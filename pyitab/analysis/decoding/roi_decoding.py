@@ -1,20 +1,24 @@
-from mvpa_itab.preprocessing.functions import FeatureSlicer
-from sklearn.metrics.scorer import _check_multimetric_scoring
 import numpy as np
+
+from sklearn.metrics.scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
-from mvpa_itab.io.utils import get_ds_data
 from sklearn.preprocessing.label import LabelEncoder
 from sklearn.model_selection._split import LeaveOneGroupOut
 from sklearn.model_selection._validation import cross_validate
 
 from tqdm import tqdm
-import logging
-from mvpa_itab.pipeline import Analyzer, Transformer
+
+from pyitab.io.utils import get_ds_data
+
+from pyitab.preprocessing.functions import FeatureSlicer
+from pyitab.analysis import Analyzer, Transformer
+
 from scipy.io.matlab.mio import savemat
-from memory_profiler import profile
+
+import logging
 logger = logging.getLogger(__name__)
 
-@profile
+
 class Decoding(Analyzer):
     """Implement decoding analysis using an arbitrary type of classifier.
 
@@ -201,7 +205,8 @@ class Decoding(Analyzer):
 
             scores = cross_validate(self.estimator, X, y_, groups,
                                   self.scoring, self.cv, self.n_jobs,
-                                  self.verbose, return_estimator=True, return_splits=True)
+                                  self.verbose, return_estimator=True, 
+                                  return_splits=True)
             
             values.append(scores)
             
@@ -213,7 +218,7 @@ class Decoding(Analyzer):
 
     def save(self, path=None, full_save=False):
         
-        import cPickle as pickle
+        import _pickle as pickle
         import os
         
         path = Analyzer.save(self, path=path)
@@ -293,6 +298,7 @@ class Decoding(Analyzer):
             
             for set_ in mat_.keys():
                 mat_[set_].append(spl[set_])
+
                 
         return mat_        
         

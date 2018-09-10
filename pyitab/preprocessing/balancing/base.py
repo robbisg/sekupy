@@ -1,18 +1,19 @@
-from mvpa_itab.pipeline import Transformer
+from pyitab.analysis import Transformer
+from pyitab.preprocessing.functions import SampleSlicer
+from pyitab.io.utils import get_ds_data
+from pyitab.preprocessing.balancing.utils import sample_generator
+from mvpa2.datasets.base import Dataset
 from imblearn.under_sampling import RandomUnderSampler
-from mvpa_itab.main_wu import slice_dataset
-from mvpa_itab.io.utils import get_ds_data
 
+from collections import Counter
 import numpy as np
 from mvpa2.base.dataset import vstack
 
 import logging
-from mvpa_itab.preprocessing.balancing.utils import sample_generator
-from mvpa2.datasets.base import Dataset
-from collections import Counter
+
+
 
 logger = logging.getLogger(__name__)
-
 
 
 class Balancer(Transformer):
@@ -72,6 +73,9 @@ class SamplingBalancer(Transformer):
         logger.info("Final: %s" %(str(Counter(balanced_ds.targets))))
         
         return balanced_ds
+
+    def _balance(self, ds):
+        return
     
     
     
@@ -80,8 +84,9 @@ class SamplingBalancer(Transformer):
         balanced_ds = []
         logger.debug(np.unique(ds.sa[self._attr].value))
         for attribute in np.unique(ds.sa[self._attr].value):
-            ds_ = slice_dataset(ds, selection_dict={self._attr:[attribute]})
-            
+
+            selection_dict = {self._attr:[attribute]}
+            ds_ = SampleSlicer(**selection_dict).transform(ds)
             
             ds_b = self._balance(ds_)  
             

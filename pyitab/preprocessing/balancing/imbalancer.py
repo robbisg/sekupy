@@ -1,11 +1,10 @@
-from mvpa_itab.pipeline import Transformer
-from mvpa_itab.io.utils import get_ds_data
-from mvpa2.datasets.base import Dataset
+from pyitab.analysis import Transformer
+from pyitab.io.utils import get_ds_data
 from collections import Counter
 import numpy as np
 
 import logging
-from imblearn.under_sampling._prototype_selection._random_under_sampler import RandomUnderSampler
+from imblearn.under_sampling import RandomUnderSampler
 logger = logging.getLogger(__name__)
 
 class Imbalancer(Transformer):

@@ -1,8 +1,6 @@
 
 import numpy as np
 
-
-   
 def sample_generator(key, values, difference, new_targets):
     
 
@@ -19,7 +17,7 @@ def sample_generator(key, values, difference, new_targets):
     key_ = key
     if not key in sample_mapper.keys():
         key_ = 'default'
-        
+
     unique = np.unique(values)
     if len(unique) == 1:
         attributes = np.array([unique[0] for _ in range(difference)])
@@ -59,7 +57,7 @@ def chunk_generator(values, difference, new_targets):
             values[class_chunk_mask] = values_
         else:
             new_chunks += [i for _ in range(count_diff)]
-    
+            
     return np.hstack((values, new_chunks))
 
 

@@ -14,7 +14,12 @@ from scipy.sparse import load_npz, save_npz
 import logging
 logger = logging.getLogger(__name__)
 
-def _get_affinity(seeds, coords, radius, allow_overlap, affine, mask_img=None):
+def _get_affinity(seeds, 
+                  coords, 
+                  radius, 
+                  allow_overlap, 
+                  affine, 
+                  mask_img=None):
     
     seeds = list(seeds)
 
@@ -72,7 +77,7 @@ def check_proximity(ds, radius):
     logger.info("Checking proximity matrix...")
     radius = np.float(radius)
     fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
-    logger.debug(fname)
+    
     return os.path.exists(fname)
 
 
@@ -81,6 +86,7 @@ def load_proximity(ds, radius):
     logger.info("Loading proximity matrix...")
     radius = np.float(radius)
     fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
+    
     A = load_npz(fname)
     return A.tolil()
 
@@ -90,7 +96,7 @@ def save_proximity(ds, radius, A):
     logger.info("Saving proximity matrix...")
     radius = np.float(radius)
     fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
+    
     save_npz(fname, A.tocoo())
-    return
 
 

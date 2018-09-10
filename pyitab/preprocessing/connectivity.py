@@ -1,11 +1,11 @@
-import numpy as np
 
 import logging
+import numpy as np
 from mvpa_itab.conn.operations import array_to_matrix, copy_matrix
 from mvpa2.base.collections import SampleAttributesCollection
 from mvpa2.datasets.base import Dataset
-from mvpa_itab.io.base import add_attributes
-from mvpa_itab.pipeline import Transformer
+from pyitab.io.base import add_attributes
+from pyitab.analysis import Transformer
 
 logger = logging.getLogger(__name__)
 

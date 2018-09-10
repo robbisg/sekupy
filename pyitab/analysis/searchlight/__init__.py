@@ -1,21 +1,25 @@
-from nilearn.image.resampling import coord_transform
-from nilearn.input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
-from sklearn.metrics.scorer import _check_multimetric_scoring
-from nilearn.decoding.searchlight import search_light
 import numpy as np
-from nilearn import masking
-from sklearn.svm import SVC
-from mvpa_itab.pipeline.searchlight.utils import _get_affinity, check_proximity,\
-    load_proximity, save_proximity
-from mvpa_itab.io.utils import get_ds_data
-from sklearn.preprocessing.label import LabelEncoder
-from sklearn.model_selection._split import LeaveOneGroupOut
 import os
 
-import logging
-from mvpa_itab.pipeline import Analyzer
+from nilearn.image.resampling import coord_transform
+from nilearn.input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
+from nilearn import masking
+from nilearn.decoding.searchlight import search_light
+
+from sklearn.metrics.scorer import _check_multimetric_scoring
+from sklearn.svm import SVC
+from sklearn.preprocessing.label import LabelEncoder
+from sklearn.model_selection._split import LeaveOneGroupOut
+
+from pyitab.analysis.searchlight.utils import _get_affinity, check_proximity
+from pyitab.analysis.searchlight.utils import load_proximity, save_proximity
+from pyitab.analysis import Analyzer
+
+from mvpa_itab.io.utils import get_ds_data
 from mvpa_itab.io.utils import save_map
 from mvpa_itab.results import make_dir
+
+import logging
 logger = logging.getLogger(__name__)
 
 
@@ -41,8 +45,6 @@ def get_seeds(ds, radius):
     save_proximity(ds, radius, A)
     
     return A
-
-
 
 
 
@@ -200,14 +202,6 @@ class SearchLight(Analyzer):
         info['radius'] = self.radius
         
         return info
-        
-    
-        
-        
-        
-        
-        
-        
         
             
             

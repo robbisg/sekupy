@@ -1,17 +1,16 @@
 import logging
 import os
 from mvpa_itab.results import get_time, make_dir
-from mvpa_itab.io.configuration import save_configuration
+from pyitab.io.configuration import save_configuration
 logger = logging.getLogger(__name__)    
 
 
 class Node(object):
 
 
-    def __init__(self, name='none', **kwargs):
+    def __init__(self, name='none'):
         self.name = name
-       
-    
+        
     
     def save(self, path=None):
         return
@@ -78,7 +77,7 @@ class Analyzer(Node):
             return None
         
         
-        if path == None:
+        if path is None:
             info = self._get_fname_info()
             path = self._get_path(**info)
             
@@ -90,8 +89,6 @@ class Analyzer(Node):
             
         return path
     
-    
-    
         
     def _get_fname_info(self):
         # TODO: Superclass?
@@ -101,13 +98,8 @@ class Analyzer(Node):
         info['experiment'] = self._info['a'].experiment
         info['task'] = self._info['a'].task
         info['analysis'] = self.name
-        
-        
-        
-
-        
+               
         return info
-            
             
             
     def _store_ds_info(self, ds, **kwargs):

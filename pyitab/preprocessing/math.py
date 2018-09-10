@@ -1,12 +1,9 @@
 import numpy as np
-from mvpa_itab.pipeline import Transformer
+from pyitab.analysis import Transformer
 from mvpa_itab.conn.connectivity import z_fisher
-
 
 import logging
 logger = logging.getLogger(__name__)
-
-
 
 
 class MathTransformer(Transformer):
@@ -30,25 +27,16 @@ class MathTransformer(Transformer):
 
 
 
-
 class ZFisherTransformer(MathTransformer):
-    
     
     def __init__(self, name='zfisher', **kwargs):
         MathTransformer.__init__(self, name=name, fx=z_fisher, **kwargs)
        
     
-    
-    
 
 class AbsoluteValueTransformer(MathTransformer):
-    
     
     def __init__(self, name='abs', **kwargs):
         MathTransformer.__init__(self, name=name, fx=np.abs, **kwargs)
         
-        
-        
-        
-        
-        
+            

@@ -17,10 +17,10 @@ class AnalysisIterator(object):
     
     
     
-    def __init__(self, options, configurator, name=None):
+    def __init__(self, options, configurator):
         
         
-        self._configurations = self._setup(**options)
+        self.configurations, self.i, self.n = self._setup(**options)
         self._configurator = configurator
 
    
@@ -34,10 +34,12 @@ class AnalysisIterator(object):
         args = [arg for arg in kwargs]
         logger.info(kwargs)
         combinations_ = list(itertools.product(*[kwargs[arg] for arg in kwargs]))
-        self.configurations = [dict(zip(args, elem)) for elem in combinations_]
-        self.i = 0
-        self.n = len(self.configurations)
-
+        configurations = [dict(zip(args, elem)) for elem in combinations_]
+        i = 0
+        n = len(self.configurations)
+        
+        return configurations, i, n
+        
     
     
     def __iter__(self):
@@ -52,11 +54,10 @@ class AnalysisIterator(object):
             self.i += 1
             logger.info("Iteration %d/%d" %(self.i, self.n))
             self._configurator.set_params(**value)
-            return self._configurator
         else:
             raise StopIteration()
         
-    
+        return self._configurator
     
     
     

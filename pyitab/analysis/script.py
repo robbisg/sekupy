@@ -1,12 +1,15 @@
 from sklearn.pipeline import Pipeline
-from mvpa_itab.pipeline.searchlight import SearchLight
 from sklearn.model_selection._split import GroupShuffleSplit
 from sklearn.svm.classes import SVR
-from mvpa_itab.preprocessing.mapper import function_mapper
-from mvpa_itab.preprocessing.pipelines import PreprocessingPipeline
+
+from pyitab.preprocessing.mapper import function_mapper
+from pyitab.preprocessing.pipelines import PreprocessingPipeline
+from pyitab.analysis.searchlight import SearchLight
+from pyitab.io.configuration import save_configuration
+
+from builtins import object
 
 import logging
-from mvpa_itab.io.configuration import save_configuration
 logger = logging.getLogger(__name__)
 
 

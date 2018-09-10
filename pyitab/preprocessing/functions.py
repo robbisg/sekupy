@@ -8,10 +8,8 @@ from mvpa2.mappers.zscore import ZScoreMapper
 import logging
 from itertools import product
 from mvpa2.base.dataset import hstack, vstack
-from mvpa_itab.pipeline import Transformer, Node
+from pyitab.analysis import Transformer
 logger = logging.getLogger(__name__)
-
-   
 
 
 class Detrender(Transformer):
@@ -23,7 +21,7 @@ class Detrender(Transformer):
             
     
     def transform(self, ds):
-        logger.info('Dataset preprocessing: Detrending with polynomial of order %s...' %(str(self._degree)))
+        logger.info('Dataset preprocessing: Detrending with polynomial of order %s...', (str(self._degree)))
         return self.node.forward(ds)
                    
 
@@ -81,7 +79,7 @@ class TargetTransformer(Transformer):
         Transformer.__init__(self, name='target_transformer', **kwargs)
     
     def transform(self, ds):
-        logger.info("Dataset preprocessing: Target set to %s" %(self._attribute))
+        logger.info("Dataset preprocessing: Target set to %s" , (self._attribute))
         ds.targets = ds.sa[self._attribute]
         
         return ds
@@ -119,9 +117,9 @@ class FeatureSlicer(Transformer):
         selection_dict = self._selection
     
         selection_mask = np.ones(ds.shape[1], dtype=np.bool)
-        for key, values in selection_dict.iteritems():
+        for key, values in selection_dict.items():
             
-            logger.info("Selected %s from %s attribute." %(str(values), key))
+            logger.info("Selected %s from %s attribute.", str(values), key)
             
             ds_values = ds.fa[key].value
             condition_mask = np.zeros_like(ds_values, dtype=np.bool)
@@ -172,9 +170,9 @@ class SampleSlicer(Transformer):
         selection_dict = self._selection
     
         selection_mask = np.ones_like(ds.targets, dtype=np.bool)
-        for key, values in selection_dict.iteritems():
+        for key, values in selection_dict.items():
             
-            logger.info("Selected %s from %s attribute." %(str(values), key))
+            logger.info("Selected %s from %s attribute.", str(values), key)
             
             ds_values = ds.sa[key].value
             condition_mask = np.zeros_like(ds_values, dtype=np.bool)
@@ -204,7 +202,11 @@ class FeatureStacker(Transformer):
     equal to 1 OR 2 OR 3 AND all samples with accuracy equal to 'I'.   
     """
 
-    def __init__(self, selection_dictionary=None, stack_attr=['targets', 'chunks'], **kwargs):
+    def __init__(self, 
+                 selection_dictionary=None, 
+                 stack_attr=['targets', 'chunks'], 
+                 **kwargs):
+        
         self._selection = selection_dictionary
         self._attr = stack_attr
         Transformer.__init__(self, name='sample_stacker',**kwargs)    
@@ -212,7 +214,7 @@ class FeatureStacker(Transformer):
 
     def transform(self, ds):
         
-        ds_ = SampleSlicer(self._selection).transform(ds)
+        ds_ = SampleSlicer(**self._selection).transform(ds)
         
         iterable = [np.unique(ds_.sa[a].value) for a in self._attr]
         

@@ -7,7 +7,7 @@ from tqdm import tqdm
 from itertools import product
 
 import logging
-from memory_profiler import profile
+
 logger = logging.getLogger(__name__)
 
 
@@ -150,7 +150,7 @@ def get_configuration_fields(conf, *args):
             if k[:idx_end] == arg+"__":
                 try:
                     value = ast.literal_eval(v)
-                except ValueError, _:
+                except ValueError as _:
                     if str(k[idx_end:]) != 'prepro':
                         results[str(k[idx_end:])] = v
                     else:

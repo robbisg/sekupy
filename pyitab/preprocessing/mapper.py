@@ -1,9 +1,9 @@
-from mvpa_itab.preprocessing.functions import Detrender, TargetTransformer,\
+from pyitab.preprocessing.functions import Detrender, TargetTransformer,\
     FeatureWiseNormalizer, FeatureSlicer, SampleSlicer, SampleWiseNormalizer,\
     FeatureStacker
-from mvpa_itab.preprocessing.balancing.base import Balancer
-from mvpa_itab.preprocessing.balancing.imbalancer import Imbalancer
-from mvpa_itab.preprocessing.math import ZFisherTransformer, AbsoluteValueTransformer
+from pyitab.preprocessing.balancing.base import Balancer
+from pyitab.preprocessing.balancing.imbalancer import Imbalancer
+from pyitab.preprocessing.math import ZFisherTransformer, AbsoluteValueTransformer
 
 
 

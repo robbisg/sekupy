@@ -1,6 +1,6 @@
 import logging
 import os
-from mvpa_itab.pipeline import Analyzer
+from pyitab.analysis import Analyzer
 from mvpa_itab.results import get_time, make_dir
 from collections import Counter
 logger = logging.getLogger(__name__)
@@ -14,28 +14,21 @@ class AnalysisPipeline(Analyzer):
         
         self._configurator = configurator
         self._name = name
-        
-        
+                
     
     def fit(self, ds, **kwargs):
         
         self._transformer, self._estimator = self._configurator.fit()
-
         ds_ = self._transform(ds)
-        
         self._estimator.fit(ds_, **kwargs)     
-        
-        #logger.debug(hpy().heap())
-        
+                
         return self
     
     
     def save(self):
         
-
         params = self._configurator._get_fname_info()
         params.update(self._estimator._get_fname_info())
-        
         
         logger.info(params)
         

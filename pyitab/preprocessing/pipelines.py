@@ -1,10 +1,9 @@
-from mvpa_itab.preprocessing.functions import Detrender, FeatureWiseNormalizer, \
-                SampleSlicer, SampleWiseNormalizer
-
-from mvpa_itab.pipeline import Transformer
+from pyitab.preprocessing.functions import Detrender, FeatureWiseNormalizer
+from pyitab.preprocessing.functions import SampleSlicer, SampleWiseNormalizer
+from pyitab.analysis import Transformer
+from pyitab.preprocessing.mapper import function_mapper
 
 import logging
-from mvpa_itab.preprocessing.mapper import function_mapper
 logger = logging.getLogger(__name__)
 
 
