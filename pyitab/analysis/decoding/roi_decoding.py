@@ -11,7 +11,7 @@ from tqdm import tqdm
 from pyitab.io.utils import get_ds_data
 
 from pyitab.preprocessing.functions import FeatureSlicer
-from pyitab.analysis import Analyzer, Transformer
+from pyitab.analysis.base import Analyzer, Transformer
 
 from scipy.io.matlab.mio import savemat
 

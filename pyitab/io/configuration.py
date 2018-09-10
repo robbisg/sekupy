@@ -52,7 +52,7 @@ def read_configuration(filename, section):
     for sec in config.sections():
         
         if sec == 'roi_labels':
-            roi_labels=dict()
+            roi_labels = dict()
             for k, v in config.items(sec):
                 roi_labels[k] = v
         

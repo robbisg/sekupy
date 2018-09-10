@@ -67,9 +67,16 @@ def save_map(filename, map_np_array, affine=np.eye(4)):
         
     map_zscore = ni.Nifti1Image(map_np_array, affine)
     ni.save(map_zscore, filename)
-    return
+    
 
 
+def make_dir(path):
+    """ Make dir unix command wrapper """
+    #os.mkdir(os.path.join(path))
+    command = 'mkdir -p '+os.path.join(path)
+    logger.info(command)
+    os.system(command)
+    
 
 
 def ds_to_dataframe(ds, keys=['band', 'targets', 'subjects'], melt=False):

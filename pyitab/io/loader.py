@@ -37,7 +37,7 @@ class DataLoader(object):
 
         
         
-    def fetch(self, prepro=None):
+    def fetch(self, prepro=None, n_subjects=None):
         
         if prepro != None:
             self._prepro = prepro
@@ -46,7 +46,8 @@ class DataLoader(object):
             
         ds =  self._loader(self._configuration_file, 
                            self._task, 
-                           prepro=self._prepro)
+                           prepro=self._prepro,
+                           n_subjects=n_subjects)
         
 
         ds = self._update_ds(ds)

@@ -1,4 +1,4 @@
-from pyitab.analysis import Transformer
+from pyitab.analysis.base import Transformer
 from pyitab.io.utils import get_ds_data
 from collections import Counter
 import numpy as np

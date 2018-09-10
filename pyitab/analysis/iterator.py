@@ -15,8 +15,6 @@ _default_options = {
 
 class AnalysisIterator(object):
     
-    
-    
     def __init__(self, options, configurator):
         
         
@@ -24,9 +22,6 @@ class AnalysisIterator(object):
         self._configurator = configurator
 
    
-    
-    
-    
     def _setup(self, **kwargs):
         
         import itertools
@@ -40,8 +35,7 @@ class AnalysisIterator(object):
         
         return configurations, i, n
         
-    
-    
+
     def __iter__(self):
         return self
     

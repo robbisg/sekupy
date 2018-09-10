@@ -13,11 +13,9 @@ from sklearn.model_selection._split import LeaveOneGroupOut
 
 from pyitab.analysis.searchlight.utils import _get_affinity, check_proximity
 from pyitab.analysis.searchlight.utils import load_proximity, save_proximity
-from pyitab.analysis import Analyzer
+from pyitab.analysis.base import Analyzer
 
-from mvpa_itab.io.utils import get_ds_data
-from mvpa_itab.io.utils import save_map
-from mvpa_itab.results import make_dir
+from pyitab.io.utils import get_ds_data, save_map, make_dir
 
 import logging
 logger = logging.getLogger(__name__)
@@ -165,9 +163,6 @@ class SearchLight(Analyzer):
         return self
     
     
-    
-    
-    
     def save(self, path=None, save_cv=True):
         
         map_type = ['avg', 'cv']
@@ -203,6 +198,4 @@ class SearchLight(Analyzer):
         
         return info
         
-            
-            
-            
+   

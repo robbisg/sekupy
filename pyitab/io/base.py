@@ -403,7 +403,8 @@ def load_attributes (path, subj, task,  **kwargs):
 def load_subject_ds(conf_file, 
                     task, 
                     extra_sa=None,
-                    prepro=StandardPreprocessingPipeline(), 
+                    prepro=StandardPreprocessingPipeline(),
+                    n_subjects=None,
                     **kwargs):
     
     """
@@ -423,6 +424,8 @@ def load_subject_ds(conf_file,
     # Subject file should be included in configuration
     subject_file = conf['subjects']
     subjects, extra_sa = load_subject_file(subject_file)
+
+    # TODO: Use n_subjects to stop loading
         
     logger.info('Merging %s subjects from %s' % (str(len(subjects)), data_path))
     

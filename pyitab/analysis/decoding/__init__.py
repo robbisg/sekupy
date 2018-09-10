@@ -1,11 +1,9 @@
 import logging
 import os
-from pyitab.analysis import Analyzer
+from pyitab.analysis.base import Analyzer
 from mvpa_itab.results import get_time, make_dir
 from collections import Counter
 logger = logging.getLogger(__name__)
-
-#from guppy import hpy
 
 
 class AnalysisPipeline(Analyzer):

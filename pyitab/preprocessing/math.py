@@ -1,5 +1,5 @@
 import numpy as np
-from pyitab.analysis import Transformer
+from pyitab.analysis.base import Transformer
 from mvpa_itab.conn.connectivity import z_fisher
 
 import logging
@@ -15,7 +15,7 @@ class MathTransformer(Transformer):
         
     def transform(self, ds):
         
-        logger.info("Transforming samples with %s" %(str(self._fx)))
+        logger.info("Transforming samples with %s", str(self._fx))
         ds_ = ds.copy()
         samples = self._fx(ds_.samples)
         samples[np.isinf(samples)] = 1

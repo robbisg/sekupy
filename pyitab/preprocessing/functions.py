@@ -8,7 +8,7 @@ from mvpa2.mappers.zscore import ZScoreMapper
 import logging
 from itertools import product
 from mvpa2.base.dataset import hstack, vstack
-from pyitab.analysis import Transformer
+from pyitab.analysis.base import Transformer
 logger = logging.getLogger(__name__)
 
 

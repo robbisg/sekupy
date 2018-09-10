@@ -1,6 +1,6 @@
 from pyitab.preprocessing.functions import Detrender, FeatureWiseNormalizer
 from pyitab.preprocessing.functions import SampleSlicer, SampleWiseNormalizer
-from pyitab.analysis import Transformer
+from pyitab.analysis.base import Transformer
 from pyitab.preprocessing.mapper import function_mapper
 
 import logging

@@ -5,7 +5,7 @@ from mvpa_itab.conn.operations import array_to_matrix, copy_matrix
 from mvpa2.base.collections import SampleAttributesCollection
 from mvpa2.datasets.base import Dataset
 from pyitab.io.base import add_attributes
-from pyitab.analysis import Transformer
+from pyitab.analysis.base import Transformer
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +24,7 @@ class SingleRowMatrixTransformer(Transformer):
         
         ds_ = Dataset.from_wizard(data)
         ds_ = add_attributes(ds_, attr)
-        
-        
+                
         return ds_
         
         
