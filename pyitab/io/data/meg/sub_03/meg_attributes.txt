@@ -1,0 +1,13 @@
+targets band run
+2back alpha 1
+rest beta 1
+rest alpha 1
+0back gamma 1
+2back theta 1
+rest gamma 1
+0back alpha 1
+rest theta 1
+2back beta 1
+2back gamma 1
+0back beta 1
+0back theta 1
