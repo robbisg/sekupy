@@ -18,10 +18,7 @@ from pyitab.io.utils import add_subdirs, build_pathnames
 from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
 from pyitab.io.configuration import read_configuration
 
-#from memory_profiler import profile
-
 logger = logging.getLogger(__name__) 
-
 
 
 def load_dataset(path, subj, folder, **kwargs):
@@ -36,7 +33,7 @@ def load_dataset(path, subj, folder, **kwargs):
         subject name (in general it specifies a subfolder under path)
     folder : string
         subfolder under subject folder (in general is the experiment name)
-    \*\*kwargs : keyword arguments
+    kwargs : keyword arguments
         Keyword arguments to format-specific load
 
     Returns
@@ -183,9 +180,8 @@ def add_subjectname(ds, subj):
     return ds
 
 
-   
 def load_filelist(path, name, folder, **kwargs):
-    ''' Load file given filename, the 
+    ''' Load file given the filename
 
     Parameters
     ----------
@@ -195,7 +191,7 @@ def load_filelist(path, name, folder, **kwargs):
         subject name (in general it specifies a subfolder under path)
     folder : string
         subfolder under subject folder (in general is the experiment name)
-    \*\*kwargs : keyword arguments
+    kwargs : keyword arguments
         Keyword arguments to format-specific load
 
     Returns
@@ -232,7 +228,7 @@ def load_filelist(path, name, folder, **kwargs):
 def load_roi_labels(roi_labels):
     
     roi_labels_dict = {}
-    if roi_labels != None:
+    if roi_labels is not None:
         for label, img in roi_labels.items():
             if isinstance(img, str):
                 roi_labels_dict[label] = ni.load(img)
@@ -253,15 +249,15 @@ def load_fmri(filelist, skip_vols=0):
         
         logger.info('Now loading '+file_)     
         
-        img = ni.load(file_)     
+        img = ni.load(file_)
         data = img.get_data()
         
         
         if len(data.shape) == 4:
         
-            img = img.__class__(data[:,:,:,skip_vols:], 
-                                  affine = img.affine, 
-                                  header = img.header)
+            img = img.__class__(data[..., skip_vols:], 
+                                  affine=img.affine, 
+                                  header=img.header)
         del data
         image_list.append(img)
         
@@ -311,6 +307,8 @@ def load_mask(path, **kwargs):
     for arg in kwargs: 
         if (arg == 'mask_dir'):
             mask_path = kwargs[arg]
+            if mask_path[0] != '/':
+                mask_path = os.path.join(path, mask_path)
         if (arg == 'brain_mask'):
             rois = kwargs[arg].split(',')
                               
@@ -403,6 +401,7 @@ def load_attributes (path, subj, task,  **kwargs):
 def load_subject_ds(conf_file, 
                     task, 
                     extra_sa=None,
+                    loader=load_dataset,
                     prepro=StandardPreprocessingPipeline(),
                     n_subjects=None,
                     **kwargs):
@@ -420,27 +419,33 @@ def load_subject_ds(conf_file,
     logger.debug(conf)
     
     data_path = conf['data_path']
+    if len(data_path) == 1:
+        data_path = os.path.abspath(os.path.join(conf_file, os.pardir))
     
     # Subject file should be included in configuration
     subject_file = conf['subjects']
-    subjects, extra_sa = load_subject_file(subject_file)
+    if subject_file[0] != '/':
+        subject_file = os.path.join(data_path, subject_file)
+    
+    subjects, extra_sa = load_subject_file(subject_file, 
+                                            n_subjects=n_subjects)
 
     # TODO: Use n_subjects to stop loading
         
     logger.info('Merging %s subjects from %s' % (str(len(subjects)), data_path))
     
     for i, subj in enumerate(subjects):
+      
+        ds = loader(data_path, subj, task, **conf)
         
-        ds = load_dataset(data_path, subj, task, **conf)
-        
-        if ds == None:
+        if ds is None:
             continue
         
         ds = prepro.transform(ds)
         
         # add extra samples
-        if extra_sa != None:
-            for k, v in extra_sa.iteritems():
+        if extra_sa is not None:
+            for k, v in extra_sa.items():
                 if len(v) == len(subjects):
                     ds.sa[k] = [v[i] for _ in range(ds.samples.shape[0])]
         
@@ -464,23 +469,47 @@ def load_subject_ds(conf_file,
 
 
 
-def load_subject_file(fname):
-    """
-        File format example
-        >>>
-        subject,group,group_split
-        s01_160112alefor,1,1
-        s02_160216micbra,1,1
+def load_subject_file(fname, n_subjects=None):
+    ''' Load information about subjects from a file.
+
+
+    Parameters
+    ----------
+    fname : string
+       The file of subjects information (.csv) 
+        An example of subjects file is this:
+        
+        >> subjects.csv
+        subject,group,group_split,age
+        s01_160112alefor,1,1,21
+        s02_160216micbra,1,1,30
         >>
-    """
+    
+    n_subjects : integer
+        The number of subjects to include.
+
+    Returns
+    -------
+    subjects : string array
+       list of subjects name
+
+    extra_sa : dictionary
+        a dictionary of extra subject attributes like 
+        age or other subject-wise information
+        In the example above the dictionary will be:
+        {'group':[1,1], 'group_split':[1,1], 'age':[21,30]}
+
+    '''
+
     
     subject_array = np.genfromtxt(fname, 
                                   delimiter=',', 
-                                  dtype=np.string_)
+                                  dtype=np.str_)
         
     subjects = subject_array[1:,0]
     # TODO: Check for extra_sa
     extra_sa = {a[0]:a[1:] for a in subject_array.T}
+    extra_sa = {k:v[:n_subjects] for k, v in extra_sa.items()}
     
-    return subjects, extra_sa
+    return subjects[:n_subjects], extra_sa
 

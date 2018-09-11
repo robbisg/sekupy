@@ -25,7 +25,7 @@ def add_subdirs(path, name, sub_dirs):
         if d[0] == '/':
             complete_path.append(d)
         
-        
+        logger.debug("%s %s %s", path, name, d)
         pathname = os.path.join(path, name, d)
         
         logger.debug(pathname)
@@ -89,7 +89,7 @@ def ds_to_dataframe(ds, keys=['band', 'targets', 'subjects'], melt=False):
             df_dict[k] = sample.sa[k].value[0]
             
         sample_data = sample.samples.squeeze()
-        feature_dict = {"feature_%04d"%(i+1):v for i, v in enumerate(sample_data)}
+        feature_dict = {"feature_%04d"%(i+1) : v for i, v in enumerate(sample_data)}
             
         df_dict.update(feature_dict)
         dd = df_dict.copy()

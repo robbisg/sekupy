@@ -1,5 +1,6 @@
 import os
-from pyitab.utils.io import get_time, make_dir
+from pyitab.io.utils import make_dir
+from pyitab.utils import get_time
 
 class Node(object):
 
@@ -26,5 +27,4 @@ class Node(object):
 
         path = os.path.join(path, '0_results', dir_)
             
-        return path
-        
+        return path    
