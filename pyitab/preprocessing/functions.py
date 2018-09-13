@@ -8,25 +8,60 @@ from mvpa2.mappers.zscore import ZScoreMapper
 import logging
 from itertools import product
 from mvpa2.base.dataset import hstack, vstack
-from pyitab.analysis.base import Transformer
+from pyitab.preprocessing import Transformer
 logger = logging.getLogger(__name__)
 
 
 class Detrender(Transformer):
+    """This transformer is used to detrend data.
+    
+    Parameters
+    ----------
+    degree : int, optional
+        The polynomial degree of the detrending function
+        (the default is 1)
+    chunks_attr : str, optional
+        The attribute used to get data for the detrend
+        (the default is 'chunks', which can be only a sample attribute
+        of the dataset)
+    
+    """
+
     
     def __init__(self, degree=1, chunks_attr='chunks', **kwargs):
+
         self._degree = degree
         self.node = PolyDetrendMapper(chunks_attr=chunks_attr, polyord=degree)
         Transformer.__init__(self, name='detrending', **kwargs)
             
     
     def transform(self, ds):
+        """This function performs the detrending
+        
+        Parameters
+        ----------
+        ds : pymvpa Dataset
+            The dataset to be transformed.
+        
+        Returns
+        -------
+        ds : pymvpa Dataset
+            The transformed dataset
+        """
         logger.info('Dataset preprocessing: Detrending with polynomial of order %s...', (str(self._degree)))
         return self.node.forward(ds)
                    
 
 
 class SampleAverager(Transformer):
+    """This transformer is used to average data.
+    
+    Parameters
+    ----------
+    attributes : list
+      List of sample attributes whose unique values will be used to identify the
+      samples groups.   
+    """
     
     
     def __init__(self, attributes, **kwargs):
@@ -35,6 +70,18 @@ class SampleAverager(Transformer):
         
         
     def transform(self, ds):
+        """This function performs the averaging
+        
+        Parameters
+        ----------
+        ds : pymvpa Dataset
+            The dataset to be transformed.
+        
+        Returns
+        -------
+        ds : pymvpa Dataset
+            The transformed dataset
+        """
         logger.info('Dataset preprocessing: Averaging samples...')
         return ds.get_mapped(self.node)  
 
@@ -88,8 +135,7 @@ class TargetTransformer(Transformer):
 
 
 class FeatureSlicer(Transformer):
-    """
-    Selects only portions of features in the dataset based on a dictionary
+    """ This transformer filters the dataset using features as specified on a dictionary
     The dictionary indicates the feature attributes to be used as key and a list
     with conditions to be selected:
     
@@ -100,6 +146,7 @@ class FeatureSlicer(Transformer):
                         
     This dictionary means that we will select all features with frame attribute
     equal to 1 OR 2 OR 3 AND all samples with accuracy equal to 'I'.
+
     
     """
     

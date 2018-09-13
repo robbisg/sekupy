@@ -7,21 +7,6 @@ from pyitab.analysis import Node
 logger = logging.getLogger(__name__)
 
 
-class Transformer(Node):
-    
-    def __init__(self, name='transformer', **kwargs):
-        self.foo = "foo"
-        Node.__init__(self, name=name, **kwargs)
-        
-        
-    def transform(self, ds):
-        return ds
-    
-    
-    def save(self, path=None):
-        return Node.save(self, path=path)
-
-
 class Analyzer(Node):
     
     def __init__(self, name='analyzer', **kwargs):
@@ -62,7 +47,7 @@ class Analyzer(Node):
     
         
     def _get_fname_info(self):
-        # TODO: Superclass?
+
         info = dict()
         
         info['path'] = self._info['a'].data_path
@@ -74,7 +59,7 @@ class Analyzer(Node):
             
             
     def _store_ds_info(self, ds, **kwargs):
-        # TODO: Superclass function ?
+
         import numpy as np
         info = dict()
         info['a'] = ds.a.copy()

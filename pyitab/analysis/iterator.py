@@ -14,8 +14,23 @@ _default_options = {
 
 
 class AnalysisIterator(object):
+
     
     def __init__(self, options, configurator):
+        """This class allows to configure different analysis to be
+        iterated using a set of options.
+                
+        Parameters
+        ----------
+        options : dict
+            A dictionary that include all different values that must be 
+            iterated in the analysis to be performed.
+            
+        configurator : [type]
+            [description]
+        
+        """
+
         
         
         self.configurations, self.i, self.n = self._setup(**options)

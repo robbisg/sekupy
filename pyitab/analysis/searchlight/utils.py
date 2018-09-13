@@ -96,7 +96,7 @@ def save_proximity(ds, radius, A):
     logger.info("Saving proximity matrix...")
     radius = np.float(radius)
     fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
-    
+    logger.debug(fname)
     save_npz(fname, A.tocoo())
 
 

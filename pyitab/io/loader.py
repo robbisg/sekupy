@@ -27,10 +27,8 @@ class DataLoader(object):
         self._task = task
         self._prepro = prepro
         
-        self._conf = read_configuration(configuration_file, task)
+        self._conf = {}
         self._conf.update(**kwargs)
-            
-        self._data_path = self._conf['data_path']
         
         
         
@@ -45,24 +43,12 @@ class DataLoader(object):
                              self._task,
                              loader=self._loader,
                              prepro=self._prepro,
-                             n_subjects=n_subjects)
+                             n_subjects=n_subjects,
+                             **self._conf
+                             )
         
-
-        ds = self._update_ds(ds)
-        
-        return ds
-    
-
-
-
-
-
-    
-    
-    def _update_ds(self, ds):
-        
-        ds.a.update(self._conf)
-        ds.a['task'] = self._task
         
         return ds
+    
+
     

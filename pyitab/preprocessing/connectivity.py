@@ -5,17 +5,36 @@ from mvpa_itab.conn.operations import array_to_matrix, copy_matrix
 from mvpa2.base.collections import SampleAttributesCollection
 from mvpa2.datasets.base import Dataset
 from pyitab.io.base import add_attributes
-from pyitab.analysis.base import Transformer
+from pyitab.preprocessing import Transformer
 
 logger = logging.getLogger(__name__)
 
 
 class SingleRowMatrixTransformer(Transformer):
-    
+    """This transformer change a row dataset representing a matrix
+    in a square matrix dataset.       
+    """
+
     def __init__(self, name='upper_matrix', **kwargs):
+
         Transformer.__init__(self, name=name, **kwargs)       
 
+
     def transform(self, ds):
+        """This function performs the transformation into
+        a square matrix dataset
+        
+        Parameters
+        ----------
+        ds : pymvpa Dataset
+            The dataset to be transformed.
+        
+        Returns
+        -------
+        ds : pymvpa Dataset
+            The transformed dataset
+        """
+
                 
         data = np.dstack([copy_matrix(array_to_matrix(a)) for a in ds.samples])
         data = np.hstack([d for d in data[:,:]]).T

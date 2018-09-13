@@ -11,7 +11,7 @@ def get_ds_data(ds, target_attribute='targets'):
     """
     Returns X and y data from pymvpa dataset
     """
-    
+
     return ds.samples, ds.sa[target_attribute].value
 
 

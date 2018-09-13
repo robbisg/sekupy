@@ -1,6 +1,6 @@
 from pyitab.preprocessing.functions import Detrender, FeatureWiseNormalizer
 from pyitab.preprocessing.functions import SampleSlicer, SampleWiseNormalizer
-from pyitab.analysis.base import Transformer
+from pyitab.preprocessing import Transformer
 from pyitab.preprocessing.mapper import function_mapper
 
 import logging
@@ -11,10 +11,11 @@ class PreprocessingPipeline(Transformer):
     
     
     def __init__(self, name='pipeline', nodes=[Transformer()]):
+
         
         self.nodes = []
         
-        if nodes != None:
+        if nodes is not None:
             self.nodes = nodes
         
         if isinstance(nodes[0], str):

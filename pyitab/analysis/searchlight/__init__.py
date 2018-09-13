@@ -131,7 +131,6 @@ class SearchLight(Analyzer):
     def fit(self, ds, cv_attr='chunks'):
         """
         Fit the searchlight
-
         """
         
         A = get_seeds(ds, self.radius)
@@ -144,12 +143,16 @@ class SearchLight(Analyzer):
         y = LabelEncoder().fit_transform(y)
         groups = LabelEncoder().fit_transform(ds.sa[cv_attr].value)
         
+        logger.debug(X.shape)
+        logger.debug(y)
         
         values = []
         indices = self._get_permutation_indices(len(y))
         
         for idx in indices:
-            y_ = y[idx]        
+            y_ = y[idx] 
+            logger.debug(y_)
+            logger.debug(self.cv)
             scores = search_light(X, y_, estimator, A, groups,
                                   self.scoring, self.cv, self.n_jobs,
                                   self.verbose)
@@ -180,7 +183,7 @@ class SearchLight(Analyzer):
                 for score, image in img_dict.items():
                     
                     # TODO: Better use of cv and attributes for leave-one-subject-out
-                    if map_type[j] == 'cv' and save_cv == False:
+                    if map_type[j] == 'cv' and save_cv is False:
                         continue
                     
                     filename = "%s_perm_%04d_%s.nii.gz" %(score, i, map_type[j])

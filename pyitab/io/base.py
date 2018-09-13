@@ -44,8 +44,7 @@ def load_dataset(path, subj, folder, **kwargs):
     
     skip_vols = 0
     roi_labels = dict()
-    
-    
+      
     for arg in kwargs:
         if arg == 'skip_vols':              # no. of canceled volumes
             skip_vols = np.int(kwargs[arg])
@@ -68,7 +67,7 @@ def load_dataset(path, subj, folder, **kwargs):
     # Loading attributes
     attr = load_attributes(path, subj, folder, **kwargs)
     
-    if (attr == None) and (len(file_list) == 0):
+    if (attr is None) and (len(file_list) == 0):
         return None            
 
     # Loading mask 
@@ -241,8 +240,21 @@ def load_roi_labels(roi_labels):
 
 
 def load_fmri(filelist, skip_vols=0):
+    """Load data specified in the file list as nibabel image.
+    
+    Parameters
+    ----------
+    filelist : list
+        List of pathnames specifying the location of image to be loaded
+    skip_vols : int, optional
+        Number of volumes to be discarded (the default is 0)
+    
+    Returns
+    -------
+    fmri_list: 
+        List of nibabel images.
     """
-    """   
+
     image_list = []
         
     for file_ in filelist:
@@ -264,8 +276,8 @@ def load_fmri(filelist, skip_vols=0):
         logger.debug(img.shape)
     
     logger.debug('The image list is of ' + str(len(image_list)) + ' images.')
+    
     return image_list
-
 
       
 
@@ -328,14 +340,14 @@ def load_mask(path, **kwargs):
 
 
 
-def find_roi(path, rois):
+def find_roi(path, roi_list):
     
-    logger.debug(rois)
+    logger.debug(roi_list)
     
     found_rois = os.listdir(path)
     mask_list = []
     
-    for roi in rois:
+    for roi in roi_list:
         mask_list += [m for m in found_rois if m.find(roi) != -1]
    
     mask_list = [m for m in mask_list if m.find(".nii.gz")!=-1 or m.find(".img")!=-1 or m.find(".nii") != -1]
@@ -349,9 +361,10 @@ def find_roi(path, rois):
 
 
 def load_attributes (path, subj, task,  **kwargs):
-    ## Should return attr and a code to check if loading has been exploited #####
     
-    #Default header struct
+    # TODO: Maybe is better to use explicit variables
+    # instead of kwargs
+
     header = ['targets', 'chunks']
     
     for arg in kwargs:
@@ -421,16 +434,19 @@ def load_subject_ds(conf_file,
     data_path = conf['data_path']
     if len(data_path) == 1:
         data_path = os.path.abspath(os.path.join(conf_file, os.pardir))
+        conf['data_path'] = data_path
     
     # Subject file should be included in configuration
     subject_file = conf['subjects']
     if subject_file[0] != '/':
         subject_file = os.path.join(data_path, subject_file)
+        conf['subjects'] = subject_file
     
+    logger.debug(subject_file)
+    logger.debug(data_path)
     subjects, extra_sa = load_subject_file(subject_file, 
                                             n_subjects=n_subjects)
 
-    # TODO: Use n_subjects to stop loading
         
     logger.info('Merging %s subjects from %s' % (str(len(subjects)), data_path))
     
@@ -462,9 +478,10 @@ def load_subject_ds(conf_file,
     
     
     ds_merged.a['prepro'] = prepro.get_names()
+    ds_merged.a.update(conf)
+    ds_merged.a['task'] = task
     
     return ds_merged
-
 
 
 
@@ -507,6 +524,7 @@ def load_subject_file(fname, n_subjects=None):
                                   dtype=np.str_)
         
     subjects = subject_array[1:,0]
+    
     # TODO: Check for extra_sa
     extra_sa = {a[0]:a[1:] for a in subject_array.T}
     extra_sa = {k:v[:n_subjects] for k, v in extra_sa.items()}

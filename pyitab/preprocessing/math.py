@@ -1,5 +1,5 @@
 import numpy as np
-from pyitab.analysis.base import Transformer
+from pyitab.preprocessing import Transformer
 from mvpa_itab.conn.connectivity import z_fisher
 
 import logging

@@ -12,12 +12,31 @@ logger = logging.getLogger(__name__)
 
 
 def get_results(path, dir_id, field_list=['sample_slicer'], result_keys=None, filter=None):
+    """This function is used to collect the results from a previous analysis.
     
-    """
-    filter : {'field':[value]}
+    Parameters
+    ----------
+    path : str
+        The pathname of the folder in which results are stored
+    dir_id : str
+        The id / pattern to be used to filter folders. It is often the id of 
+        the Analysis Pipeline used.
+    field_list : list, optional
+        List of different condition used by the AnalysisIterator  
+        (the default is ['sample_slicer'], which is a fields of the configuration)
+    result_keys : list, optional
+        List of strings indicating the other fields to get from the result (e.g. cross_validation folds)
+    filter : dictionary, optional
+        This is used to filter dataset and include only fields or conditions.
+        See ```pyitab.preprocessing.SampleSlicer``` for an example of dictionary
+         (the default is None, which [default_description])
+    
+    Returns
+    -------
+    dataframe : pandas dataframe
+        A table of the results in pandas format
     """
        
-    
     dir_analysis = os.listdir(path)
     dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1]
     dir_analysis.sort()
@@ -47,14 +66,12 @@ def get_results(path, dir_id, field_list=['sample_slicer'], result_keys=None, fi
                     
             data = loadmat(os.path.join(path, d, fname))
             
-
-            
             for score in scores:
                 for i, s in enumerate(data['test_%s' % (score)].squeeze()):
                     fields[score] = s
                     fields['fold'] = i+1
                     logger.debug(fields)
-                    if result_keys != None:
+                    if result_keys is not None:
                         for k in result_keys:
                             fields[k] = data[k][i].squeeze().copy()
                     fields_ = fields.copy()
@@ -186,6 +203,7 @@ def get_searchlight_results(path, dir_id, field_list=['sample_slicer'], load_cv=
         files = os.listdir(os.path.join(path, d))
         files = [f for f in files if f.find(".nii.gz") != -1]
         files.sort()
+        
         if not load_cv:
             files = [f for f in files if f.find("avg") != -1]
         
@@ -193,8 +211,7 @@ def get_searchlight_results(path, dir_id, field_list=['sample_slicer'], load_cv=
             
             fname_split = fname.split("_")
             fields['measure'] = "_".join(fname_split[:-3])
-            fields['permutation'] = np.float_(fname_split[-2])
-                    
+            fields['permutation'] = np.float_(fname_split[-2])              
             fields['map'] = os.path.join(path, d, fname)
             
             fields_ = fields.copy()

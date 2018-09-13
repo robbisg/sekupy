@@ -1,6 +1,7 @@
 from pyitab.preprocessing.functions import Detrender, TargetTransformer,\
     FeatureWiseNormalizer, FeatureSlicer, SampleSlicer, SampleWiseNormalizer,\
     FeatureStacker
+from pyitab.preprocessing import Transformer
 from pyitab.preprocessing.balancing.base import Balancer
 from pyitab.preprocessing.balancing.imbalancer import Imbalancer
 from pyitab.preprocessing.math import ZFisherTransformer, AbsoluteValueTransformer
@@ -20,7 +21,8 @@ def function_mapper(name):
               'balancer': Balancer,
               'imbalancer': Imbalancer,
               'abs': AbsoluteValueTransformer,
-              'zfisher': ZFisherTransformer
+              'zfisher': ZFisherTransformer,
+              'none' : Transformer,
               }
     
     return mapper[name]

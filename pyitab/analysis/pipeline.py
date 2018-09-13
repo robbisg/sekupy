@@ -9,12 +9,39 @@ logger = logging.getLogger(__name__)
 
 class AnalysisPipeline(Analyzer):
     
-    def __init__(self, configurator, name="base", **kwargs):
+
+    def __init__(self, configurator, name="base"):
+        """This class is used to perform a general analysis based on
+        the configuration that is specified by the parameter.
+        (see ```pyitab.analysis.configurator.Configurator``` docs)
         
+        Parameters
+        ----------
+        configurator : ```pyitab.analysis.configurator.Configurator```
+            object used to specify the preprocessing and the analysis 
+            to be performed
+        name : str, optional
+            [description] (the default is "base")
+        
+        """
+     
         self._configurator = configurator
         self._name = name
             
+
     def fit(self, ds, **kwargs):
+        """Fit the analysis on the dataset.
+        
+        Parameters
+        ----------
+        ds : pymvpa dataset
+            The dataset is the input to the analysis.
+
+        kwargs : dict
+            Optional parameters for the analysis.
+        
+        """
+
         
         self._transformer, self._estimator = self._configurator.fit()
         ds_ = self._transform(ds)
@@ -22,6 +49,7 @@ class AnalysisPipeline(Analyzer):
         
         return self
     
+
     def save(self, **kwargs):
         
         params = self._configurator._get_fname_info()
@@ -35,7 +63,7 @@ class AnalysisPipeline(Analyzer):
                                   self._name,
                                   params.pop("analysis"),
                                   params.pop("experiment"),
-                                  "_".join(["%s_%s" %(k, v) for k, v in params.items()])
+                                  "_".join(["%s_%s" % (k, v) for k, v in params.items()])
                                   )
                                
         full_path = os.path.join(path, "0_results", dir_)
@@ -62,6 +90,3 @@ class AnalysisPipeline(Analyzer):
                 self._configurator._default_options[key] = Counter(ds.targets)
         
         return ds
-        
-        
-    
