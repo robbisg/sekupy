@@ -36,9 +36,9 @@ def get_results(path, dir_id, field_list=['sample_slicer'], result_keys=None, fi
     dataframe : pandas dataframe
         A table of the results in pandas format
     """
-       
+    # TODO: Optimize memory
     dir_analysis = os.listdir(path)
-    dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1]
+    dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1 and d.find(".") == -1]
     dir_analysis.sort()
     
     results = []
@@ -61,8 +61,8 @@ def get_results(path, dir_id, field_list=['sample_slicer'], result_keys=None, fi
             
             fname_split = fname.split("_")
             fields['roi'] = "_".join(fname_split[:-4])
-            fields['roi_value'] = np.float_(fname_split[-4])
-            fields['permutation'] = np.float_(fname_split[-2])
+            fields['roi_value'] = np.float16(fname_split[-4])
+            fields['permutation'] = np.float16(fname_split[-2])
                     
             data = loadmat(os.path.join(path, d, fname))
             
@@ -88,8 +88,6 @@ def get_results(path, dir_id, field_list=['sample_slicer'], result_keys=None, fi
 
     
 
-
-
 def get_permutation_values(dataframe, keys, scores=["accuracy"]):
     
     # TODO: Multiple scores (test)
@@ -107,7 +105,6 @@ def get_permutation_values(dataframe, keys, scores=["accuracy"]):
     
     options = {k:np.unique(table[k]) for k in keys}
     
-    
     n_permutation = options.pop('permutation')[-1]
     
     keys, values = options.keys(), options.values()
@@ -117,12 +114,11 @@ def get_permutation_values(dataframe, keys, scores=["accuracy"]):
 
     for item in opts:
         
-        cond_dict = {k:v for k,v in item.items()}
+        cond_dict = {k: v for k, v in item.items()}
         item = {k: [v] for k, v in item.items()}
         
         df_ = dataframe.copy()
         data_ = table.copy()
-        
         
         data_ = filter_dataframe(data_, item)
         item.update({'permutation':[0]})
@@ -149,11 +145,34 @@ def get_permutation_values(dataframe, keys, scores=["accuracy"]):
    
     
 def get_configuration_fields(conf, *args):
+    """This function is used to collect fields from the configuration file.
+    
+    Parameters
+    ----------
+    conf : dictionary
+        The configuration dictionary to be digged.
+
+    args : list
+        List of keywords to be found in the configuration file.
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
+
     
     import ast
     
     results = dict()
+
+
+    if 'id' in list(conf.keys()):
+        results['id'] = conf['id']
+    else:
+        results['id'] = "None"
     
+
     for k, v in conf.items():
 
         for arg in args:
@@ -162,7 +181,7 @@ def get_configuration_fields(conf, *args):
                 value = ast.literal_eval(v)
                 results[arg] = "_".join(value)
             
-            idx_end = len(arg)+2
+            idx_end = len(arg) + 2  # len("__")
             
             if k[:idx_end] == arg+"__":
                 try:
@@ -175,7 +194,12 @@ def get_configuration_fields(conf, *args):
                     continue
                     
                 if isinstance(value, list):
-                    value = "_".join(value)
+                    
+                    if len(value) != 1:
+                        value = "_".join(value)
+                    else:
+                        value = value[0]
+                    
                 results[str(k[idx_end:])] = value
                 
     return results, ast.literal_eval(conf['scores'])
@@ -186,7 +210,7 @@ def get_configuration_fields(conf, *args):
 def get_searchlight_results(path, dir_id, field_list=['sample_slicer'], load_cv=False):
     
     dir_analysis = os.listdir(path)
-    dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1]
+    dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1 and d.find(".") == -1]
     dir_analysis.sort()
     
     results = []
@@ -228,7 +252,7 @@ def filter_dataframe(dataframe, selection_dict):
     
 
     selection_mask = np.ones(dataframe.shape[0], dtype=np.bool)
-    for key, values in selection_dict.iteritems():
+    for key, values in selection_dict.items():
         
                 
         ds_values = dataframe[key].values
@@ -247,3 +271,53 @@ def filter_dataframe(dataframe, selection_dict):
     
     return dataframe.loc[selection_mask]
 
+
+
+def aggregate_searchlight(path, dir_id, filter):
+    """This should be used for a within subject analysis 
+    to collect data from different folders / subjects and
+    collect results.
+
+    Be aware of the different parameters of the analysis.
+
+    So the best approach is to use get_searchlight_results
+    and then use that to aggregate.
+    
+    Parameters
+    ----------
+    path : [type]
+        [description]
+    dir_id : [type]
+        [description]
+    
+    """
+    dataframe = get_searchlight_results(path, dir_id, field_list=['sample_slicer'], load_cv=False)
+    
+    return
+
+
+def array2df(dataframe, key):
+    df = pd.DataFrame(dataframe[key].values.tolist(), 
+                      columns=['%s_%d' %(key, i) for i in range(dataframe[key].values[0].shape[0])])
+
+
+    df_keys = pd.DataFrame([row[:-1] for row in dataframe.values.tolist()], 
+                                    columns=dataframe.keys()[:-1])
+
+    df_concat = pd.concat(df, df_keys)
+
+    return df_concat
+
+
+
+
+
+
+
+def dataframe_to_afni():
+    """This should return a command or similar to perform
+    statistics in AFNI
+    
+    """
+
+    return

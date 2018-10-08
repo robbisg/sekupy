@@ -10,8 +10,6 @@ _default_options = {
                            
                         }
      
-    
-
 
 class AnalysisIterator(object):
 
@@ -30,11 +28,11 @@ class AnalysisIterator(object):
             [description]
         
         """
-
-        
-        
+    
         self.configurations, self.i, self.n = self._setup(**options)
         self._configurator = configurator
+        import uuid
+        self._id = uuid.uuid4()
 
    
     def _setup(self, **kwargs):
@@ -46,23 +44,28 @@ class AnalysisIterator(object):
         combinations_ = list(itertools.product(*[kwargs[arg] for arg in kwargs]))
         configurations = [dict(zip(args, elem)) for elem in combinations_]
         i = 0
-        n = len(self.configurations)
+        n = len(configurations)
         
         return configurations, i, n
         
-
+   
     def __iter__(self):
         return self
-    
-        
-    
+
+
     def next(self):
+        return self.__next__()
+    
+    
+    def __next__(self):
         
         if self.i < self.n:
             value = self.configurations[self.i]
             self.i += 1
             logger.info("Iteration %d/%d" %(self.i, self.n))
             self._configurator.set_params(**value)
+            self._configurator.set_params(id=self._id)
+            self._configurator.set_params(num=self.i)
         else:
             raise StopIteration()
         

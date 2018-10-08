@@ -7,8 +7,6 @@ from pyitab.preprocessing.pipelines import PreprocessingPipeline
 from pyitab.analysis.searchlight import SearchLight
 from pyitab.io.configuration import save_configuration
 
-from builtins import object
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -80,8 +78,14 @@ class ScriptConfigurator(object):
         self._default_options['analysis'] = analysis
         self._default_options['cv'] = cv
         self._default_options['scores'] = scores
+        self._default_options['num'] = 1
 
         self._default_options.update(kwargs)
+
+        if not 'id' in list(self._default_options.keys()):
+            import uuid
+            self._default_options['id'] = uuid.uuid4()
+
         
         
         
@@ -97,13 +101,19 @@ class ScriptConfigurator(object):
     
     
     def _get_params(self, keyword):
-        
+       
         params = dict()
         for key in self._default_options.keys():
             idx = key.find(keyword)
             if idx == 0 and len(key.split("__")) > 1:
                 idx += len(keyword)+2
-                params[key[idx:]] = self._default_options[key]
+                key_split = key[idx:]
+                logger.debug(key_split)
+                if key_split == "%s":
+                    if 'target_trans__target' in self._default_options.keys():
+                        key_split = key_split %(self._default_options['target_trans__target'])
+                        
+                params[key_split] = self._default_options[key]
     
         logger.debug("%s %s" % (keyword, str(params)))
         return params
@@ -164,6 +174,7 @@ class ScriptConfigurator(object):
         params = dict()
         
         for keyword in ["sample_slicer", "target_trans"]:
+
             if keyword in self._default_options['prepro']:
                 
                 params_ = self._get_params(keyword)
@@ -173,7 +184,8 @@ class ScriptConfigurator(object):
                     
                 params.update(params_)
 
-            
+        params.update({'id': self._default_options['id']})
+        params.update({'num': self._default_options['num']})
         logger.debug(params)
         return params
         
@@ -193,6 +205,5 @@ class ScriptConfigurator(object):
         if path is None:
             logger.error("path should be setted!")
             return
-        
         
         save_configuration(path, self._default_options)

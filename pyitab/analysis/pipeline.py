@@ -1,7 +1,8 @@
 import logging
 import os
 from pyitab.analysis.base import Analyzer
-from mvpa_itab.results import get_time, make_dir
+from pyitab.utils import get_time
+from pyitab.io.utils import make_dir
 from collections import Counter
 
 logger = logging.getLogger(__name__)
@@ -56,15 +57,18 @@ class AnalysisPipeline(Analyzer):
         params.update(self._estimator._get_fname_info())
         
         logger.info(params)
+
+        _ = params.pop('id')
         
         path = params.pop("path")
-        dir_ = "%s_%s_%s_%s_%s" %(
-                                  get_time(),
-                                  self._name,
-                                  params.pop("analysis"),
-                                  params.pop("experiment"),
-                                  "_".join(["%s_%s" % (k, v) for k, v in params.items()])
-                                  )
+        dir_ = "%s_%03d_%s_%s_%s_%s" %(
+                                        get_time(),
+                                        params.pop('num'),
+                                        self._name,
+                                        params.pop("analysis"),
+                                        params.pop("experiment"),
+                                        "_".join(["%s_%s" % (k, v) for k, v in params.items()])
+                                        )
                                
         full_path = os.path.join(path, "0_results", dir_)
         make_dir(full_path)
