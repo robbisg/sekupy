@@ -4,6 +4,7 @@ import numpy as np
 from mvpa2.mappers.detrend import PolyDetrendMapper
 from mvpa2.mappers.fx import mean_group_sample
 from mvpa2.mappers.zscore import ZScoreMapper
+from mvpa2.base.dataset import vstack
 
 import logging
 from itertools import product
@@ -32,7 +33,7 @@ class Detrender(Transformer):
 
         self._degree = degree
         self.node = PolyDetrendMapper(chunks_attr=chunks_attr, polyord=degree)
-        Transformer.__init__(self, name='detrending', **kwargs)
+        Transformer.__init__(self, name='detrending')
             
     
     def transform(self, ds):
@@ -48,6 +49,9 @@ class Detrender(Transformer):
         ds : pymvpa Dataset
             The transformed dataset
         """
+        
+        self.node.train(ds)
+
         logger.info('Dataset preprocessing: Detrending with polynomial of order %s...', (str(self._degree)))
         return self.node.forward(ds)
                    
@@ -64,9 +68,9 @@ class SampleAverager(Transformer):
     """
     
     
-    def __init__(self, attributes, **kwargs):
+    def __init__(self, attributes):
         self.node = mean_group_sample(attributes)
-        Transformer.__init__(self, name='sample_averager', **kwargs)
+        Transformer.__init__(self, name='sample_averager')
         
         
     def transform(self, ds):
@@ -87,43 +91,11 @@ class SampleAverager(Transformer):
 
 
 
-
-class FeatureWiseNormalizer(Transformer):
-    
-    def __init__(self, chunks_attr='chunks', param_est=None, **kwargs):
-        self.node = ZScoreMapper(chunks_attr=chunks_attr, param_est=param_est)
-        Transformer.__init__(self, name='feature_normalizer', **kwargs)
-        
-    
-    def transform(self, ds):
-        logger.info('Dataset preprocessing: Normalization feature-wise...')
-        self.node.train(ds)
-        return self.node.forward(ds)
-    
-
-
-    
-class SampleWiseNormalizer(Transformer):
-    
-    def __init__(self, name='sample_normalizer', **kwargs):
-        Transformer.__init__(self, name=name, **kwargs)       
-
-    def transform(self, ds):
-        logger.info('Dataset preprocessing: Normalization sample-wise...')
-        ds.samples -= np.mean(ds, axis=1)[:, None]
-        ds.samples /= np.std(ds, axis=1)[:, None]
-        
-        ds.samples[np.isnan(ds.samples)] = 0
-        
-        return ds
-
-
-
 class TargetTransformer(Transformer):
     
     def __init__(self, target=None, **kwargs):
         self._attribute = target
-        Transformer.__init__(self, name='target_transformer', **kwargs)
+        Transformer.__init__(self, name='target_transformer')
     
     def transform(self, ds):
         logger.info("Dataset preprocessing: Target set to %s" , (self._attribute))
@@ -155,7 +127,7 @@ class FeatureSlicer(Transformer):
         self._selection = dict()
         for arg in kwargs:
             self._selection[arg] = kwargs[arg]
-        Transformer.__init__(self, name='feature_slicer', **kwargs)  
+        Transformer.__init__(self, name='feature_slicer')  
 
 
 
@@ -186,7 +158,6 @@ class FeatureSlicer(Transformer):
 
 
 
-
 class SampleSlicer(Transformer):
     """
     Selects only portions of the dataset based on a dictionary
@@ -207,9 +178,8 @@ class SampleSlicer(Transformer):
         self._selection = dict()
         for arg in kwargs:
             self._selection[arg] = kwargs[arg]
-        
-        
-        Transformer.__init__(self, name='sample_slicer',**kwargs)    
+         
+        Transformer.__init__(self, name='sample_slicer')
 
 
     def transform(self, ds):
@@ -256,7 +226,7 @@ class FeatureStacker(Transformer):
         
         self._selection = selection_dictionary
         self._attr = stack_attr
-        Transformer.__init__(self, name='sample_stacker',**kwargs)    
+        Transformer.__init__(self, name='sample_stacker')    
 
 
     def transform(self, ds):
