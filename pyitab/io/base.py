@@ -216,7 +216,7 @@ def load_filelist(path, name, folder, **kwargs):
                  if (elem.find(img_pattern) != -1)]
 
     logger.debug(' Matching files ')
-    logger.debug('\n'.join(file_list))
+    logger.debug(file_list)
     
     file_list.sort()
     
@@ -233,7 +233,9 @@ def load_roi_labels(roi_labels):
                 roi_labels_dict[label] = ni.load(img)
             else:
                 roi_labels_dict[label] = img
-                
+    
+    logger.debug(roi_labels_dict)
+
     return roi_labels_dict
 
 
@@ -417,7 +419,9 @@ def load_subject_ds(conf_file,
                     loader=load_dataset,
                     prepro=StandardPreprocessingPipeline(),
                     n_subjects=None,
+                    subjects=None,
                     **kwargs):
+    # TODO: Documentation
     
     """
     This is identical to load_subjectwise_ds but we can
@@ -444,13 +448,19 @@ def load_subject_ds(conf_file,
     
     logger.debug(subject_file)
     logger.debug(data_path)
-    subjects, extra_sa = load_subject_file(subject_file, 
+    _subjects, extra_sa = load_subject_file(subject_file, 
                                             n_subjects=n_subjects)
 
-        
-    logger.info('Merging %s subjects from %s' % (str(len(subjects)), data_path))
+    if subjects is not None:
+        subject_mask = [_subjects == s for s in subjects]
+        subject_mask = np.logical_or.reduce(np.array(subject_mask))
+        _subjects = _subjects[subject_mask]
+        extra_sa = {k : v[subject_mask] for k, v in extra_sa.items()}
+
+
+    logger.info('Merging %s subjects from %s' % (str(len(_subjects)), data_path))
     
-    for i, subj in enumerate(subjects):
+    for i, subj in enumerate(_subjects):
       
         ds = loader(data_path, subj, task, **conf)
         
@@ -462,7 +472,7 @@ def load_subject_ds(conf_file,
         # add extra samples
         if extra_sa is not None:
             for k, v in extra_sa.items():
-                if len(v) == len(subjects):
+                if len(v) == len(_subjects):
                     ds.sa[k] = [v[i] for _ in range(ds.samples.shape[0])]
         
         
@@ -473,9 +483,7 @@ def load_subject_ds(conf_file,
             ds_merged = vstack((ds_merged, ds))
             ds_merged.a.update(ds.a)
             
-        
         del ds
-    
     
     ds_merged.a['prepro'] = prepro.get_names()
     ds_merged.a.update(conf)

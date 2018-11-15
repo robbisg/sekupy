@@ -93,8 +93,8 @@ class SampleAverager(Transformer):
 
 class TargetTransformer(Transformer):
     
-    def __init__(self, target=None, **kwargs):
-        self._attribute = target
+    def __init__(self, attr=None, **kwargs):
+        self._attribute = attr
         Transformer.__init__(self, name='target_transformer')
     
     def transform(self, ds):
@@ -102,7 +102,6 @@ class TargetTransformer(Transformer):
         ds.targets = ds.sa[self._attribute]
         
         return ds
-
 
 
 
@@ -262,7 +261,3 @@ class FeatureStacker(Transformer):
         ds.sa[key] = [value]
         
         return ds
-        
-        
-        
-        

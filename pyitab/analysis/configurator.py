@@ -10,7 +10,7 @@ from pyitab.io.configuration import save_configuration
 import logging
 logger = logging.getLogger(__name__)
 
-
+# TODO: Maybe is better to name it AnalysisConfigurator
 class ScriptConfigurator(object):
     
   
@@ -74,6 +74,7 @@ class ScriptConfigurator(object):
         self._default_options = {}
 
         self._default_options['prepro'] = prepro
+        # TODO: If we are not classifying?
         self._default_options['estimator'] = estimator
         self._default_options['analysis'] = analysis
         self._default_options['cv'] = cv
@@ -158,12 +159,19 @@ class ScriptConfigurator(object):
     def _get_analysis(self):
         
         params = self._get_params("analysis")
-        params['estimator'] = self._get_estimator()
-        params['cv'] = self._get_cross_validation()
-        params['scoring'] = self._default_options['scores']
+        
+        # TODO: Use a single function with key as parameter
+        keys = list(self._default_options.keys())
+        if 'estimator' in keys:
+            params['estimator'] = self._get_estimator()
+        
+        if 'cv' in keys:
+            params['cv'] = self._get_cross_validation()
+
+        if 'scores' in keys:
+            params['scoring'] = self._default_options['scores']
         
         analysis = self._default_options['analysis']        
-
         
         return analysis(**params)      
     

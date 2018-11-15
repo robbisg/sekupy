@@ -49,9 +49,27 @@ class AnalysisPipeline(Analyzer):
         self._estimator.fit(ds_, **kwargs)     
         
         return self
-    
 
-    def save(self, **kwargs):
+
+
+    def _transform(self, ds):
+        
+        self._configurator._default_options['ds__target_count_pre'] = Counter(ds.targets)
+        
+        ds_dict = {"ds__%s" % (k):v.value for k,v in ds.a.items()}
+        self._configurator._default_options.update(ds_dict)
+
+
+        for node in self._transformer.nodes:
+            ds = node.transform(ds)
+            if node.name in ['balancer', 'target_transformer']:
+                key = 'ds__target_count_%s' % (node.name)
+                self._configurator._default_options[key] = Counter(ds.targets)
+        
+        return ds
+
+
+    def save(self, subdir="0_results", **kwargs):
         
         params = self._configurator._get_fname_info()
         params.update(self._estimator._get_fname_info())
@@ -70,27 +88,16 @@ class AnalysisPipeline(Analyzer):
                                         "_".join(["%s_%s" % (k, v) for k, v in params.items()])
                                         )
                                
-        full_path = os.path.join(path, "0_results", dir_)
+        full_path = os.path.join(path, subdir, dir_)
         make_dir(full_path)
         
         self._path = full_path
         
         # Save results
         self._configurator.save(path=full_path, **kwargs)
-        self._estimator.save(path=full_path, **kwargs)        
+        self._estimator.save(path=full_path, **kwargs)    
         
         return
     
     
-    def _transform(self, ds):
-        
-        self._configurator._default_options['ds__target_count_pre'] = Counter(ds.targets)
-        self._configurator._default_options['ds__prepro'] = ds.a.prepro
-        
-        for node in self._transformer.nodes:
-            ds = node.transform(ds)
-            if node.name in ['balancer', 'target_transformer']:
-                key = 'ds__target_count_%s' % (node.name)
-                self._configurator._default_options[key] = Counter(ds.targets)
-        
-        return ds
+

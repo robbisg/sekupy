@@ -1,6 +1,6 @@
 import numpy as np
 from pyitab.preprocessing import Transformer
-from mvpa_itab.conn.connectivity import z_fisher
+from pyitab.utils.math import z_fisher
 
 import logging
 logger = logging.getLogger(__name__)
@@ -39,4 +39,8 @@ class AbsoluteValueTransformer(MathTransformer):
     def __init__(self, name='abs', **kwargs):
         MathTransformer.__init__(self, name=name, fx=np.abs, **kwargs)
         
-            
+
+class SignTransformer(MathTransformer):
+
+    def __init__(self, name='sign', **kwargs):
+        MathTransformer.__init__(self, name=name, fx=np.sign, **kwargs)

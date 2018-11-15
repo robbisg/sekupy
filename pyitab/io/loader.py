@@ -5,7 +5,7 @@ from pyitab.io.configuration import read_configuration
 import logging
 logger = logging.getLogger(__name__)
 
-
+# TODO : Documentation
 class DataLoader(object):
     
     
@@ -32,7 +32,7 @@ class DataLoader(object):
         
         
         
-    def fetch(self, prepro=None, n_subjects=None):
+    def fetch(self, prepro=None, n_subjects=None, subject_names=None):
         
         if prepro is not None:
             self._prepro = prepro
@@ -44,6 +44,7 @@ class DataLoader(object):
                              loader=self._loader,
                              prepro=self._prepro,
                              n_subjects=n_subjects,
+                             subjects=subject_names,
                              **self._conf
                              )
         

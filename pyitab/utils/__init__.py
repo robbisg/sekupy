@@ -18,3 +18,15 @@ def get_time():
         datetime += str(elem)
 
     return datetime
+
+
+def enable_logging():
+    import logging
+    root = logging.getLogger()
+    form = logging.Formatter('%(name)s - %(levelname)s: %(lineno)d \t %(filename)s \t%(funcName)s \t --  %(message)s')
+    ch = logging.StreamHandler()
+    ch.setFormatter(form)
+    root.addHandler(ch)
+    root.setLevel(logging.INFO)
+    
+    return root

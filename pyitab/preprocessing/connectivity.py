@@ -6,6 +6,7 @@ from mvpa2.base.collections import SampleAttributesCollection
 from mvpa2.datasets.base import Dataset
 from pyitab.io.base import add_attributes
 from pyitab.preprocessing import Transformer
+from scipy.spatial.distance import euclidean
 
 logger = logging.getLogger(__name__)
 
@@ -66,5 +67,28 @@ class SingleRowMatrixTransformer(Transformer):
         
         return SampleAttributesCollection(attr)
     
+
+
+class SpeedEstimator(Transformer):
+    # TODO: Is it a transformer or an estimator??
+
+    def __init__(self, name='speed_tc', **kwargs):
+        Transformer.__init__(self, name=name, **kwargs) 
+
+    def transform(self, ds):
+
+        ds_ = ds.copy()
+
+        trajectory = [euclidean(ds.samples[i+1], ds.samples[i]) 
+                         for i in range(ds.shape[0]-1)]
+
+        ds_.samples = np.array(trajectory)
+
+        return ds_
     
-    
+
+
+class AverageEstimator(Transformer):
+
+    def transform(self, ds):
+        return super().transform(ds)()

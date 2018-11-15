@@ -18,26 +18,26 @@ class Analyzer(Node):
         
         
         
-        Node.__init__(self, name=name, **kwargs)
+        Node.__init__(self, name=name)
         
         
     def fit(self, ds, **kwargs):
         return self
 
 
-    def save(self, path=None):
+    def save(self, path=None, **kwargs):
         
         if not hasattr(self, "scores"):
             logger.error("Please run fit() before saving results.")
             
             return None
         
-        
+        logger.info(self)
         if path is None:
             info = self._get_fname_info()
             path = self._get_path(**info)
             
-            info.update(self._get_analysis_info())
+            info.update(self._get_analysis_info(**kwargs))
 
             make_dir(path)
             save_configuration(path, info)
@@ -70,7 +70,6 @@ class Analyzer(Node):
             info[k] = str(v)
         
         return info
-    
     
     
     def _get_analysis_info(self, attributes=['estimator', 

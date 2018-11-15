@@ -1,5 +1,5 @@
-from pyitab.preprocessing.functions import Detrender, FeatureWiseNormalizer
-from pyitab.preprocessing.functions import SampleSlicer, SampleWiseNormalizer
+from pyitab.preprocessing.functions import Detrender, SampleSlicer
+from pyitab.preprocessing.normalizers import SampleZNormalizer, FeatureZNormalizer
 from pyitab.preprocessing import Transformer
 from pyitab.preprocessing.mapper import function_mapper
 
@@ -51,8 +51,8 @@ class StandardPreprocessingPipeline(PreprocessingPipeline):
         self.nodes = [
                       Detrender(chunks_attr='file'),
                       Detrender(),
-                      FeatureWiseNormalizer(),            
-                      SampleWiseNormalizer(),
+                      FeatureZNormalizer(),            
+                      SampleZNormalizer(),
                       ]
         
         PreprocessingPipeline.__init__(self, nodes=self.nodes)
@@ -66,7 +66,7 @@ class MonksPreprocessingPipeline(PreprocessingPipeline):
         self.nodes = [
                       Detrender(chunks_attr='file'),
                       Detrender(),
-                      FeatureWiseNormalizer(),
+                      FeatureZNormalizer(),
                       SampleSlicer(selection_dictionary={'events_number':range(1, 13)})                 
                       
                       ]
@@ -82,7 +82,7 @@ class MonksConnectivityPipeline(PreprocessingPipeline):
         self.nodes = [
                       Detrender(chunks_attr='file'),
                       Detrender(),
-                      FeatureWiseNormalizer(),
+                      FeatureZNormalizer(),
                       SampleSlicer(selection_dictionary={'events_number':range(1,13)})                 
                       
                       ]

@@ -10,6 +10,7 @@ from sklearn.metrics.scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
 from sklearn.preprocessing.label import LabelEncoder
 from sklearn.model_selection._split import LeaveOneGroupOut
+from sklearn.pipeline import Pipeline
 
 from pyitab.analysis.searchlight.utils import _get_affinity, check_proximity
 from pyitab.analysis.searchlight.utils import load_proximity, save_proximity
@@ -88,12 +89,18 @@ class SearchLight(Analyzer):
 
     def __init__(self, 
                  radius=9.,
-                 estimator=SVC(C=1, kernel='linear'),
+                 estimator=None,
                  n_jobs=1, 
                  scoring='accuracy', 
                  cv=LeaveOneGroupOut(), 
                  permutation=0,
                  verbose=1):
+
+        if estimator is None:
+            estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
+
+        if not isinstance(estimator, Pipeline):
+            estimator = Pipeline(steps=[('clf', estimator)])
         
         self.radius = radius
         self.estimator = estimator
@@ -141,18 +148,21 @@ class SearchLight(Analyzer):
         
         X, y = get_ds_data(ds)
         y = LabelEncoder().fit_transform(y)
-        groups = LabelEncoder().fit_transform(ds.sa[cv_attr].value)
-        
-        logger.debug(X.shape)
-        logger.debug(y)
+
+
+        if cv_attr != None:
+            if isinstance(cv_attr, list):
+                groups = np.vstack([ds.sa[att].value for att in cv_attr]).T
+            else:
+                groups = ds.sa[cv_attr].value
+
         
         values = []
         indices = self._get_permutation_indices(len(y))
         
         for idx in indices:
             y_ = y[idx] 
-            logger.debug(y_)
-            logger.debug(self.cv)
+
             scores = search_light(X, y_, estimator, A, groups,
                                   self.scoring, self.cv, self.n_jobs,
                                   self.verbose)
@@ -160,24 +170,39 @@ class SearchLight(Analyzer):
             values.append(scores)
         
         self.scores = values
-        
-        self._info = self._store_ds_info(ds, cv_attr=cv_attr)
+
+        splits = self._split_name(X, self.cv, groups)
+
+       
+        self._info = self._store_ds_info(ds, cv_attr=cv_attr, test_order=splits)
 
         return self
+
+    
+    def _split_name(self, X, cv, groups):
+
+        if len(groups.shape) == 1:
+            groups = np.vstack((groups, groups)).T
+
+        split = [np.unique(groups[:,1][test])[0] for train, test in cv.split(X, y=None, groups=groups)]
+        return split
+
+
     
     
     def save(self, path=None, save_cv=True):
+
+        # TODO: Demean / minus_chance
         
         map_type = ['avg', 'cv']
         
         path = Analyzer.save(self, path)
                     
-        
         fx = self._info['a'].mapper.reverse1
         affine = self._info['a'].imgaffine
         
-        
-        
+        #np.savetxt()
+
         for i in range(len(self.scores)):
             for j, img_dict in enumerate(self.scores[i]):
                 for score, image in img_dict.items():

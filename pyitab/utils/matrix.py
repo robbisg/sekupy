@@ -1,6 +1,7 @@
 import numpy as np
 
-def array_to_matrix(array, nan_mask=None):
+# TODO: Documentation
+def array_to_matrix(array, nan_mask=None, copy=True, **kwargs):
     
     if nan_mask is None:
         # second degree resolution to get matrix dimensions #
@@ -18,6 +19,9 @@ def array_to_matrix(array, nan_mask=None):
     matrix[il] = 0
     
     matrix[np.nonzero(matrix)] = array
+
+    if copy:
+        copy_matrix(matrix, **kwargs)
     
     return matrix
 

@@ -12,10 +12,11 @@ from pyitab.analysis import Node
 from pyitab.io.base import load_subject_file, add_attributes, load_attributes,\
     add_subjectname, load_filelist
 
+# TODO : Document 
 
 def conn_transformer(data):
     
-    data = np.rollaxis(np.vstack(data), 0,3)
+    data = np.rollaxis(np.vstack(data), 0, 3)
     data = data[np.triu_indices(data.shape[0], k=1)].T
     logger.debug(data.shape)
     
@@ -34,6 +35,9 @@ def load_mat_data(path, subj, folder, **kwargs):
     
     # load data from mat
     filelist = load_filelist(path, subj, folder, **kwargs)
+
+    if len(filelist) == 0:
+        return None
     
     data = []
     for f in filelist:
@@ -50,15 +54,16 @@ def load_mat_data(path, subj, folder, **kwargs):
 
 
 def load_mat_ds(path, subj, folder, **kwargs):   
-    
         
     data = load_mat_data(path, subj, folder, **kwargs)
     
     # load attributes
     attr = load_attributes(path, subj, folder, **kwargs)
+
+    if (attr is None) or (data is None):
+        return None
     
     attr, labels = edit_attr(attr, data.shape)
-    
     
     ds = Dataset.from_wizard(data, attr.targets)
     ds = add_subjectname(ds, subj)

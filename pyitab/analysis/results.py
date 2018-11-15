@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import os
 from scipy.io import loadmat
+from scipy.stats import ttest_1samp
 import numpy as np
 from tqdm import tqdm
 from itertools import product
@@ -65,10 +66,15 @@ def get_results(path, dir_id, field_list=['sample_slicer'], result_keys=None, fi
             fields['permutation'] = np.float16(fname_split[-2])
                     
             data = loadmat(os.path.join(path, d, fname))
-            
+            logger.debug(data.keys())
             for score in scores:
+
+                test_score = [k.find(score) != -1 for k in list(data.keys())]
+                if not np.any(np.array(test_score)):
+                    score = 'score'
+
                 for i, s in enumerate(data['test_%s' % (score)].squeeze()):
-                    fields[score] = s
+                    fields["score_%s" %(score)] = s
                     fields['fold'] = i+1
                     logger.debug(fields)
                     if result_keys is not None:
@@ -82,14 +88,53 @@ def get_results(path, dir_id, field_list=['sample_slicer'], result_keys=None, fi
     dataframe = pd.DataFrame(results)
     
     if filter is not None:
-        dataframe = filter_dataframe(dataframe, filter)
+        dataframe = filter_dataframe(dataframe, **filter)
            
     return dataframe
 
+
+def ttest_values(dataframe, keys, scores=["accuracy"], popmean=0.5):
+    # TODO: Documentation
+    # TODO: Multiple scores (test)
+        
     
+    options = {k: np.unique(dataframe[k]) for k in keys}
+    
+    keys, values = options.keys(), options.values()
+    opts = [dict(zip(keys,items)) for items in product(*values)]
+    
+    p_values = []
+
+    for item in opts:
+        
+        cond_dict = {k: v for k, v in item.items()}
+        item = {k: [v] for k, v in item.items()}
+        
+        df_true = dataframe.copy()
+        df_true = filter_dataframe(df_true, **item)
+          
+        for score in scores:
+            
+            values_score = df_true[score].values
+            print(values_score)
+            t, p = ttest_1samp(values_score, popmean)
+
+            cond_dict[score+'_avg'] = np.mean(values_score)
+            cond_dict[score+'_t'] = t            
+            cond_dict[score+'_p'] = p
+        
+        p_values.append(cond_dict)
+        
+           
+    
+    return pd.DataFrame(p_values)
+
+
+
+
 
 def get_permutation_values(dataframe, keys, scores=["accuracy"]):
-    
+    # TODO: Document
     # TODO: Multiple scores (test)
     
     
@@ -97,13 +142,13 @@ def get_permutation_values(dataframe, keys, scores=["accuracy"]):
 
     df_perm = dataframe.loc[dataframe['permutation'] != 0]
     
-    table = pd.pivot_table(df_perm, 
-                           values=scores, 
-                           index=keys, 
-                           aggfunc=np.mean).reset_index()
+    table_perm = pd.pivot_table(df_perm, 
+                                values=scores, 
+                                index=keys, 
+                                aggfunc=np.mean).reset_index()
     
     
-    options = {k:np.unique(table[k]) for k in keys}
+    options = {k:np.unique(table_perm[k]) for k in keys}
     
     n_permutation = options.pop('permutation')[-1]
     
@@ -117,23 +162,25 @@ def get_permutation_values(dataframe, keys, scores=["accuracy"]):
         cond_dict = {k: v for k, v in item.items()}
         item = {k: [v] for k, v in item.items()}
         
-        df_ = dataframe.copy()
-        data_ = table.copy()
+        df_true = dataframe.copy()
+        df_permutation = table_perm.copy()
         
-        data_ = filter_dataframe(data_, item)
-        item.update({'permutation':[0]})
-        df_ = filter_dataframe(df_, item)
+        df_permutation = filter_dataframe(df_permutation, **item)
+        item.update({'permutation': [0]})
+        df_true = filter_dataframe(df_true, **item)
           
         for score in scores:
             
-            df_avg = np.mean(df_[score].values)
+            df_avg = np.mean(df_true[score].values)
             
-            n_values = (np.count_nonzero(data_[score].values > df_avg) + 1)
+            permutation_values = df_permutation[score].values
+
+            n_values = (np.count_nonzero(permutation_values > df_avg) + 1)
             
             p = n_values / float(n_permutation)
             
-            cond_dict[score+'_perm'] = np.mean(data_[score].values)
-            cond_dict[score+'_true'] = np.mean(df_[score].values)               
+            cond_dict[score+'_perm'] = np.mean(df_permutation[score].values)
+            cond_dict[score+'_true'] = np.mean(df_true[score].values)            
             cond_dict[score+'_p'] = p
         
         p_values.append(cond_dict)
@@ -160,22 +207,21 @@ def get_configuration_fields(conf, *args):
     [type]
         [description]
     """
-
+    # TODO: Complete documentation
     
     import ast
-    
     results = dict()
-
 
     if 'id' in list(conf.keys()):
         results['id'] = conf['id']
     else:
         results['id'] = "None"
     
-
     for k, v in conf.items():
-
         for arg in args:
+
+            if arg == k == 'ds__img_pattern':
+                results[arg] = v
             
             if arg == k == 'prepro':
                 value = ast.literal_eval(v)
@@ -194,6 +240,7 @@ def get_configuration_fields(conf, *args):
                     continue
                     
                 if isinstance(value, list):
+                    value = [str(v) for v in value]
                     
                     if len(value) != 1:
                         value = "_".join(value)
@@ -246,10 +293,38 @@ def get_searchlight_results(path, dir_id, field_list=['sample_slicer'], load_cv=
     return dataframe
     
 
-
-
-def filter_dataframe(dataframe, selection_dict):
+def get_connectivity_results(path, dir_id, field_list=['sample_slicer'], load_cv=False):
     
+    dir_analysis = os.listdir(path)
+    dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1 and d.find(".") == -1]
+    dir_analysis.sort()
+    
+    results = []
+    
+    for d in tqdm(dir_analysis):
+        # read json
+        conf_fname = os.path.join(path, d, "configuration.json")
+        with open(conf_fname) as f:
+            conf = json.load(f)
+        
+        # TODO: Check if permutation is in fields
+        fields, scores = get_configuration_fields(conf, *field_list)
+        
+        data = loadmat(os.path.join(path, d, "connectivity_data.mat"))
+
+        fields['data'] = data['matrix']
+        fields_ = fields.copy()           
+            
+        results.append(fields_)
+    
+    dataframe = pd.DataFrame(results)
+       
+    return dataframe
+
+
+
+def filter_dataframe(dataframe, **selection_dict):
+    # TODO: Documentation
 
     selection_mask = np.ones(dataframe.shape[0], dtype=np.bool)
     for key, values in selection_dict.items():
@@ -297,8 +372,10 @@ def aggregate_searchlight(path, dir_id, filter):
 
 
 def array2df(dataframe, key):
+    # TODO : Documentation
     df = pd.DataFrame(dataframe[key].values.tolist(), 
-                      columns=['%s_%d' %(key, i) for i in range(dataframe[key].values[0].shape[0])])
+                      columns=['%s_%d' %(key, i) \
+                                    for i in range(dataframe[key].values[0].shape[0])])
 
 
     df_keys = pd.DataFrame([row[:-1] for row in dataframe.values.tolist()], 
@@ -310,7 +387,48 @@ def array2df(dataframe, key):
 
 
 
+def df_fx_over_keys(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).sum(0)):
+    """This function perform a function on the dataframe, it groups the dataframe
+    by using the key parameter and applies a function to values indicated.
+    
+    Parameters
+    ----------
+    dataframe : pandas Dataframe
+        The dataframe to be processed by the function
+    keys : list of string
+        The keys that should be used to group the dataframe. These keys are those that
+        were preserved in the output.
+    attr : str, optional
+        The key were values should be found (the default is 'features')
+    fx : function, optional
+        The function that is applied to values. (the default is lambda x:np.vstack(x).sum(0))
+    
+    Returns
+    -------
+    dataframe : The processed dataframe.
+    """
 
+    df_sum = dataframe.groupby(keys)[attr].apply(fx)
+
+    return df_sum.reset_index()
+
+
+def get_weights(dataframe):
+
+    from scipy.stats import zscore
+
+    df_weights = []
+    for i, row in dataframe.iterrows():
+        matrix = np.zeros_like(row['features'], dtype=np.float)
+        mask = np.equal(row['features'], 1)
+
+        matrix[mask] = zscore(row['weights'])
+
+        row['weights'] = matrix
+        
+        df_weights.append(row)
+
+    return pd.DataFrame(df_weights)
 
 
 

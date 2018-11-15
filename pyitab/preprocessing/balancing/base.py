@@ -17,9 +17,21 @@ logger = logging.getLogger(__name__)
 
 
 class Balancer(Transformer):
+    """[summary]
+    
+    Parameters
+    ----------
+    balancer : [type], optional
+        [description] (the default is RandomUnderSampler(return_indices=True), which [default_description])
+    attr : str, optional
+        [description] (the default is 'chunks', which [default_description])
+    
+    """
     
     
     def __init__(self, balancer=RandomUnderSampler(return_indices=True), attr='chunks', **kwargs):
+
+        # TODO: attribute list
         
         self._attr = attr
         self._balancer_algorithm = balancer   
@@ -63,14 +75,14 @@ class SamplingBalancer(Transformer):
         
     def transform(self, ds):
         
-        logger.info("Init: %s" %(str(Counter(ds.targets))))
+        logger.info("Init: %s" % (str(Counter(ds.targets))))
         
         if self._attr != 'all':
             balanced_ds = self._balance_attr(ds)
         else:
             balanced_ds = self._balance(ds)
 
-        logger.info("Final: %s" %(str(Counter(balanced_ds.targets))))
+        logger.info("Final: %s" % (str(Counter(balanced_ds.targets))))
         
         return balanced_ds
 
@@ -85,18 +97,18 @@ class SamplingBalancer(Transformer):
         logger.debug(np.unique(ds.sa[self._attr].value))
         for attribute in np.unique(ds.sa[self._attr].value):
 
-            selection_dict = {self._attr:[attribute]}
+            selection_dict = {self._attr : [attribute]}
             ds_ = SampleSlicer(**selection_dict).transform(ds)
             
             ds_b = self._balance(ds_)  
-            
+            logger.debug(Counter(ds_b.targets))
             balanced_ds.append(ds_b)
                         
         balanced_ds = vstack(balanced_ds)
         balanced_ds.a.update(ds.a)
         
-        return balanced_ds  
-        
+        return balanced_ds
+    
 
 class UnderSamplingBalancer(SamplingBalancer):
     
@@ -107,14 +119,12 @@ class UnderSamplingBalancer(SamplingBalancer):
             logger.info("Balancer must return indices, set return_indices to True")
             logger.info("Balancer set to default RandomUnderSampler.")
             balancer = RandomUnderSampler(return_indices=True)
-            
         
         SamplingBalancer.__init__(self, balancer, attr, name='under_balancer', **kwargs)
         
-    
-    def _balance(self, ds):
-        
 
+    # TODO: Multiple attributes
+    def _balance(self, ds):
         
         X, y = get_ds_data(ds)
         
@@ -166,8 +176,4 @@ class OverSamplingBalancer(SamplingBalancer):
             
             
         return ds_   
-        
-        
-        
-        
         

@@ -1,6 +1,6 @@
 import numpy as np
 
-from sklearn.metrics.scorer import _check_multimetric_scoring
+from sklearn.metrics.scorer import check_scoring
 from sklearn.svm import SVC
 from sklearn.preprocessing.label import LabelEncoder
 from sklearn.pipeline import Pipeline
@@ -17,13 +17,17 @@ from pyitab.preprocessing.functions import Transformer
 
 from scipy.io.matlab.mio import savemat
 
+from mne.decoding import GeneralizingEstimator
+from imblearn.under_sampling import RandomUnderSampler
 import logging
 logger = logging.getLogger(__name__)
 
+# TODO: Inherit from metadecoding
+class TemporalDecoding(Analyzer):
+    """Implement temporal generalization decoding analysis 
+        using an arbitrary type of classifier.
 
-# TODO: Inherit from MetaDecoding
-class Decoding(Analyzer):
-    """Implement decoding analysis using an arbitrary type of classifier.
+        see King 2014 TICS
 
     Parameters
     -----------
@@ -78,7 +82,7 @@ class Decoding(Analyzer):
         if not isinstance(estimator, Pipeline):
             estimator = Pipeline(steps=[('clf', estimator)])
 
-        self.estimator = estimator
+        self.estimator = GeneralizingEstimator(estimator)
         self.n_jobs = n_jobs
         self.permutation = permutation
         self.scoring = scoring
@@ -88,8 +92,12 @@ class Decoding(Analyzer):
         Analyzer.__init__(self, name='decoding')
         
 
-    
-    def fit(self, ds, cv_attr='chunks', roi='all', roi_values=None, prepro=Transformer()):
+    # The fit method should include kwargs
+    def fit(self, ds, 
+            time_attr='frame', cv_attr='chunks', 
+            roi='all', roi_values=None, prepro=Transformer(),
+            balancer=RandomUnderSampler(return_indices=True)
+            ):
         """Fits the decoding of the dataset.
 
         Parameters
@@ -123,7 +131,7 @@ class Decoding(Analyzer):
             before the decoding analysis is performed.
         
         """
-
+        self._balancer = balancer
 
         if roi_values == None:
             roi_values = self._get_rois(ds, roi)
@@ -143,7 +151,7 @@ class Decoding(Analyzer):
             
             #logger.info(ds_.summary(chunks_attr=summary_cv))
             
-            scores = self._fit(ds_, cv_attr)
+            scores = self._fit(ds_, time_attr=time_attr, cv_attr=cv_attr)
             
             string_value = "_".join([str(v) for v in value])
             self.scores["%s_%s" % (r, string_value)] = scores
@@ -176,6 +184,7 @@ class Decoding(Analyzer):
     
     
     def _get_permutation_indices(self, n_samples, groups):
+        
         """Permutes the indices of the dataset"""
         
         # TODO: Permute labels based on cv_attr
@@ -192,46 +201,80 @@ class Decoding(Analyzer):
             indices.append(idx)
         
         return indices
-        
+
+
+    def _transform_data(self, X, y, time_attr):
+        times = np.unique(time_attr)
+
+        X_ = X.reshape(-1, len(times), X.shape[1])
+        X_ = np.rollaxis(X_, 1, 3)
+
+        y_ = self._reshape_attributes(y, time_attr)
+
+        return X_, y_
+
+
+    def _reshape_attributes(self, attribute_list, time_attribute):
+        times = np.unique(time_attribute)
+
+        y = attribute_list.reshape(-1, len(times))
+        labels = []
+        for yy in y:
+            l, c = np.unique(yy, return_counts=True)
+            labels.append(l[np.argmax(c)])
+
+        return np.array(labels)
+
     
-    def _fit(self, ds, cv_attr=None):
+    def _fit(self, ds, time_attr='frame', cv_attr=None):
         """General method to fit data"""
                    
-        self.scoring, _ = _check_multimetric_scoring(self.estimator, scoring=self.scoring)
-        
+        #self.scoring = check_scoring(self.estimator, scoring=self.scoring)
+
         X, y = get_ds_data(ds)
-        y = LabelEncoder().fit_transform(y)
+        t_values = ds.sa[time_attr].value
+
+        X, y = self._transform_data(X, y, t_values)
+
+        _, _, indices = self._balancer.fit_sample(X[:,:,0], y)
+        indices = np.sort(indices)
 
         groups = None
         if cv_attr is not None:
+            _reshape = self._reshape_attributes
             if isinstance(cv_attr, list):
-                groups = np.vstack([ds.sa[att].value for att in cv_attr]).T
+                groups = np.vstack([_reshape(ds.sa[att].value, t_values) for att in cv_attr]).T
             else:
-                groups = ds.sa[cv_attr].value
+                groups = _reshape(ds.sa[cv_attr].value, t_values)
+            groups = groups[indices]
 
-
+        X, y = X[indices], y[indices]
+        logger.info(np.unique(y, return_counts=True))
 
         indices = self._get_permutation_indices(len(y), groups)
                 
         values = []
                 
-        
         for idx in tqdm(indices):
             
             y_ = y[idx]
 
-            scores = cross_validate(self.estimator, X, y_, groups,
-                                  self.scoring, self.cv, self.n_jobs,
-                                  self.verbose, return_estimator=True, 
-                                  return_splits=True)
+            scores = cross_validate(self.estimator, X, y_, 
+                                    groups=groups,
+                                    #scoring={'score' : self.scoring}, 
+                                    cv=self.cv, 
+                                    n_jobs=self.n_jobs,
+                                    verbose=self.verbose, 
+                                    return_estimator=True, 
+                                    return_splits=True)
             
             values.append(scores)
-
+            """
             if cv_attr != None:
                 scores['split_name'] = self._split_name(scores['splits'], 
                                                         cv_attr, 
                                                         groups)
-            
+            """
             #logger.debug(hpy().heap())
         
         return values
@@ -252,11 +295,8 @@ class Decoding(Analyzer):
             test_name = np.unique(groups[1][split['test']])
             train_name = np.unique(groups[0][split['train']])
 
-            test_name = [str(s) for s in test_name]
-            train_name = [str(s) for s in train_name]
-
             split_.append({'train': "_".join(train_name), 
-                           'test' : "_".join(test_name)})
+                           'test': "_".join(test_name)})
 
         return split_
 
@@ -264,20 +304,26 @@ class Decoding(Analyzer):
 
     
 
-    def save(self, path=None):
+    def save(self, path=None, full_save=False):
         
+        import _pickle as pickle
         import os
         
         path = Analyzer.save(self, path=path)
         
         for roi, scores in self.scores.items():
+            
+            # Save full object!
+            if full_save:
+                with open(os.path.join(path, '%s_scores.pickle' %(roi)), 'wb') as output:
+                    pickle.dump(scores, output)
                        
             for p, score in enumerate(scores):
                     
                 mat_score = self._save_score(score)
                     
                 # TODO: Better use of cv and attributes for leave-one-subject-out
-                filename = "%s_perm_%04d_data.mat" %(roi, int(p))
+                filename = "%s_perm_%04d_data.mat" %(roi, p)
                 logger.info("Saving %s" %(filename))
                 
                 savemat(os.path.join(path, filename), mat_score)
@@ -296,10 +342,10 @@ class Decoding(Analyzer):
             
             if key.find("test_") != -1:
                 mat_file[key] = value
-                
-            elif key == 'estimator':
-                mat_estimator = self._save_estimator(value)
-                mat_file.update(mat_estimator)
+            
+            #elif key == 'estimator':
+            #    mat_estimator = self._save_estimator(value)
+            #    mat_file.update(mat_estimator)
                 
             elif key == "splits":
                 mat_splits = self._save_splits(value)
@@ -320,12 +366,13 @@ class Decoding(Analyzer):
         mat_['features'] = []
         
         for est in estimator:
-            
-            w = est.named_steps['clf'].coef_
+            _estimator = est.base_estimator
+
+            w = _estimator.named_steps['clf'].coef_
             mat_['weights'].append(w)
             
-            if 'fsel' in est.named_steps.keys():
-                f = est.named_steps['fsel'].get_support()
+            if 'fsel' in _estimator.named_steps.keys():
+                f = _estimator.named_steps['fsel'].get_support()
                 mat_['features'].append(f)
                 
         return mat_
@@ -345,12 +392,4 @@ class Decoding(Analyzer):
                 mat_[set_].append(spl[set_])
 
                 
-        return mat_        
-        
-        
-        
-        
-        
-        
-        
-        
+        return mat_

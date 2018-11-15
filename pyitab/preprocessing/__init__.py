@@ -3,8 +3,8 @@ from pyitab.analysis import Node
 
 class Transformer(Node):
     
-    def __init__(self, name='transformer', **kwargs):
-        """Base class for transformer. 
+    def __init__(self, name='transformer'):
+        """Base class for the transformer. 
         
         Parameters
         ----------
@@ -13,7 +13,7 @@ class Transformer(Node):
         
         """
 
-        Node.__init__(self, name=name, **kwargs)
+        Node.__init__(self, name=name)
         
         
     def transform(self, ds):

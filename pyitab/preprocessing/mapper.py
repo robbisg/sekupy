@@ -1,28 +1,34 @@
-from pyitab.preprocessing.functions import Detrender, TargetTransformer,\
-    FeatureWiseNormalizer, FeatureSlicer, SampleSlicer, SampleWiseNormalizer,\
-    FeatureStacker
+from pyitab.preprocessing.functions import Detrender, TargetTransformer, \
+    FeatureSlicer, FeatureSlicer, SampleSlicer, FeatureStacker
+from pyitab.preprocessing.normalizers import FeatureZNormalizer, \
+    SampleZNormalizer, SampleSigmaNormalizer, FeatureSigmaNormalizer, \
+    DatasetFxNormalizer
 from pyitab.preprocessing import Transformer
 from pyitab.preprocessing.balancing.base import Balancer
 from pyitab.preprocessing.balancing.imbalancer import Imbalancer
-from pyitab.preprocessing.math import ZFisherTransformer, AbsoluteValueTransformer
-
+from pyitab.preprocessing.math import ZFisherTransformer, \
+    AbsoluteValueTransformer, SignTransformer
 
 
 def function_mapper(name):
 
     mapper = {
-              'detrending': Detrender,
-              'target_trans': TargetTransformer,
-              'feature_norm': FeatureWiseNormalizer,
+              'detrender': Detrender,
+              'target_transformer': TargetTransformer,
+              'feature_normalizer': FeatureZNormalizer,
               'feature_slicer': FeatureSlicer,
               'sample_slicer': SampleSlicer,
-              'sample_norm': SampleWiseNormalizer,
+              'sample_normalizer': SampleZNormalizer,
+              'sample_sigmanorm': SampleSigmaNormalizer,
+              'feature_sigmanorm': FeatureSigmaNormalizer,
+              'ds_normalizer': DatasetFxNormalizer,
               'sample_stacker': FeatureStacker,
               'balancer': Balancer,
               'imbalancer': Imbalancer,
               'abs': AbsoluteValueTransformer,
+              'sign': SignTransformer,
               'zfisher': ZFisherTransformer,
-              'none' : Transformer,
+              'none': Transformer,
               }
     
     return mapper[name]
