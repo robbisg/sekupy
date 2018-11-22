@@ -12,7 +12,7 @@ from tqdm import tqdm
 from pyitab.io.utils import get_ds_data
 
 from pyitab.preprocessing.functions import FeatureSlicer
-from pyitab.analysis.base import Analyzer
+from pyitab.analysis.decoding import Decoding
 from pyitab.preprocessing.functions import Transformer
 
 from scipy.io.matlab.mio import savemat
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: Inherit from MetaDecoding
-class Decoding(Analyzer):
+class RoiDecoding(Decoding):
     """Implement decoding analysis using an arbitrary type of classifier.
 
     Parameters
@@ -71,93 +71,18 @@ class Decoding(Analyzer):
                  cv=LeaveOneGroupOut(),
                  permutation=0,
                  verbose=1):
-        
-        if estimator is None:
-            estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
-
-        if not isinstance(estimator, Pipeline):
-            estimator = Pipeline(steps=[('clf', estimator)])
-
-        self.estimator = estimator
-        self.n_jobs = n_jobs
-        self.permutation = permutation
-        self.scoring = scoring
-        self.cv = cv
-        self.verbose = verbose
-        
-        Analyzer.__init__(self, name='decoding')
-        
-
-    
-    def fit(self, ds, cv_attr='chunks', roi='all', roi_values=None, prepro=Transformer()):
-        """Fits the decoding of the dataset.
-
-        Parameters
-        -----------
-    
-        ds : PyMVPA dataset
-            The dataset to be used to fit the data
-    
-        cv_attr : string. Default is 'chunks'.
-            The attribute to be used to separate data in the cross validation.
-            If cv attribute is specified this parameter is ignored.
-            
-    
-        roi : list of strings. Default is 'all'
-            The list of rois to be selected for the analysis. 
-            Each string must correspond to a key in the dataset feature attributes.
-
-            
-        roi_values : list of tuple, optional. Default is None
-            The list of tuple must have as first element the name of roi to be used,
-            which should be in the feature attribute of the dataset.
-            The second element of the tuple must be a list of values, corresponding to
-            the value of the specific roi 
-            (e.g. roi_values = [('lateral_ips', [2,4,6]), ('left_precuneus', [10,12])] 
-             performs two analysis on lateral_ips and left_precuneus with the
-             union of rois with values of 2,4,6 and 10,12 )
-             
-             
-        prepro : Node or PreprocessingPipeline implementing transform, optional.
-            A transformation of series of transformation to be performed
-            before the decoding analysis is performed.
-        
-        """
 
 
-        if roi_values == None:
-            roi_values = self._get_rois(ds, roi)
-                
-        self.scores = dict()
-        
-        # TODO: How to use multiple ROIs
-        for r, value in roi_values:
-            
-            ds_ = FeatureSlicer(**{r:value}).transform(ds)
-            ds_ = prepro.transform(ds_)
-            
-            logger.info("Dataset shape %s" % (str(ds_.shape)))
-            summary_cv = cv_attr
-            if isinstance(cv_attr, list):
-                summary_cv = cv_attr[0]
-            
-            #logger.info(ds_.summary(chunks_attr=summary_cv))
-            
-            scores = self._fit(ds_, cv_attr)
-            
-            string_value = "_".join([str(v) for v in value])
-            self.scores["%s_%s" % (r, string_value)] = scores
-        
-        
-        self._info = self._store_ds_info(ds, 
-                                         cv_attr=cv_attr,
-                                         roi=roi,
-                                         prepro=prepro)
-        
-        return self
-    
-    
-    
+        Decoding.__init__(self,
+                          estimator=estimator,
+                          n_jobs=n_jobs,
+                          scoring=scoring,
+                          cv=cv,
+                          permutation=permutation,
+                          verbose=verbose,
+                          name='roi_decoding')
+
+
     def _get_rois(self, ds, roi):
         """Gets the roi list if the attribute is all"""
         
@@ -192,11 +117,21 @@ class Decoding(Analyzer):
             indices.append(idx)
         
         return indices
+
+    def fit(self, ds, cv_attr='chunks', roi='all', roi_values=None, prepro=Transformer(), **kwargs):
+        
+        return Decoding.fit(self, ds, 
+                           cv_attr=cv_attr, 
+                           roi=roi, 
+                           roi_values=roi_values, 
+                           prepro=prepro, 
+                           **kwargs)
         
     
-    def _fit(self, ds, cv_attr=None):
+    def _fit(self, ds, cv_attr=None, return_predictions=False, return_splits=True, **kwargs):
         """General method to fit data"""
-                   
+
+
         self.scoring, _ = _check_multimetric_scoring(self.estimator, scoring=self.scoring)
         
         X, y = get_ds_data(ds)
@@ -209,148 +144,24 @@ class Decoding(Analyzer):
             else:
                 groups = ds.sa[cv_attr].value
 
-
-
         indices = self._get_permutation_indices(len(y), groups)
                 
         values = []
-                
-        
+
         for idx in tqdm(indices):
             
             y_ = y[idx]
 
             scores = cross_validate(self.estimator, X, y_, groups,
-                                  self.scoring, self.cv, self.n_jobs,
-                                  self.verbose, return_estimator=True, 
-                                  return_splits=True)
+                                    self.scoring, self.cv, self.n_jobs,
+                                    self.verbose, return_estimator=True, 
+                                    return_splits=return_splits, 
+                                    return_predictions=return_predictions)
             
             values.append(scores)
-
-            if cv_attr != None:
+            if cv_attr is not None:
                 scores['split_name'] = self._split_name(scores['splits'], 
-                                                        cv_attr, 
+                                                        cv_attr,
                                                         groups)
-            
-            #logger.debug(hpy().heap())
-        
+       
         return values
-    
-
-
-    def _split_name(self, splits, attr, groups):
-
-        if isinstance(attr, str):
-            groups = np.vstack((groups, groups)).T
-            cv_attr = [attr, attr]
-
-        split_ = []
-
-        groups = groups.T
-
-        for split in splits:
-            test_name = np.unique(groups[1][split['test']])
-            train_name = np.unique(groups[0][split['train']])
-
-            test_name = [str(s) for s in test_name]
-            train_name = [str(s) for s in train_name]
-
-            split_.append({'train': "_".join(train_name), 
-                           'test' : "_".join(test_name)})
-
-        return split_
-
-
-
-    
-
-    def save(self, path=None):
-        
-        import os
-        
-        path = Analyzer.save(self, path=path)
-        
-        for roi, scores in self.scores.items():
-                       
-            for p, score in enumerate(scores):
-                    
-                mat_score = self._save_score(score)
-                    
-                # TODO: Better use of cv and attributes for leave-one-subject-out
-                filename = "%s_perm_%04d_data.mat" %(roi, int(p))
-                logger.info("Saving %s" %(filename))
-                
-                savemat(os.path.join(path, filename), mat_score)
-                #logger.debug(hpy().heap())
-                del mat_score
-                
-        return
-
-        
-        
-    def _save_score(self, score):
-         
-        mat_file = dict()
-        
-        for key, value in score.items():
-            
-            if key.find("test_") != -1:
-                mat_file[key] = value
-                
-            elif key == 'estimator':
-                mat_estimator = self._save_estimator(value)
-                mat_file.update(mat_estimator)
-                
-            elif key == "splits":
-                mat_splits = self._save_splits(value)
-                mat_file.update(mat_splits)
-
-            elif key == "split_name":
-                mat_file['split_name'] = [s['test'] for s in value]
-            
-        
-        return mat_file
-        
-    
-    
-    def _save_estimator(self, estimator):
-        
-        mat_ = dict()
-        mat_['weights'] = []
-        mat_['features'] = []
-        
-        for est in estimator:
-            
-            w = est.named_steps['clf'].coef_
-            mat_['weights'].append(w)
-            
-            if 'fsel' in est.named_steps.keys():
-                f = est.named_steps['fsel'].get_support()
-                mat_['features'].append(f)
-                
-        return mat_
-        
-        
-        
-    def _save_splits(self, splits):
-        
-        
-        mat_ = dict()
-        mat_['train'] = []
-        mat_['test'] = []
-        
-        for spl in splits:
-            
-            for set_ in mat_.keys():
-                mat_[set_].append(spl[set_])
-
-                
-        return mat_        
-        
-        
-        
-        
-        
-        
-        
-        

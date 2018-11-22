@@ -21,7 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class MetaDecoding(Analyzer):
+class Decoding(Analyzer):
     """Implement decoding analysis using an arbitrary type of classifier.
 
     Parameters
@@ -69,7 +69,8 @@ class MetaDecoding(Analyzer):
                  scoring='accuracy', 
                  cv=LeaveOneGroupOut(),
                  permutation=0,
-                 verbose=1):
+                 verbose=1,
+                 name="abstact_decoding"):
         
         if estimator is None:
             estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
@@ -84,47 +85,20 @@ class MetaDecoding(Analyzer):
         self.cv = cv
         self.verbose = verbose
         
-        Analyzer.__init__(self, name='decoding')
+        Analyzer.__init__(self, name=name)
         
 
     # TODO: Must include kwargs
-    def fit(self, ds, cv_attr='chunks', roi='all', roi_values=None, prepro=Transformer()):
-        """Fits the decoding of the dataset.
-
-        Parameters
-        -----------
-    
-        ds : PyMVPA dataset
-            The dataset to be used to fit the data
-    
-        cv_attr : string. Default is 'chunks'.
-            The attribute to be used to separate data in the cross validation.
-            If cv attribute is specified this parameter is ignored.
-            
-    
-        roi : list of strings. Default is 'all'
-            The list of rois to be selected for the analysis. 
-            Each string must correspond to a key in the dataset feature attributes.
-
-            
-        roi_values : list of tuple, optional. Default is None
-            The list of tuple must have as first element the name of roi to be used,
-            which should be in the feature attribute of the dataset.
-            The second element of the tuple must be a list of values, corresponding to
-            the value of the specific roi 
-            (e.g. roi_values = [('lateral_ips', [2,4,6]), ('left_precuneus', [10,12])] 
-             performs two analysis on lateral_ips and left_precuneus with the
-             union of rois with values of 2,4,6 and 10,12 )
-             
-             
-        prepro : Node or PreprocessingPipeline implementing transform, optional.
-            A transformation of series of transformation to be performed
-            before the decoding analysis is performed.
-        
-        """
+    def fit(self, ds, 
+            cv_attr='chunks', roi='all', 
+            roi_values=None, 
+            prepro=Transformer(),
+            return_predictions=False,
+            return_splits=True,
+            **kwargs):
 
 
-        if roi_values == None:
+        if roi_values is None:
             roi_values = self._get_rois(ds, roi)
                 
         self.scores = dict()
@@ -140,9 +114,13 @@ class MetaDecoding(Analyzer):
             if isinstance(cv_attr, list):
                 summary_cv = cv_attr[0]
             
-            #logger.info(ds_.summary(chunks_attr=summary_cv))
-            
-            scores = self._fit(ds_, cv_attr)
+            scores = self._fit(ds_, 
+                               cv_attr=cv_attr,
+                               return_predictions=return_predictions,
+                               return_splits=return_splits,
+                               **kwargs)
+
+
             
             string_value = "_".join([str(v) for v in value])
             self.scores["%s_%s" % (r, string_value)] = scores
@@ -155,8 +133,7 @@ class MetaDecoding(Analyzer):
         
         return self
     
-    
-    
+
     def _get_rois(self, ds, roi):
         """Gets the roi list if the attribute is all"""
         
@@ -194,7 +171,7 @@ class MetaDecoding(Analyzer):
         return indices
         
     
-    def _fit(self, ds, cv_attr=None):
+    def _fit(self, ds, cv_attr=None, **kwargs):
         """This method must be implemented in subclasses"""
         pass
     
@@ -214,14 +191,13 @@ class MetaDecoding(Analyzer):
             test_name = np.unique(groups[1][split['test']])
             train_name = np.unique(groups[0][split['train']])
 
+            test_name = [str(s) for s in test_name]
+            train_name = [str(s) for s in train_name]
+
             split_.append({'train': "_".join(train_name), 
-                           'test': "_".join(test_name)})
+                           'test' : "_".join(test_name)})
 
         return split_
-
-
-
-    
 
     def save(self, path=None):
         

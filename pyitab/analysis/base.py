@@ -6,7 +6,7 @@ from pyitab.io.configuration import save_configuration
 from pyitab.analysis import Node
 logger = logging.getLogger(__name__)
 
-
+# TODO: For permutation stuff use utils.shuffle of scikit
 class Analyzer(Node):
     
     def __init__(self, name='analyzer', **kwargs):
@@ -32,7 +32,6 @@ class Analyzer(Node):
             
             return None
         
-        logger.info(self)
         if path is None:
             info = self._get_fname_info()
             path = self._get_path(**info)

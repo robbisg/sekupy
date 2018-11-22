@@ -188,8 +188,7 @@ class SearchLight(Analyzer):
         return split
 
 
-    
-    
+
     def save(self, path=None, save_cv=True):
 
         # TODO: Demean / minus_chance
