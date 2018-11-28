@@ -5,14 +5,14 @@ from sklearn.svm import SVC
 from sklearn.preprocessing.label import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import LeaveOneGroupOut
-from sklearn.model_selection._validation import cross_validate
 
 from tqdm import tqdm
 
-from pyitab.io.utils import get_ds_data
+from pyitab.utils.dataset import get_ds_data
+from pyitab.utils.dataset import temporal_attribute_reshaping, temporal_transformation
 
 from pyitab.preprocessing.functions import FeatureSlicer
-from pyitab.analysis.decoding import Decoding
+from pyitab.analysis.decoding.roi_decoding import RoiDecoding
 from pyitab.preprocessing.functions import Transformer
 
 from scipy.io.matlab.mio import savemat
@@ -22,8 +22,8 @@ from imblearn.under_sampling import RandomUnderSampler
 import logging
 logger = logging.getLogger(__name__)
 
-# TODO: Inherit from metadecoding
-class TemporalDecoding(Decoding):
+
+class TemporalDecoding(RoiDecoding):
     """Implement temporal generalization decoding analysis 
         using an arbitrary type of classifier.
 
@@ -76,7 +76,7 @@ class TemporalDecoding(Decoding):
                  permutation=0,
                  verbose=1):
         
-        Decoding.__init__(self,
+        RoiDecoding.__init__(self,
                           estimator=estimator,
                           n_jobs=n_jobs,
                           scoring=scoring,
@@ -91,90 +91,27 @@ class TemporalDecoding(Decoding):
         if not isinstance(estimator, Pipeline):
             estimator = Pipeline(steps=[('clf', estimator)])
 
-        self.estimator = GeneralizingEstimator(estimator)   
+        self.estimator = GeneralizingEstimator(estimator)
+        self.scoring = None 
     
-    
-    def _get_rois(self, ds, roi):
-        """Gets the roi list if the attribute is all"""
+
+    def _get_data(self, ds, cv_attr, 
+                    time_attr='frame',
+                    balancer=RandomUnderSampler(return_indices=True),
+                    **kwargs):
         
-        rois = [r for r in ds.fa.keys() if r != 'voxel_indices']
-        
-        if roi != 'all':
-            rois = roi
-        
-        rois_values = []
-        
-        for r in rois:
-            value = [(r, [v]) for v in np.unique(ds.fa[r].value) if v != 0]
-            rois_values.append(value)
-            
-        return list(*rois_values)    
-    
-    
-    def _get_permutation_indices(self, n_samples, groups):
-        
-        """Permutes the indices of the dataset"""
-        
-        # TODO: Permute labels based on cv_attr
-        from numpy.random.mtrand import permutation
-        
-        if self.permutation == 0:
-            return [range(n_samples)]
-            
-        # reset random state
-        indices = [range(n_samples)]
-        for _ in range(self.permutation):
-            idx = permutation(indices[0])
-            indices.append(idx)
-        
-        return indices
-
-
-    def _transform_data(self, X, y, time_attr):
-        times = np.unique(time_attr)
-
-        X_ = X.reshape(-1, len(times), X.shape[1])
-        X_ = np.rollaxis(X_, 1, 3)
-
-        y_ = self._reshape_attributes(y, time_attr)
-
-        return X_, y_
-
-
-    def _reshape_attributes(self, attribute_list, time_attribute):
-        times = np.unique(time_attribute)
-
-        y = attribute_list.reshape(-1, len(times))
-        labels = []
-        for yy in y:
-            l, c = np.unique(yy, return_counts=True)
-            labels.append(l[np.argmax(c)])
-
-        return np.array(labels)
-
-  
-    def _fit(self, ds, 
-             time_attr='frame', 
-             cv_attr=None, 
-             balancer=RandomUnderSampler(return_indices=True),
-             return_splits=True,
-             return_predictions=False,
-             **kwargs):
-        """General method to fit data"""
-        
-        self._balancer = balancer
 
         X, y = get_ds_data(ds)
         t_values = ds.sa[time_attr].value
 
-        X, y = self._transform_data(X, y, t_values)
+        X, y = temporal_transformation(X, y, t_values)
 
-        _, _, indices = self._balancer.fit_sample(X[:,:,0], y)
+        _, _, indices = balancer.fit_sample(X[:,:,0], y)
         indices = np.sort(indices)
 
         groups = None
         if cv_attr is not None:
-            _reshape = self._reshape_attributes
+            _reshape = temporal_attribute_reshaping
             if isinstance(cv_attr, list):
                 groups = np.vstack([_reshape(ds.sa[att].value, t_values) for att in cv_attr]).T
             else:
@@ -184,26 +121,33 @@ class TemporalDecoding(Decoding):
         X, y = X[indices], y[indices]
         logger.info(np.unique(y, return_counts=True))
 
-        indices = self._get_permutation_indices(len(y), groups)
-        values = []
-                
-        for idx in tqdm(indices):
-            
-            y_ = y[idx]
+        return X, y, groups
+    
 
-            scores = cross_validate(self.estimator, X, y_, 
-                                    groups=groups,
-                                    #scoring={'score' : self.scoring}, 
-                                    cv=self.cv, 
-                                    n_jobs=self.n_jobs,
-                                    verbose=self.verbose, 
-                                    return_estimator=True, 
-                                    return_splits=return_splits,
-                                    return_predictions=return_predictions)
-            
-            values.append(scores)
+  
+    def fit(self, ds, 
+             time_attr='frame',
+             roi='all',
+             roi_values=None,
+             cv_attr=None,
+             prepro=Transformer(),
+             balancer=RandomUnderSampler(return_indices=True),
+             return_splits=True,
+             return_predictions=False,
+             **kwargs):
 
-        return values
+        """General method to fit data"""
+        
+        super().fit(ds, 
+                    cv_attr=cv_attr,
+                    roi=roi, 
+                    roi_values=roi_values, 
+                    prepro=prepro,
+                    return_predictions=return_predictions,
+                    return_splits=return_splits,
+                    time_attr=time_attr,
+                    balancer=balancer,
+                    **kwargs)
 
   
     def _save_score(self, score):

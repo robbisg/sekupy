@@ -2,7 +2,6 @@ import numpy as np
 import os
 
 from nilearn.image.resampling import coord_transform
-from nilearn.input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from nilearn import masking
 from nilearn.decoding.searchlight import search_light
 
@@ -14,42 +13,23 @@ from sklearn.pipeline import Pipeline
 
 from pyitab.analysis.searchlight.utils import _get_affinity, check_proximity
 from pyitab.analysis.searchlight.utils import load_proximity, save_proximity
+from pyitab.analysis.searchlight import SearchLight, get_seeds
 from pyitab.analysis.base import Analyzer
+
+from mne.decoding import GeneralizingEstimator
+from imblearn.under_sampling import RandomUnderSampler
 
 from pyitab.utils.dataset import get_ds_data
 from pyitab.utils.image import save_map
 from pyitab.utils.files import make_dir
+from pyitab.utils.dataset import temporal_attribute_reshaping, temporal_transformation
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 
-def get_seeds(ds, radius):
-    
-    if check_proximity(ds, radius):
-        return load_proximity(ds, radius)
-    
-    
-    # Get the seeds
-    process_mask_coords = ds.fa.voxel_indices.T
-    process_mask_coords = coord_transform(
-        process_mask_coords[0], process_mask_coords[1],
-        process_mask_coords[2], ds.a.imgaffine)
-    process_mask_coords = np.asarray(process_mask_coords).T
-    
-    seeds = process_mask_coords
-    coords = ds.fa.voxel_indices
-    logger.info("Building proximity matrix...")
-    A = _get_affinity(seeds, coords, radius, allow_overlap=True, affine=ds.a.imgaffine)
-    
-    save_proximity(ds, radius, A)
-    
-    return A
-
-
-
-class SearchLight(Analyzer):
+class TemporalSearchLight(SearchLight):
     """Implement search_light analysis using an arbitrary type of classifier.
     This is a wrapper of the nilearn algorithm to work with pymvpa dataset.
 
@@ -98,27 +78,28 @@ class SearchLight(Analyzer):
                  permutation=0,
                  verbose=1):
 
+
+        super().__init__(radius=radius,
+                         estimator=estimator,
+                         n_jobs=n_jobs, 
+                         scoring=scoring, 
+                         cv=cv, 
+                         permutation=permutation,
+                         verbose=verbose)
+
         if estimator is None:
             estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
 
         if not isinstance(estimator, Pipeline):
             estimator = Pipeline(steps=[('clf', estimator)])
-        
-        self.radius = radius
-        self.estimator = estimator
-        self.n_jobs = n_jobs
-        self.permutation = permutation
-        
-        self.scoring = scoring
-        
-        self.cv = cv
-        self.verbose = verbose
-        
-        Analyzer.__init__(self, name='searchlight')
+
+        self.estimator = GeneralizingEstimator(estimator)
 
 
 
-    def fit(self, ds, cv_attr='chunks'):
+    def fit(self, ds, 
+            time_attr='frame', cv_attr='chunks',
+            balancer=RandomUnderSampler(return_indices=True)):
         """
         Fit the searchlight
         """
@@ -126,30 +107,38 @@ class SearchLight(Analyzer):
         A = get_seeds(ds, self.radius)
         
         estimator = self.estimator
-            
-        self.scoring, _ = _check_multimetric_scoring(estimator, 
-                                                     scoring=self.scoring)
         
+        self._balancer = balancer
+
         X, y = get_ds_data(ds)
-        y = LabelEncoder().fit_transform(y)
+        t_values = ds.sa[time_attr].value
 
+        X, y = temporal_transformation(X, y, t_values)
 
-        if cv_attr != None:
+        _, _, indices = self._balancer.fit_sample(X[:,:,0], y)
+        indices = np.sort(indices)
+
+        groups = None
+        if cv_attr is not None:
+            _reshape = temporal_attribute_reshaping
             if isinstance(cv_attr, list):
-                groups = np.vstack([ds.sa[att].value for att in cv_attr]).T
+                groups = np.vstack([_reshape(ds.sa[att].value, t_values) for att in cv_attr]).T
             else:
-                groups = ds.sa[cv_attr].value
+                groups = _reshape(ds.sa[cv_attr].value, t_values)
+            groups = groups[indices]
 
-        
-        values = []
+        X, y = X[indices], y[indices]
+        logger.info(np.unique(y, return_counts=True))
+
         indices = self._get_permutation_indices(len(y))
+        values = []
         
         for idx in indices:
             y_ = y[idx] 
 
-            scores = search_light(X, y_, estimator, A, groups,
-                                  self.scoring, self.cv, self.n_jobs,
-                                  self.verbose)
+            scores = search_light(X, y_, estimator, A, groups=groups,
+                                  cv=self.cv, n_jobs=self.n_jobs,
+                                  verbose=self.verbose)
             
             values.append(scores)
         
@@ -161,53 +150,14 @@ class SearchLight(Analyzer):
 
         return self
 
-    
-    def _split_name(self, X, y, cv, groups):
 
-        if len(groups.shape) == 1:
-            groups = np.vstack((groups, groups)).T
-
-        if len(X.shape) == 3:
-            X = X[..., 0]
-
-        split = [np.unique(groups[:, 1][test])[0] for train, test in cv.split(X, y=y, groups=groups)]
-        return split
+    def _reshape_image(self, image):
+        new_shape = (image.shape[0], -1)
+        return np.reshape(image, new_shape)
 
 
 
-    def save(self, path=None, save_cv=True, fx_image=lambda x: x):
-
-        # TODO: Demean / minus_chance
-        
-        map_type = ['avg', 'cv']
-        
-        path = Analyzer.save(self, path)
-                    
-        reverse = self._info['a'].mapper.reverse1
-        affine = self._info['a'].imgaffine
-
-        for i in range(len(self.scores)):
-            for j, img_dict in enumerate(self.scores[i]):
-                for score, image in img_dict.items():
-                    
-                    # TODO: Better use of cv and attributes for leave-one-subject-out
-                    if map_type[j] == 'cv' and save_cv is False:
-                        continue
-                    
-                    filename = "%s_perm_%04d_%s.nii.gz" %(score, i, map_type[j])
-                    logger.info("Saving %s" , filename)
-                    filename = os.path.join(path, filename)
-                    image = fx_image(image)
-                    save_map(filename, reverse(image), affine)
-                    
-    
-    
-    
-    def _get_analysis_info(self):
-        
-        info = Analyzer._get_analysis_info(self)
-        info['radius'] = self.radius
-        
-        return info
-        
-   
+    def save(self, path=None, save_cv=True, fx_image=self._reshape_image):
+        super().save(path=path,
+                     save_cv=save_cv,
+                     fx_image=fx_image)

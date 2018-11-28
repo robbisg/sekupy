@@ -1,9 +1,8 @@
 import os
-from pyitab.io.utils import make_dir
-from pyitab.utils import get_time
+from pyitab.utils.files import make_dir
+from pyitab.utils.time import get_time
 
 class Node(object):
-
 
     def __init__(self, name='none'):
         self.name = name

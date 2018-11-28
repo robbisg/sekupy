@@ -9,7 +9,7 @@ from sklearn.model_selection._validation import cross_validate
 
 from tqdm import tqdm
 
-from pyitab.io.utils import get_ds_data
+from pyitab.utils.dataset import get_ds_data
 
 from pyitab.preprocessing.functions import FeatureSlicer
 from pyitab.analysis.decoding import Decoding
@@ -70,6 +70,7 @@ class RoiDecoding(Decoding):
                  scoring='accuracy', 
                  cv=LeaveOneGroupOut(),
                  permutation=0,
+                 name='roi_decoding',
                  verbose=1):
 
 
@@ -80,7 +81,7 @@ class RoiDecoding(Decoding):
                           cv=cv,
                           permutation=permutation,
                           verbose=verbose,
-                          name='roi_decoding')
+                          name=name)
 
 
     def _get_rois(self, ds, roi):
@@ -99,69 +100,77 @@ class RoiDecoding(Decoding):
             
         return list(*rois_values)    
     
-    
-    def _get_permutation_indices(self, n_samples, groups):
-        """Permutes the indices of the dataset"""
-        
-        # TODO: Permute labels based on cv_attr
-        from numpy.random.mtrand import permutation
-        
-        if self.permutation == 0:
-            return [range(n_samples)]
-        
-        
-        # reset random state
-        indices = [range(n_samples)]
-        for _ in range(self.permutation):
-            idx = permutation(indices[0])
-            indices.append(idx)
-        
-        return indices
 
-    def fit(self, ds, cv_attr='chunks', roi='all', roi_values=None, prepro=Transformer(), **kwargs):
+    def fit(self, ds, 
+            cv_attr='chunks', 
+            roi='all', 
+            roi_values=None, 
+            prepro=Transformer(),
+            return_predictions=False,
+            return_splits=True,
+            **kwargs):
+        """[summary]
         
-        return Decoding.fit(self, ds, 
-                           cv_attr=cv_attr, 
-                           roi=roi, 
-                           roi_values=roi_values, 
-                           prepro=prepro, 
-                           **kwargs)
+        Parameters
+        ----------
+        ds : [type]
+            [description]
+        cv_attr : str, optional
+            [description] (the default is 'chunks', which [default_description])
+        roi : str, optional
+            [description] (the default is 'all', which [default_description])
+        roi_values : [type], optional
+            [description] (the default is None, which [default_description])
+        prepro : [type], optional
+            [description] (the default is Transformer(), which [default_description])
+        return_predictions : bool, optional
+            [description] (the default is False, which [default_description])
+        return_splits : bool, optional
+            [description] (the default is True, which [default_description])
         
-    
-    def _fit(self, ds, cv_attr=None, return_predictions=False, return_splits=True, **kwargs):
-        """General method to fit data"""
+        Returns
+        -------
+        [type]
+            [description]
+        """
 
-
-        self.scoring, _ = _check_multimetric_scoring(self.estimator, scoring=self.scoring)
-        
-        X, y = get_ds_data(ds)
-        y = LabelEncoder().fit_transform(y)
-
-        groups = None
-        if cv_attr is not None:
-            if isinstance(cv_attr, list):
-                groups = np.vstack([ds.sa[att].value for att in cv_attr]).T
-            else:
-                groups = ds.sa[cv_attr].value
-
-        indices = self._get_permutation_indices(len(y), groups)
+        if roi_values is None:
+            roi_values = self._get_rois(ds, roi)
                 
-        values = []
-
-        for idx in tqdm(indices):
+        scores = dict()
+        
+        # TODO: How to use multiple ROIs
+        for r, value in roi_values:
             
-            y_ = y[idx]
-
-            scores = cross_validate(self.estimator, X, y_, groups,
-                                    self.scoring, self.cv, self.n_jobs,
-                                    self.verbose, return_estimator=True, 
-                                    return_splits=return_splits, 
-                                    return_predictions=return_predictions)
+            ds_ = FeatureSlicer(**{r:value}).transform(ds)
+            ds_ = prepro.transform(ds_)
             
-            values.append(scores)
-            if cv_attr is not None:
-                scores['split_name'] = self._split_name(scores['splits'], 
-                                                        cv_attr,
-                                                        groups)
-       
-        return values
+            logger.info("Dataset shape %s" % (str(ds_.shape)))
+            summary_cv = cv_attr
+            if isinstance(cv_attr, list):
+                summary_cv = cv_attr[0]
+            
+            super().fit(ds_, 
+                        cv_attr=cv_attr,
+                        return_predictions=return_predictions,
+                        return_splits=return_splits,
+                        **kwargs)
+
+
+            
+            string_value = "_".join([str(v) for v in value])
+            scores["%s_%s" % (r, string_value)] = self.scores
+        
+        
+        self._info = self._store_ds_info(ds, 
+                                         cv_attr=cv_attr,
+                                         roi=roi,
+                                         prepro=prepro)
+
+        self.scores = scores
+        
+        return self    
+
+    
+    
+

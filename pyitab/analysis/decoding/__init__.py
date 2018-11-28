@@ -9,7 +9,7 @@ from sklearn.model_selection._validation import cross_validate
 
 from tqdm import tqdm
 
-from pyitab.io.utils import get_ds_data
+from pyitab.utils.dataset import get_ds_data
 
 from pyitab.preprocessing.functions import FeatureSlicer
 from pyitab.analysis.base import Analyzer
@@ -70,7 +70,7 @@ class Decoding(Analyzer):
                  cv=LeaveOneGroupOut(),
                  permutation=0,
                  verbose=1,
-                 name="abstact_decoding"):
+                 name="decoding"):
         
         if estimator is None:
             estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
@@ -84,54 +84,63 @@ class Decoding(Analyzer):
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
-        
+        self.scoring, _ = _check_multimetric_scoring(self.estimator, 
+                                                     scoring=self.scoring)
         Analyzer.__init__(self, name=name)
-        
 
-    # TODO: Must include kwargs
+    
+    def _get_data(self, ds, cv_attr, **kwargs):
+        
+        X, y = get_ds_data(ds)
+        y = LabelEncoder().fit_transform(y)
+
+        groups = None
+        if cv_attr is not None:
+            if isinstance(cv_attr, list):
+                groups = np.vstack([ds.sa[att].value for att in cv_attr]).T
+            else:
+                groups = ds.sa[cv_attr].value
+
+        return X, y, groups
+
+
+    
+
     def fit(self, ds, 
-            cv_attr='chunks', roi='all', 
-            roi_values=None, 
-            prepro=Transformer(),
+            cv_attr=None,
             return_predictions=False,
             return_splits=True,
             **kwargs):
+        """General method to fit data"""
+        
 
+        X, y, groups = self._get_data(ds, cv_attr, **kwargs)
 
-        if roi_values is None:
-            roi_values = self._get_rois(ds, roi)
+        indices = self._get_permutation_indices(len(y))
                 
-        self.scores = dict()
-        
-        # TODO: How to use multiple ROIs
-        for r, value in roi_values:
+        self.scores = []
+        for idx in tqdm(indices):
             
-            ds_ = FeatureSlicer(**{r:value}).transform(ds)
-            ds_ = prepro.transform(ds_)
-            
-            logger.info("Dataset shape %s" % (str(ds_.shape)))
-            summary_cv = cv_attr
-            if isinstance(cv_attr, list):
-                summary_cv = cv_attr[0]
-            
-            scores = self._fit(ds_, 
-                               cv_attr=cv_attr,
-                               return_predictions=return_predictions,
-                               return_splits=return_splits,
-                               **kwargs)
+            y_ = y[idx]
 
-
+            scores = cross_validate(self.estimator, X, y_, groups,
+                                    self.scoring, self.cv, self.n_jobs,
+                                    self.verbose, return_estimator=True, 
+                                    return_splits=return_splits, 
+                                    return_predictions=return_predictions)
             
-            string_value = "_".join([str(v) for v in value])
-            self.scores["%s_%s" % (r, string_value)] = scores
-        
-        
-        self._info = self._store_ds_info(ds, 
-                                         cv_attr=cv_attr,
-                                         roi=roi,
-                                         prepro=prepro)
-        
+            self.scores.append(scores)
+            if cv_attr is not None:
+                scores['split_name'] = self._split_name(scores['splits'], 
+                                                        cv_attr,
+                                                        groups)
+       
+
         return self
+
+
+
+
     
 
     def _get_rois(self, ds, roi):
@@ -149,32 +158,7 @@ class Decoding(Analyzer):
             rois_values.append(value)
             
         return list(*rois_values)    
-    
-    
-    def _get_permutation_indices(self, n_samples, groups):
-        
-        """Permutes the indices of the dataset"""
-        
-        # TODO: Permute labels based on cv_attr
-        from numpy.random.mtrand import permutation
-        
-        if self.permutation == 0:
-            return [range(n_samples)]
-        
-        
-        # reset random state
-        indices = [range(n_samples)]
-        for _ in range(self.permutation):
-            idx = permutation(indices[0])
-            indices.append(idx)
-        
-        return indices
-        
-    
-    def _fit(self, ds, cv_attr=None, **kwargs):
-        """This method must be implemented in subclasses"""
-        pass
-    
+       
 
 
     def _split_name(self, splits, attr, groups):
@@ -200,6 +184,18 @@ class Decoding(Analyzer):
         return split_
 
     def save(self, path=None):
+        """[summary]
+        
+        Parameters
+        ----------
+        path : [type], optional
+            [description] (the default is None, which [default_description])
+        
+        Returns
+        -------
+        [type]
+            [description]
+        """
         
         import os
         
