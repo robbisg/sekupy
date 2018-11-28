@@ -1,8 +1,8 @@
 import logging
 import os
 from pyitab.analysis.base import Analyzer
-from pyitab.utils import get_time
-from pyitab.io.utils import make_dir
+from pyitab.utils.time import get_time
+from pyitab.utils.files import make_dir
 from collections import Counter
 
 logger = logging.getLogger(__name__)

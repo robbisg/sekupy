@@ -5,8 +5,10 @@ import os
 logger = logging.getLogger(__name__)
 
 from mvpa2.base.collections import SampleAttributesCollection
-from sklearn.preprocessing.label import LabelEncoder
 from mvpa2.suite import Dataset, vstack
+
+from sklearn.preprocessing.label import LabelEncoder
+
 from pyitab.io.configuration import read_configuration
 from pyitab.analysis import Node
 from pyitab.io.base import load_subject_file, add_attributes, load_attributes,\

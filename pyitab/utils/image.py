@@ -135,3 +135,9 @@ def afni_converter(afni_fname, output_fname, brick):
     ni.save(ni.Nifti1Image(output, img.affine), output_fname)
     
     return
+
+
+def save_map(filename, map_np_array, affine=np.eye(4)):
+        
+    map_zscore = ni.Nifti1Image(map_np_array, affine)
+    ni.save(map_zscore, filename)

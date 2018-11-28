@@ -1,6 +1,6 @@
 from pyitab.preprocessing import Transformer
 from pyitab.preprocessing.functions import SampleSlicer
-from pyitab.io.utils import get_ds_data
+from pyitab.utils.dataset import get_ds_data
 from pyitab.preprocessing.balancing.utils import sample_generator
 from mvpa2.datasets.base import Dataset
 from imblearn.under_sampling import RandomUnderSampler

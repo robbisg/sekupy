@@ -1,23 +1,30 @@
-import time
 
-
-def get_time():
-    """Get the current time and returns a string (fmt: yymmdd_hhmmss)"""
+def load_test_dataset(task='fmri'):
+    from pyitab.io.loader import DataLoader
+    from pyitab.io.base import load_dataset
+    from pyitab.io.connectivity import load_mat_ds
+    from pyitab.preprocessing.pipelines import PreprocessingPipeline
+    from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
     
-    # Time acquisition
-    tempo = time.localtime()
-    
-    datetime = ''
-    i = 0
-    for elem in tempo[:-3]:
-        i = i + 1
-        if len(str(elem)) < 2:
-            elem = '0'+str(elem)
-        if i == 4:
-            datetime += '_'
-        datetime += str(elem)
+    currdir = os.path.dirname(os.path.abspath(__file__))
+    currdir = os.path.abspath(os.path.join(currdir, os.pardir))
+    if task != 'fmri':
+        reader = load_mat_ds
+        prepro = PreprocessingPipeline()
+    else:
+        reader = load_dataset
+        prepro = StandardPreprocessingPipeline()
 
-    return datetime
+    datadir = os.path.join(currdir, 'io', 'data', task)
+    configuration_file = os.path.join(datadir, '%s.conf' %(task))
+
+    loader = DataLoader(configuration_file=configuration_file, 
+                        task=task,
+                        loader=reader)
+
+    ds = loader.fetch(prepro=prepro)
+
+    return ds
 
 
 def enable_logging():

@@ -14,7 +14,7 @@ import nibabel as ni
 from mvpa2.datasets.eventrelated import find_events
 from mvpa2.base.dataset import vstack
 
-from pyitab.io.utils import add_subdirs, build_pathnames
+from pyitab.utils.files import add_subdirs, build_pathnames
 from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
 from pyitab.io.configuration import read_configuration
 

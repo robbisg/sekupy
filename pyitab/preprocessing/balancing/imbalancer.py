@@ -1,5 +1,5 @@
 from pyitab.preprocessing import Transformer
-from pyitab.io.utils import get_ds_data
+from pyitab.utils.dataset import get_ds_data
 from collections import Counter
 import numpy as np
 
