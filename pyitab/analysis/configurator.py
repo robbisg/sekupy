@@ -88,8 +88,6 @@ class AnalysisConfigurator(object):
             self._default_options['id'] = uuid.uuid4()
 
         
-        
-        
     def fit(self):
         
         return self._get_transformer(), self._get_analysis()

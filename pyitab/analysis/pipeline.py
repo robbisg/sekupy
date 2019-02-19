@@ -79,6 +79,9 @@ class AnalysisPipeline(Analyzer):
         _ = params.pop('id')
         
         path = params.pop("path")
+        if 'path' in kwargs.keys():
+            path = kwargs.pop("path")
+            
         dir_ = "%s_%03d_%s_%s_%s_%s" %(
                                         get_time(),
                                         params.pop('num'),
