@@ -68,6 +68,9 @@ class TrajectoryConnectivity(Analyzer):
             roi_values = self._get_rois(ds, roi)
                 
         self._tc = dict()
+
+        if use_partialcorr:
+            self._tc['full_brain'] = self.tc_estimator.transform(ds)
         
         for r, value in roi_values:
             
@@ -82,8 +85,7 @@ class TrajectoryConnectivity(Analyzer):
             string_value = "_".join([str(v) for v in value])
             self._tc["%s_%s" % (r, string_value)] = roi_timecourse.samples
         
-        if use_partialcorr:
-            self._tc['full_brain'] = self.tc_estimator.transform(ds)
+
 
         self.scores = self._fit(self._tc, use_partialcorr)
 
