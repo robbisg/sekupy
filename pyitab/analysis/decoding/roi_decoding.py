@@ -108,7 +108,9 @@ class RoiDecoding(Decoding):
             prepro=Transformer(),
             return_predictions=False,
             return_splits=True,
+            return_decisions=False,
             **kwargs):
+
         """[summary]
         
         Parameters
@@ -138,7 +140,6 @@ class RoiDecoding(Decoding):
             roi_values = self._get_rois(ds, roi)
                 
         scores = dict()
-        
         # TODO: How to use multiple ROIs
         for r, value in roi_values:
             
@@ -154,6 +155,7 @@ class RoiDecoding(Decoding):
                         cv_attr=cv_attr,
                         return_predictions=return_predictions,
                         return_splits=return_splits,
+                        return_decisions=return_decisions,
                         **kwargs)
 
 

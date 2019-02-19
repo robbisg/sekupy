@@ -110,6 +110,7 @@ class Decoding(Analyzer):
             cv_attr=None,
             return_predictions=False,
             return_splits=True,
+            return_decisions=False,
             **kwargs):
         """General method to fit data"""
         
@@ -127,6 +128,7 @@ class Decoding(Analyzer):
                                     self.scoring, self.cv, self.n_jobs,
                                     self.verbose, return_estimator=True, 
                                     return_splits=return_splits, 
+                                    return_decisions=return_decisions,
                                     return_predictions=return_predictions)
             
             self.scores.append(scores)
@@ -238,6 +240,12 @@ class Decoding(Analyzer):
 
             elif key == "split_name":
                 mat_file['split_name'] = [s['test'] for s in value]
+
+            elif key == "predictions":
+                mat_file[key] = value
+
+            elif key == 'decisions':
+                mat_file[key] = list(value)
             
         
         return mat_file
@@ -264,7 +272,6 @@ class Decoding(Analyzer):
         
         
     def _save_splits(self, splits):
-        
         
         mat_ = dict()
         mat_['train'] = []
