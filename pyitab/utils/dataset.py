@@ -4,6 +4,23 @@ import pandas as pd
 
 
 def ds_to_dataframe(ds, keys=['band', 'targets', 'subjects'], melt=False):
+    """[summary]
+    
+    Parameters
+    ----------
+    ds : [type]
+        [description]
+    keys : list, optional
+        [description] (the default is ['band', 'targets', 'subjects'], which [default_description])
+    melt : bool, optional
+        [description] (the default is False, which [default_description])
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
+
     
     df_dict = {}
     df_list = []
@@ -28,9 +45,24 @@ def ds_to_dataframe(ds, keys=['band', 'targets', 'subjects'], melt=False):
 
 
 def get_ds_data(ds, target_attribute='targets'):
+    """This function simpy returns X and y for scikit-learn analyses
+    starting from a pymvpa dataset.
+    
+    Parameters
+    ----------
+    ds : dataset ``mvpa2.suite.Dataset``
+        The dataset in pymvpa format
+    target_attribute : str, optional
+        The sample attribute to be used to extract labels
+         (the default is 'targets', which [default_description])
+    
+    Returns
+    -------
+    X, y
+        A tuple with the X data matrix (samples x features) and the y
+        array of labels.
     """
-    Returns X and y data from pymvpa dataset
-    """
+
 
     return ds.samples, ds.sa[target_attribute].value
 

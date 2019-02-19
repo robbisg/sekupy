@@ -6,23 +6,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# TODO : Documentation
 def remove_value(image, value, mask=None):
     """This function remove a value from a nibabel image.
     
     Parameters
     ----------
-    image : nibabel image
-        The input image
+    image : ndarray
+        The input image array
     value : float
         The value that should be subtracted from the image
-    mask : nibabel image, optional
+    mask : ndarray, optional
         The mask on which subtraction is performed (the default is None)
     
     Returns
     -------
-    img : nibabel image
-        The image with the value removed.
+    image : array
+        The array with the value removed.
     """
 
     
@@ -42,20 +41,63 @@ def remove_value(image, value, mask=None):
     
 
 def remove_value_nifti(img_fname, value, output_fname, mask_fname=None):
+    """This function is used to remove a single value from a 
+    nifti file. If a mask is provided, the value is removed only in the mask
+    voxels.
+    
+    Parameters
+    ----------
+    filename : string
+        The filename of the input image
+    output_fname : string
+        The output filename of the stored image
+    value : float
+        The value that should be subtracted from the image
+    mask : ndarray, optional
+        The mask on which subtraction is performed (the default is None)
+    
+    Returns
+    -------
+    output_image
+        The nifti image
+    """
+
     
     img = ni.load(img_fname)
     
     if mask_fname is not None:
-        mask = ni.load(mask_fname)
+        mask = ni.load(mask_fname).get_data()
+        
     
-    out_img = remove_value(img.get_data(), value, mask.get_data())
+    out_img = remove_value(img.get_data(), value, mask)
     
-    ni.save(ni.Nifti1Image(out_img, img.affine), output_fname)
+    out_img = ni.save(ni.Nifti1Image(out_img, img.affine), output_fname)
     
     return out_img
 
 
 def remove_mean_brick(img_fname, output_fname, mask_fname=None):
+    """This function is used to remove the average value from a 
+    nifti file. If a mask is provided, the average is calculated only in the mask
+    voxels.
+    
+    Parameters
+    ----------
+    filename : string
+        The filename of the input image
+    output_fname : string
+        The output filename of the stored image
+    mask : ndarray, optional
+        The mask on which average is calculated (the default is None)
+    
+    Returns
+    -------
+    output_image
+        The nifti image
+    """
+    import warnings
+    warnings.warn("We are deprecating this method!", 
+                   warnings.DeprecationWarning)
     
     img = ni.load(img_fname)
     
@@ -66,19 +108,37 @@ def remove_mean_brick(img_fname, output_fname, mask_fname=None):
         mask_data = ni.load(mask_fname).get_data() != 0
         mask_data = mask_data.squeeze()
     
-    logger.info(mask_data.shape)
-    logger.info(data.shape)
+    logger.debug(mask_data.shape)
+    logger.debug(data.shape)
     img_mean = np.zeros_like(data)
     img_mean[mask_data] = data[mask_data] - data[mask_data].mean(0)
 
-    out_img = ni.Nifti1Image(img_mean, img.affine) 
-    ni.save(out_img, output_fname)
+    out_img = save_map(output_fname, img_mean, affine=img.affine)
     
     return out_img    
 
 
 
 def remove_mean_nifti(img_fname, output_fname, mask_fname=None):
+    """This function is used to remove the average value from an 
+    nifti file. If a mask is provided, the average is calculated only in the mask
+    voxels.
+    
+    Parameters
+    ----------
+    filename : string
+        The filename of the input image
+    output_fname : string
+        The output filename of the stored image
+    mask : ndarray, optional
+        The mask on which average is calculated (the default is None)
+    
+    Returns
+    -------
+    output_image
+        The nifti image
+    """
+
     
     img = ni.load(img_fname)
     
@@ -93,18 +153,31 @@ def remove_mean_nifti(img_fname, output_fname, mask_fname=None):
        
     out_img = remove_value(data, value, mask_data)
     
-    ni.save(ni.Nifti1Image(out_img, img.affine), output_fname)
+    save_map(output_fname, out_img, affine=img.affine)
     
     return out_img
 
 
 
 def conjunction_map(image_map, mask, output_fname, output='mask'):
+    """This is a function to perform conjunction operation of two maps.
+    If output is 'mask' the output will be an image of all ones, in the other
+    case ('image') the output will be with image_map values in nonzero mask voxels.
+    
+    Parameters
+    ----------
+    image_map : string
+        The filename of the input image
+    mask : string
+        The filename of the input image
+    output_fname : [type]
+        The filename of the input image
+    output : str, optional | {default='mask', 'image_map'}
+        The output type. If 'mask' the output will be a binary image, else
+        the values of the conjunction are those of image_map.
     
     """
-    if output is mask a mask composed by all ones is the output
-    else a mask with image_map values in nonzero mask voxels
-    """
+
     
     img = ni.load(image_map)
     mask_img = ni.load(mask)
@@ -116,14 +189,28 @@ def conjunction_map(image_map, mask, output_fname, output='mask'):
         data /= data
     
     out_img = np.float_(data * mask_int)
-        
-    ni.save(ni.Nifti1Image(out_img, img.affine), output_fname)
+    
+    save_map(output_fname, out_img, affine=img.affine)
     
     return
 
 
 
 def afni_converter(afni_fname, output_fname, brick):
+    """This function converts AFNI *.HEAD / *.BRIK files
+    in nii.gz fortmat.
+    
+    Parameters
+    ----------
+    afni_fname : string
+        Path to the specified HEAD/BRIK file
+    output_fname : string
+        Path to the output file (N.B. specify the extension)
+    brick : int
+        The number of the volume to be converted
+    
+    """
+
     
     command = "3dTcat -prefix %s %s[%s]" % (output_fname, afni_fname, str(brick))
     print(command)
@@ -132,12 +219,29 @@ def afni_converter(afni_fname, output_fname, brick):
     img = ni.load(output_fname)
     output = img.get_data().squeeze()
     
-    ni.save(ni.Nifti1Image(output, img.affine), output_fname)
+    save_map(output_fname, output, affine=img.affine)
     
     return
 
 
-def save_map(filename, map_np_array, affine=np.eye(4)):
+def save_map(filename, map_array, affine=np.eye(4), return_nifti=True):
+    """This function saves an a 3D/4D map in nifti format.
+    
+    Parameters
+    ----------
+    filename : string
+        The output filename of the stored image
+    map_array : ndarray (3D/4D array)
+        The array of the map to be stored
+    affine : matrix (dim x dim), optional
+        Affine transformation of the map
+        (the default is np.eye(4))
+    
+    """
+
         
-    map_zscore = ni.Nifti1Image(map_np_array, affine)
+    map_zscore = ni.Nifti1Image(map_array, affine)
     ni.save(map_zscore, filename)
+    if not return_nifti:
+        return None
+    return map_zscore

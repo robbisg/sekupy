@@ -37,15 +37,20 @@ def find_roi_center(img, roi_value):
 
 
 def get_aal_coords(fname):
-    """
-    Function used to obtain coordinates of the ROIs contained in the AAL90 atlas.
+    """Function used to obtain coordinates of the ROIs contained in the AAL90 atlas.
     The atlas used is the 2mm nifti version of the atlas.
+
+    Parameters
+    ----------
+    fname : string
+        The path of the atlas to be used.
     
     Returns
     -------
     coords : n x 3 numpy array
         The array containing n xyz coordinates in MNI space, one for each unique value of the atlas
     """
+
     atlas90 = ni.load(fname)
     coords = [find_roi_center(atlas90, roi_value=i) for i in np.unique(atlas90.get_data())[1:]]
     
@@ -84,8 +89,8 @@ def get_atlas90_info(background='black'):
     Parameters
     ----------
     
-    atlas_name : string | {'atlas90', 'findlab'}
-        A string used to understand the atlas information used for plots.
+    background : string | {'black', 'white'}
+        A string used to build colors for plots.
         
     Returns
     -------
