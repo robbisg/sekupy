@@ -78,7 +78,7 @@ def check_proximity(ds, radius):
     radius = np.float(radius)
     fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
     
-    return os.path.exists(fname)
+    return os.path.exists(str(fname))
 
 
 def load_proximity(ds, radius):
@@ -87,7 +87,7 @@ def load_proximity(ds, radius):
     radius = np.float(radius)
     fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
     
-    A = load_npz(fname)
+    A = load_npz(str(fname))
     return A.tolil()
 
 
@@ -97,6 +97,6 @@ def save_proximity(ds, radius, A):
     radius = np.float(radius)
     fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
     logger.debug(fname)
-    save_npz(fname, A.tocoo())
+    save_npz(str(fname), A.tocoo())
 
 
