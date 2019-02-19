@@ -6,13 +6,66 @@ from scipy.stats import ttest_1samp
 import numpy as np
 from tqdm import tqdm
 from itertools import product
-
+from joblib import Parallel, delayed
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-def get_results(path, dir_id, field_list=['sample_slicer'], result_keys=None, filter=None):
+
+def get_values(path, directory, field_list, result_keys):
+
+
+    dir_path = os.path.join(path, directory)
+
+    conf_fname = os.path.join(dir_path, "configuration.json")
+    
+    with open(conf_fname) as f:
+        conf = json.load(f)
+    
+    fields, scores = get_configuration_fields(conf, *field_list)
+    
+    files = os.listdir(dir_path)
+    files = [f for f in files if f.find(".mat") != -1]
+    
+    results = []
+
+    for fname in files:
+
+        fname_split = fname.split("_")
+        fields['roi'] = "_".join(fname_split[:-4])
+        fields['roi_value'] = np.float16(fname_split[-4])
+        fields['permutation'] = np.float16(fname_split[-2])
+
+        data = loadmat(os.path.join(dir_path, fname))
+        logger.debug(data.keys())
+        
+        for score in scores:
+
+            test_score = [k.find(score) != -1 for k in list(data.keys())]
+            if not np.any(np.array(test_score)):
+                score = 'score'
+
+            for i, s in enumerate(data['test_%s' % (score)].squeeze()):
+                fields["score_%s" % (score)] = s
+                fields['fold'] = i+1
+                logger.debug(fields)
+                if result_keys is not None:
+                    for k in result_keys:
+                        values = data[k].squeeze()
+                        fields[k] = values[i].squeeze().copy()
+                
+                fields_ = fields.copy()
+
+                results.append(fields_)
+
+    return results
+
+
+    
+
+def get_results(path, dir_id, field_list=['sample_slicer'], 
+                result_keys=None, filter=None, n_jobs=-1, verbose=1):
     """This function is used to collect the results from a previous analysis.
     
     Parameters
@@ -42,49 +95,12 @@ def get_results(path, dir_id, field_list=['sample_slicer'], result_keys=None, fi
     dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1 and d.find(".") == -1]
     dir_analysis.sort()
     
-    results = []
-    full_data = []
+    results = Parallel(n_jobs=n_jobs, 
+                       verbose=verbose)(delayed(get_values)(path, d, field_list, result_keys) \
+                    for d in dir_analysis)
     
-    for d in tqdm(dir_analysis):
-        # read json
-        conf_fname = os.path.join(path, d, "configuration.json")
-        with open(conf_fname) as f:
-            conf = json.load(f)
-        
-        fields, scores = get_configuration_fields(conf, *field_list)
-        
-        # TODO: Check if permutation is in fields
-        
-        files = os.listdir(os.path.join(path, d))
-        files = [f for f in files if f.find(".mat") != -1]
-        
-        for fname in tqdm(files):
-            
-            fname_split = fname.split("_")
-            fields['roi'] = "_".join(fname_split[:-4])
-            fields['roi_value'] = np.float16(fname_split[-4])
-            fields['permutation'] = np.float16(fname_split[-2])
-                    
-            data = loadmat(os.path.join(path, d, fname))
-            logger.debug(data.keys())
-            for score in scores:
+    results = [item for sublist in results for item in sublist]
 
-                test_score = [k.find(score) != -1 for k in list(data.keys())]
-                if not np.any(np.array(test_score)):
-                    score = 'score'
-
-                for i, s in enumerate(data['test_%s' % (score)].squeeze()):
-                    fields["score_%s" %(score)] = s
-                    fields['fold'] = i+1
-                    logger.debug(fields)
-                    if result_keys is not None:
-                        for k in result_keys:
-                            fields[k] = data[k][i].squeeze().copy()
-                    fields_ = fields.copy()
-                    results.append(fields_)
-            
-
-    
     dataframe = pd.DataFrame(results)
     
     if filter is not None:
@@ -326,6 +342,8 @@ def get_connectivity_results(path, dir_id, field_list=['sample_slicer'], load_cv
 def filter_dataframe(dataframe, **selection_dict):
     # TODO: Documentation
 
+    _symbols = ['!', '<', '>']
+
     selection_mask = np.ones(dataframe.shape[0], dtype=np.bool)
     for key, values in selection_dict.items():
         
@@ -386,8 +404,27 @@ def array2df(dataframe, key):
     return df_concat
 
 
+def query_rows(dataframe, keys, attr, fx=np.max):
 
-def df_fx_over_keys(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).sum(0)):
+
+    df_values = df_fx_over_keys(dataframe, keys, attr=attr, fx=fx)
+
+    queried_df = []
+
+    for i, row in df_values.iterrows():
+        mask = np.ones(dataframe.shape[0], dtype=np.bool)
+        for k in df_values.keys():
+            mask = np.logical_and(mask, dataframe[k].values == row[k])
+
+        queried_df.append(dataframe.loc[mask])
+
+
+    return pd.concat(queried_df)
+
+
+
+
+def df_fx_over_keys(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).sum(0), **fx_kwargs):
     """This function perform a function on the dataframe, it groups the dataframe
     by using the key parameter and applies a function to values indicated.
     
@@ -408,7 +445,7 @@ def df_fx_over_keys(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).s
     dataframe : The processed dataframe.
     """
 
-    df_sum = dataframe.groupby(keys)[attr].apply(fx)
+    df_sum = dataframe.groupby(keys)[attr].apply(fx, **fx_kwargs)
 
     return df_sum.reset_index()
 
