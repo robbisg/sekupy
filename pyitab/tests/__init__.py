@@ -5,36 +5,29 @@ from pyitab.preprocessing.pipelines import PreprocessingPipeline
 from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
 import numpy as np
 import os
-import unittest
+import pytest
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 currdir = os.path.abspath(os.path.join(currdir, os.pardir))
 
-class BaseTest(unittest.TestCase):
+@pytest.fixture(scope="session")
+def fetch_ds(task='fmri'):
 
-    def setUp(self):
-        self.ds = self.fetch_dataset()
+    if task != 'fmri':
+        reader = load_mat_ds
+        prepro = PreprocessingPipeline()
+    else:
+        reader = load_dataset
+        prepro = StandardPreprocessingPipeline()
 
-    def fetch_dataset(self, task='fmri'):
+    datadir = os.path.join(currdir, 'io', 'data', task)
+    configuration_file = os.path.join(datadir, '%s.conf' %(task))
 
-        if task != 'fmri':
-            reader = load_mat_ds
-            prepro = PreprocessingPipeline()
-        else:
-            reader = load_dataset
-            prepro = StandardPreprocessingPipeline()
+    loader = DataLoader(configuration_file=configuration_file, 
+                        task=task,
+                        loader=reader)
 
-        datadir = os.path.join(currdir, 'io', 'data', task)
-        configuration_file = os.path.join(datadir, '%s.conf' %(task))
+    ds = loader.fetch(prepro=prepro)
 
-        loader = DataLoader(configuration_file=configuration_file, 
-                            task=task,
-                            loader=reader)
+    return ds
 
-        ds = loader.fetch(prepro=prepro)
-
-        return ds
-
-
-if __name__ == '__main__':
-    unittest.main()
