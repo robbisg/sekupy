@@ -1,9 +1,3 @@
-import numpy as np
-import logging
-import os
-
-logger = logging.getLogger(__name__)
-
 from mvpa2.base.collections import SampleAttributesCollection
 from mvpa2.suite import Dataset, vstack
 
@@ -11,9 +5,15 @@ from sklearn.preprocessing.label import LabelEncoder
 
 from pyitab.io.configuration import read_configuration
 from pyitab.analysis import Node
-from pyitab.io.base import load_subject_file, add_attributes, load_attributes,\
-    add_subjectname, load_filelist
+from pyitab.io.base import add_attributes, load_attributes, load_filelist
+from pyitab.io.subjects import load_subject_file, add_subjectname
 from pyitab.utils.atlas import get_atlas_info
+
+import numpy as np
+import logging
+import os
+
+logger = logging.getLogger(__name__)
 
 # TODO : Document 
 
@@ -58,8 +58,6 @@ def load_mat_data(path, subj, folder, **kwargs):
         data.append(mat[key])
     
     return transformer(data)
-
-
 
 
 def load_mat_ds(path, subj, folder, **kwargs):   

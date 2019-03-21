@@ -31,6 +31,8 @@ def read_configuration(filename, section):
     
     [roi_labels]
     lateral_ips=/media/robbis/DATA/fmri/carlo_ofp/1_single_ROIs
+
+    For bids layout keywords use bids_{keyword}.
     """
     
     import configparser

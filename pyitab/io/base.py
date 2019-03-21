@@ -15,8 +15,7 @@ from mvpa2.datasets.eventrelated import find_events
 from mvpa2.base.dataset import vstack
 
 from pyitab.utils.files import add_subdirs, build_pathnames
-from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
-from pyitab.io.configuration import read_configuration
+from pyitab.io.subjects import add_subjectname
 
 logger = logging.getLogger(__name__) 
 
@@ -152,31 +151,6 @@ def add_events(ds):
     
     return ds
 
-
-
-def add_subjectname(ds, subj):
-    """
-    This function takes a string (the name of the subject) 
-    and add it to the dataset for each element of the dataset
-    
-    Parameters
-    ----------
-    
-    ds : pymvpa dataset
-        the dataset where attribute should be added
-        
-    subj : string
-        the name of the subject
-        
-    
-    Returns
-    -------
-    ds : pymvpa dataset modified
-    """
-    
-    ds.sa['name'] = [subj for _ in range(len(ds.sa.targets))]
-    
-    return ds
 
 
 def load_filelist(path, name, folder, **kwargs):
@@ -411,131 +385,3 @@ def load_attributes (path, subj, task,  **kwargs):
     
     attr = SampleAttributes(attr_fname, header=header)
     return attr
-
-
-def load_subject_ds(conf_file, 
-                    task, 
-                    extra_sa=None,
-                    loader=load_dataset,
-                    prepro=StandardPreprocessingPipeline(),
-                    n_subjects=None,
-                    subjects=None,
-                    **kwargs):
-    # TODO: Documentation
-    
-    """
-    This is identical to load_subjectwise_ds but we can
-    specify a preprocessing pipeline to manage data
-    
-    """
-    
-    # TODO: conf file should include the full path
-    conf = read_configuration(conf_file, task)
-           
-    conf.update(kwargs)
-    logger.debug(conf)
-    
-    data_path = conf['data_path']
-    if len(data_path) == 1:
-        data_path = os.path.abspath(os.path.join(conf_file, os.pardir))
-        conf['data_path'] = data_path
-    
-    # Subject file should be included in configuration
-    subject_file = conf['subjects']
-    if subject_file[0] != '/':
-        subject_file = os.path.join(data_path, subject_file)
-        conf['subjects'] = subject_file
-    
-    logger.debug(subject_file)
-    logger.debug(data_path)
-    _subjects, extra_sa = load_subject_file(subject_file, 
-                                            n_subjects=n_subjects)
-
-    if subjects is not None:
-        subject_mask = [_subjects == s for s in subjects]
-        subject_mask = np.logical_or.reduce(np.array(subject_mask))
-        _subjects = _subjects[subject_mask]
-        extra_sa = {k : v[subject_mask] for k, v in extra_sa.items()}
-
-
-    logger.info('Merging %s subjects from %s' % (str(len(_subjects)), data_path))
-    
-    for i, subj in enumerate(_subjects):
-      
-        ds = loader(data_path, subj, task, **conf)
-        
-        if ds is None:
-            continue
-        
-        ds = prepro.transform(ds)
-        
-        # add extra samples
-        if extra_sa is not None:
-            for k, v in extra_sa.items():
-                if len(v) == len(_subjects):
-                    ds.sa[k] = [v[i] for _ in range(ds.samples.shape[0])]
-        
-        
-        # First subject
-        if i == 0:
-            ds_merged = ds.copy()
-        else:
-            ds_merged = vstack((ds_merged, ds))
-            ds_merged.a.update(ds.a)
-            
-        del ds
-    
-    ds_merged.a['prepro'] = prepro.get_names()
-    ds_merged.a.update(conf)
-    ds_merged.a['task'] = task
-    
-    return ds_merged
-
-
-
-
-def load_subject_file(fname, n_subjects=None):
-    ''' Load information about subjects from a file.
-
-
-    Parameters
-    ----------
-    fname : string
-       The file of subjects information (.csv) 
-        An example of subjects file is this:
-        
-        >> subjects.csv
-        subject,group,group_split,age
-        s01_160112alefor,1,1,21
-        s02_160216micbra,1,1,30
-        >>
-    
-    n_subjects : integer
-        The number of subjects to include.
-
-    Returns
-    -------
-    subjects : string array
-       list of subjects name
-
-    extra_sa : dictionary
-        a dictionary of extra subject attributes like 
-        age or other subject-wise information
-        In the example above the dictionary will be:
-        {'group':[1,1], 'group_split':[1,1], 'age':[21,30]}
-
-    '''
-
-    
-    subject_array = np.genfromtxt(fname, 
-                                  delimiter=',', 
-                                  dtype=np.str_)
-        
-    subjects = subject_array[1:,0]
-    
-    # TODO: Check for extra_sa
-    extra_sa = {a[0]:a[1:] for a in subject_array.T}
-    extra_sa = {k:v[:n_subjects] for k, v in extra_sa.items()}
-    
-    return subjects[:n_subjects], extra_sa
-
