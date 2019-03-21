@@ -261,3 +261,24 @@ class FeatureStacker(Transformer):
         ds.sa[key] = [value]
         
         return ds
+
+
+class DatasetMasker(Transformer):
+    """
+    """
+
+    def __init__(self, 
+                 mask=None, 
+                 **kwargs):
+        
+        self._mask = mask
+        Transformer.__init__(self, name='dataset_masker')    
+
+
+    def transform(self, ds):
+
+        if self._mask is None:
+            self._mask = np.ones_like(ds.samples[:,0])
+
+        return ds[self._mask]
+        

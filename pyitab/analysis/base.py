@@ -49,7 +49,7 @@ class Analyzer(Node):
     def _get_fname_info(self):
 
         info = dict()
-        
+        logger.debug(self._info)
         info['path'] = self._info['a'].data_path
         info['experiment'] = self._info['a'].experiment
         info['task'] = self._info['a'].task
@@ -68,7 +68,7 @@ class Analyzer(Node):
         info['summary'] = ds.summary()
         for k, v in kwargs.items():
             info[k] = str(v)
-        
+        logger.debug(info)
         return info
     
     

@@ -95,6 +95,7 @@ def get_results(path, dir_id, field_list=['sample_slicer'],
     dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1 and d.find(".") == -1]
     dir_analysis.sort()
     
+    logger.info("Loading %d files..." %(len(dir_analysis)))
     results = Parallel(n_jobs=n_jobs, 
                        verbose=verbose)(delayed(get_values)(path, d, field_list, result_keys) \
                     for d in dir_analysis)

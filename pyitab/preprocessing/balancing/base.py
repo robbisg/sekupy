@@ -25,6 +25,8 @@ class Balancer(Transformer):
         [description] (the default is RandomUnderSampler(return_indices=True), which [default_description])
     attr : str, optional
         [description] (the default is 'chunks', which [default_description])
+    force_balance : boolean
+        [description]
     
     """
     
@@ -34,8 +36,9 @@ class Balancer(Transformer):
         # TODO: attribute list
         
         self._attr = attr
-        self._balancer_algorithm = balancer   
+        self._balancer_algorithm = balancer
         self._balancer = self._check_balancer(balancer)
+        
                    
         Transformer.__init__(self, name='balancer', **kwargs)
         
@@ -50,6 +53,7 @@ class Balancer(Transformer):
             balancer_ = UnderSamplingBalancer(balancer, self._attr)
         
         logger.debug(balancer_type)
+
         return balancer_
         
         
@@ -68,6 +72,9 @@ class SamplingBalancer(Transformer):
         
         self._attr = attr
         self._balancer = balancer
+        self._force_balancing = False
+        if isinstance(balancer.sampling_strategy, dict):
+            self.force_balancing = True
         
         Transformer.__init__(self, name=name, **kwargs)
         
@@ -127,13 +134,15 @@ class UnderSamplingBalancer(SamplingBalancer):
     def _balance(self, ds):
         
         X, y = get_ds_data(ds)
-        
+        self._mask = np.arange(len(y))
         _, count = np.unique(y, return_counts=True)
-        if len(np.unique(count)) == 1:
+        
+        if len(np.unique(count)) == 1 and not self.force_balancing:
             logger.debug(count)
             return ds
         
         _, _, indices = self._balancer.fit_sample(X, y)
+        self._mask = indices
         
         return ds[indices]
     

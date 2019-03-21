@@ -11,6 +11,10 @@ from pyitab.utils.matrix import copy_matrix, array_to_matrix
 from mne.viz import circular_layout
 from mne.viz.circle import _plot_connectivity_circle_onpick
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 def plot_matrix(matrix, roi_names, networks, threshold=None, **kwargs):
     """
     This function is used to plot connections in square matrix form.
@@ -663,8 +667,9 @@ def plot_connectivity_lines(matrix,
                             kind='circle', 
                             node_position=None, 
                             node_colors=None, 
-                            con_thresh=None, 
-                            facecolor='black', 
+                            con_thresh=None,
+                            linewidth=None,
+                            facecolor='black',
                             colormap='magma',
                             font="Manjari",
                             fontsize=14,
@@ -831,7 +836,10 @@ def plot_connectivity_lines(matrix,
     con_val_scaled = (matrix - vmin) / vrange
     con_thresh_scaled = (con_thresh - vmin) / vrange
     
-    linewidth = minmax_scale(np.abs(matrix))
+    if linewidth is None:
+        linewidth = minmax_scale(np.abs(matrix))
+    else:
+        linewidth *= np.ones_like(con_val_scaled)
 
     # Finally, we draw the connections
     nodes = []
@@ -872,11 +880,14 @@ def plot_connectivity_lines(matrix,
             point['x'] = y
             point['y'] = x
 
+        c = cmap(node_size[i]/node_size.sum())
+        c = np.array(c).reshape((-1, len(c)))
+
         if kind == 'multi':
             _ = axes.scatter(point['x']+1.0, 
                              point['y'], 
                              s=node_size[i], 
-                             c=cmap(node_size[i]/node_size.sum()), 
+                             c=c, 
                              zorder=1, 
                              #alpha=0.9, 
                              linewidths=2, 
@@ -888,7 +899,7 @@ def plot_connectivity_lines(matrix,
         _ = axes.scatter(point['x'], 
                         point['y'], 
                         s=node_size[i], 
-                        c=cmap(node_size[i]/node_size.sum()), 
+                        c=c, 
                         zorder=1, 
                         #alpha=0.9, 
                         linewidths=2, 

@@ -5,7 +5,7 @@ def load_test_dataset(task='fmri'):
     from pyitab.io.connectivity import load_mat_ds
     from pyitab.preprocessing.pipelines import PreprocessingPipeline
     from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
-    
+    import os
     currdir = os.path.dirname(os.path.abspath(__file__))
     currdir = os.path.abspath(os.path.join(currdir, os.pardir))
     if task != 'fmri':

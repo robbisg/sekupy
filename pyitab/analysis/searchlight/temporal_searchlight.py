@@ -156,8 +156,8 @@ class TemporalSearchLight(SearchLight):
         return np.reshape(image, new_shape)
 
 
+    def save(self, path=None, save_cv=True, fx_image=lambda x: np.reshape(x, (x.shape[0], -1))):
 
-    def save(self, path=None, save_cv=True, fx_image=self._reshape_image):
         super().save(path=path,
                      save_cv=save_cv,
                      fx_image=fx_image)
