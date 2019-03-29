@@ -2,15 +2,13 @@ import numpy as np
 
 def sample_generator(key, values, difference, new_targets):
     
-
     sample_mapper = {
-                     'chunks':chunk_generator,
-                     'time_coords':time_generator,
-                     'events_number':event_generator,
-                     'default':default_generator,
-                     'targets':target_generator,
-                     'stim':target_generator        
-                     
+                     'chunks': chunk_generator,
+                     'time_coords': time_generator,
+                     'events_number': event_generator,
+                     'default': default_generator,
+                     'targets': target_generator,
+                     'stim': target_generator                    
                      }
     
     key_ = key

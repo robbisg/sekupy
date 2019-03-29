@@ -157,6 +157,7 @@ class AnalysisConfigurator(object):
     def _get_analysis(self):
         
         params = self._get_params("analysis")
+        
 
         keys = list(self._default_options.keys())
         if 'estimator' in keys:
@@ -168,7 +169,8 @@ class AnalysisConfigurator(object):
         if 'scores' in keys:
             params['scoring'] = self._default_options['scores']
         
-        analysis = self._default_options['analysis']        
+        analysis = self._default_options['analysis']
+        logger.debug(params)  
         
         return analysis(**params)      
     

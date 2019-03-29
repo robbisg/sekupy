@@ -3,7 +3,7 @@ from pyitab.preprocessing.functions import Detrender, TargetTransformer, \
 from pyitab.preprocessing.normalizers import FeatureZNormalizer, \
     SampleZNormalizer, SampleSigmaNormalizer, FeatureSigmaNormalizer, \
     DatasetFxNormalizer
-from pyitab.preprocessing import Transformer
+from pyitab.base import Transformer
 from pyitab.preprocessing.balancing.base import Balancer
 from pyitab.preprocessing.balancing.imbalancer import Imbalancer
 from pyitab.preprocessing.math import ZFisherTransformer, \

@@ -1,7 +1,8 @@
 from pyitab.analysis.base import Analyzer
 from pyitab.utils.math import z_fisher, partial_correlation
 from pyitab.preprocessing.connectivity import SpeedEstimator
-from pyitab.preprocessing.functions import FeatureSlicer, Transformer
+from pyitab.base import Transformer
+from pyitab.preprocessing.functions import FeatureSlicer
 from nitime.analysis import CorrelationAnalyzer
 from nitime.timeseries import TimeSeries
 from scipy.stats import zscore

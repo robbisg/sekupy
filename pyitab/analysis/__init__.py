@@ -1,29 +1,55 @@
-import os
-from pyitab.utils.files import make_dir
-from pyitab.utils.time import get_time
+from pyitab.analysis.configurator import AnalysisConfigurator
+from pyitab.analysis.iterator import AnalysisIterator
+from pyitab.analysis.pipeline import AnalysisPipeline
 
-class Node(object):
 
-    def __init__(self, name='none'):
-        self.name = name
-        self._info = dict()
-        
+def run_analysis(ds, default_config, default_options=dict(), 
+                    name='mvpa', subdir="0_results", kind='combination'):
+    """[summary]
     
-    def save(self, path=None):
-        return
-    
-    
-    def _get_path(self, **kwargs):
-        
-        # Get information to make the results dir
-        datetime = get_time()
-        path = kwargs.pop('path')
-        
-        items = [datetime]
-        items += [v for _, v in kwargs.items()]
-        
-        dir_ = "_".join(items)
+    Parameters
+    ----------
+    ds : [type]
+        [description]
+    default_config : [type]
+        [description]
+    default_options : [type]
+        [description]
+    name : [type]
+        [description]
+    subdir : str, optional
+        [description] (the default is "0_results", which [default_description])
 
-        path = os.path.join(path, '0_results', dir_)
-            
-        return path    
+    kind : str
+        Indicates the type of datum given to options field.
+        (values must be 'combination', 'list' or 'configuration')
+        if 'combination' all possible combination of items in options will be performed
+        as a cartesian product of lists.
+        if 'list', elements of dictionary lists must have the same length
+        if 'configuration' the elements are single configuration to be used
+        'combination' or 'list' or 'configurations'
+        see ```pyitab.analysis.iterator.AnalysisIterator``` documentation.
+
+    Returns
+    -------
+    errs : list
+        Returns the list of errors with the configuration that caused the error.
+    
+    """
+
+    iterator = AnalysisIterator(default_options, 
+                                AnalysisConfigurator(**default_config),
+                                kind=kind
+                                )
+
+    errs = []
+
+    for conf in iterator:
+        kwargs = conf._get_kwargs()
+        try:
+            a = AnalysisPipeline(conf, name=name).fit(ds, **kwargs)
+            a.save(subdir=subdir)
+        except Exception as err:
+            errs.append([conf._default_options, err])
+
+    return errs

@@ -3,7 +3,7 @@ import os
 from pyitab.utils.files import make_dir
 from pyitab.utils.time import get_time
 from pyitab.io.configuration import save_configuration
-from pyitab.analysis import Node
+from pyitab.base import Node
 logger = logging.getLogger(__name__)
 
 

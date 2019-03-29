@@ -4,7 +4,7 @@ from mvpa2.suite import Dataset, vstack
 from sklearn.preprocessing.label import LabelEncoder
 
 from pyitab.io.configuration import read_configuration
-from pyitab.analysis import Node
+from pyitab.base import Node
 from pyitab.io.base import add_attributes, load_attributes, load_filelist
 from pyitab.io.subjects import load_subject_file, add_subjectname
 from pyitab.utils.atlas import get_atlas_info

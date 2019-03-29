@@ -5,7 +5,7 @@ from mvpa_itab.conn.operations import array_to_matrix, copy_matrix
 from mvpa2.base.collections import SampleAttributesCollection
 from mvpa2.datasets.base import Dataset
 from pyitab.io.base import add_attributes
-from pyitab.preprocessing import Transformer
+from pyitab.base import Transformer
 from scipy.spatial.distance import euclidean
 
 logger = logging.getLogger(__name__)

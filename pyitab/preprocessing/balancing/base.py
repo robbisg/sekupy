@@ -1,4 +1,4 @@
-from pyitab.preprocessing import Transformer
+from pyitab.base import Transformer
 from pyitab.preprocessing.functions import SampleSlicer
 from pyitab.utils.dataset import get_ds_data
 from pyitab.preprocessing.balancing.utils import sample_generator
@@ -31,14 +31,15 @@ class Balancer(Transformer):
     """
     
     
-    def __init__(self, balancer=RandomUnderSampler(return_indices=True), attr='chunks', **kwargs):
+    def __init__(self, 
+                 balancer=RandomUnderSampler(return_indices=True), 
+                 attr='chunks', **kwargs):
 
         # TODO: attribute list
         
         self._attr = attr
         self._balancer_algorithm = balancer
-        self._balancer = self._check_balancer(balancer)
-        
+        self._balancer = self._check_balancer(balancer)     
                    
         Transformer.__init__(self, name='balancer', **kwargs)
         
@@ -73,8 +74,9 @@ class SamplingBalancer(Transformer):
         self._attr = attr
         self._balancer = balancer
         self._force_balancing = False
+
         if isinstance(balancer.sampling_strategy, dict):
-            self.force_balancing = True
+            self._force_balancing = True
         
         Transformer.__init__(self, name=name, **kwargs)
         
@@ -137,7 +139,7 @@ class UnderSamplingBalancer(SamplingBalancer):
         self._mask = np.arange(len(y))
         _, count = np.unique(y, return_counts=True)
         
-        if len(np.unique(count)) == 1 and not self.force_balancing:
+        if len(np.unique(count)) == 1 and not self._force_balancing:
             logger.debug(count)
             return ds
         
@@ -146,8 +148,7 @@ class UnderSamplingBalancer(SamplingBalancer):
         
         return ds[indices]
     
-        
-        
+
         
 class OverSamplingBalancer(SamplingBalancer):
     

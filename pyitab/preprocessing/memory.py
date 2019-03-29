@@ -1,5 +1,5 @@
 import numpy as np
-from pyitab.preprocessing import Transformer
+from pyitab.base import Transformer
 
 import logging
 logger = logging.getLogger(__name__)

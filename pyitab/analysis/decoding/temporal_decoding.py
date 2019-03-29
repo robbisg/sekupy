@@ -13,7 +13,7 @@ from pyitab.utils.dataset import temporal_attribute_reshaping, temporal_transfor
 
 from pyitab.preprocessing.functions import FeatureSlicer
 from pyitab.analysis.decoding.roi_decoding import RoiDecoding
-from pyitab.preprocessing.functions import Transformer
+from pyitab.base import Transformer
 
 from scipy.io.matlab.mio import savemat
 

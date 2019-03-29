@@ -13,7 +13,7 @@ from pyitab.utils.dataset import get_ds_data
 
 from pyitab.preprocessing.functions import FeatureSlicer
 from pyitab.analysis.base import Analyzer
-from pyitab.preprocessing.functions import Transformer
+from pyitab.base import Transformer
 
 from scipy.io.matlab.mio import savemat
 

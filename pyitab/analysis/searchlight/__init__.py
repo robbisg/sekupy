@@ -96,7 +96,8 @@ class SearchLight(Analyzer):
                  scoring='accuracy', 
                  cv=LeaveOneGroupOut(), 
                  permutation=0,
-                 verbose=1):
+                 verbose=1,
+                 save_partial=False):
 
         if estimator is None:
             estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
@@ -108,6 +109,7 @@ class SearchLight(Analyzer):
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.permutation = permutation
+        self.save_partial = save_partial
         
         self.scoring = scoring
         
@@ -144,12 +146,19 @@ class SearchLight(Analyzer):
         values = []
         indices = self._get_permutation_indices(len(y))
         
-        for idx in indices:
+        save_partial = self.save_partial
+
+        for n, idx in enumerate(indices):
             y_ = y[idx] 
+            
+            # This is used to preserve partial good
+            # files in case of permutations
+            if n != 0: 
+                save_partial = False
 
             scores = search_light(X, y_, estimator, A, groups,
                                   self.scoring, self.cv, self.n_jobs,
-                                  self.verbose)
+                                  self.verbose, save_partial)
             
             values.append(scores)
         
@@ -170,37 +179,67 @@ class SearchLight(Analyzer):
         if len(X.shape) == 3:
             X = X[..., 0]
 
-        split = [np.unique(groups[:, 1][test])[0] for train, test in cv.split(X, y=y, groups=groups)]
+        # TODO: Bug if group is a list!
+        split = [np.unique(groups[:,1][test])[0] for train, test in cv.split(X, y=y, groups=groups[:,1])]
         return split
 
 
-
-    def save(self, path=None, save_cv=True, fx_image=lambda x: x):
-
-        # TODO: Demean / minus_chance
+    def _clean_partial(self, score):
+        # TODO: I should only remove files or not?
+        n_files = self.n_jobs
+        if self.n_jobs == -1:
+            from joblib import cpu_count
+            n_files = cpu_count()
         
-        map_type = ['avg', 'cv']
-        
-        path = Analyzer.save(self, path)
-                    
+        for i in range(n_files):
+            try:
+                os.remove("%s_%4d.temp" %(score, i+1))
+            except OSError:
+                pass
+
+    
+
+    def _save_image(self, path, image, score, n_permutation, img_type, fx):
+
         reverse = self._info['a'].mapper.reverse1
         affine = self._info['a'].imgaffine
 
-        for i in range(len(self.scores)):
-            for j, img_dict in enumerate(self.scores[i]):
-                for score, image in img_dict.items():
-                    
-                    # TODO: Better use of cv and attributes for leave-one-subject-out
-                    if map_type[j] == 'cv' and save_cv is False:
-                        continue
-                    
-                    filename = "%s_perm_%04d_%s.nii.gz" %(score, i, map_type[j])
-                    logger.info("Saving %s" , filename)
-                    filename = os.path.join(path, filename)
-                    image = fx_image(image)
-                    save_map(filename, reverse(image), affine)
-                    
-    
+        filename = "%s_perm_%04d_%s.nii.gz" %(score, n_permutation, img_type)
+        logger.info("Saving %s" , filename)
+        filename = os.path.join(path, filename)
+        image = fx(image)
+        save_map(filename, reverse(image), affine)
+
+
+
+
+
+    def save(self, path=None, operations={"cv": lambda x: x,
+                                          "avg": lambda x: np.mean(x, axis=1)}):
+        """This function is used to store searchlight images on disk.
+        
+        Parameters
+        ----------
+        path : string, optional
+            destination path of files (the default is None, but look at AnalysisPipeline documentation)
+        operations : dict, optional
+            List of operation to be performed on data.
+            The default is {"cv": lambda x: x,"avg": lambda x: np.mean(x, axis=1)}, which imply that
+            a full image with label "cv" and an average image with label "avg" are stored.
+            You can do several operation by defining a function and adding it to the dictionary
+        """
+
+        
+        path = Analyzer.save(self, path)
+
+
+        for i in range(len(self.scores)): # Permutation
+            for score, image in self.scores[i].items():
+                if self.save_partial:
+                    self._clean_partial(score)
+
+                for key, fx in operations.items():
+                    self._save_image(path, image, score, i, key, fx)                  
     
     
     def _get_analysis_info(self):

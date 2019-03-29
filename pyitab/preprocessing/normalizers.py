@@ -1,4 +1,4 @@
-from pyitab.preprocessing import Transformer
+from pyitab.base import Transformer
 from pyitab.preprocessing.functions import SampleSlicer
 from mvpa2.suite import ZScoreMapper, vstack
 

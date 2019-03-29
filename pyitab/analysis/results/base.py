@@ -64,15 +64,15 @@ def get_values(path, directory, field_list, result_keys):
 
     
 
-def get_results(path, dir_id, field_list=['sample_slicer'], 
+def get_results(path, pipeline_name, field_list=['sample_slicer'], 
                 result_keys=None, filter=None, n_jobs=-1, verbose=1):
-    """This function is used to collect the results from a previous analysis.
+    """This function is used to collect the results from analysis folders.
     
     Parameters
     ----------
     path : str
         The pathname of the folder in which results are stored
-    dir_id : str
+    pipeline_name : str
         The id / pattern to be used to filter folders. It is often the id of 
         the Analysis Pipeline used.
     field_list : list, optional
@@ -92,7 +92,7 @@ def get_results(path, dir_id, field_list=['sample_slicer'],
     """
     # TODO: Optimize memory
     dir_analysis = os.listdir(path)
-    dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1 and d.find(".") == -1]
+    dir_analysis = [d for d in dir_analysis if d.find(pipeline_name) != -1 and d.find(".") == -1]
     dir_analysis.sort()
     
     logger.info("Loading %d files..." %(len(dir_analysis)))
@@ -235,6 +235,7 @@ def get_configuration_fields(conf, *args):
         results['id'] = "None"
     
     for k, v in conf.items():
+
         for arg in args:
 
             if arg == k == 'ds__img_pattern':
@@ -265,16 +266,20 @@ def get_configuration_fields(conf, *args):
                         value = value[0]
                     
                 results[str(k[idx_end:])] = value
+            
+            if arg == k:
+                results[k] = v
                 
     return results, ast.literal_eval(conf['scores'])
 
 
 
 
-def get_searchlight_results(path, dir_id, field_list=['sample_slicer'], load_cv=False):
+def get_searchlight_results(path, pipeline_name, field_list=['sample_slicer'], load_cv=False):
     
+    # TODO: Mind BIDS!
     dir_analysis = os.listdir(path)
-    dir_analysis = [d for d in dir_analysis if d.find(dir_id) != -1 and d.find(".") == -1]
+    dir_analysis = [d for d in dir_analysis if d.find(pipeline_name) != -1 and d.find(".") == -1]
     dir_analysis.sort()
     
     results = []
