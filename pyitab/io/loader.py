@@ -1,6 +1,7 @@
 from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
 from pyitab.io.base import load_dataset
 from pyitab.io import load_ds
+from pyitab.io.mapper import get_loader
 
 import logging
 logger = logging.getLogger(__name__)
@@ -49,13 +50,13 @@ class DataLoader(object):
     def __init__(self,
                  configuration_file,
                  task,
-                 loader=load_dataset,
+                 loader='base',
                  prepro=StandardPreprocessingPipeline(),
                  **kwargs):
 
         # TODO: Use a loader mapper?
         
-        self._loader = loader
+        self._loader = get_loader(loader)
         self._configuration_file = configuration_file
         self._task = task
         self._prepro = prepro
