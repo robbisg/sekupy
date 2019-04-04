@@ -2,9 +2,8 @@ import numpy as np
 import os
 
 from nilearn.image.resampling import coord_transform
-from nilearn.input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from nilearn import masking
-from nilearn.decoding.searchlight import search_light
+
 
 from sklearn.metrics.scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
@@ -12,8 +11,9 @@ from sklearn.preprocessing.label import LabelEncoder
 from sklearn.model_selection._split import LeaveOneGroupOut
 from sklearn.pipeline import Pipeline
 
-from pyitab.analysis.searchlight.utils import _get_affinity, check_proximity
-from pyitab.analysis.searchlight.utils import load_proximity, save_proximity
+from pyitab.ext.nilearn.searchlight import search_light
+from pyitab.ext.nilearn.utils import _get_affinity, check_proximity
+from pyitab.ext.nilearn.utils import load_proximity, save_proximity
 from pyitab.analysis.base import Analyzer
 
 from pyitab.utils.dataset import get_ds_data

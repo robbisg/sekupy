@@ -31,7 +31,7 @@ def test_meg_data():
 
     loader = DataLoader(configuration_file=configuration_file,
                         task='connectivity', 
-                        loader=load_mat_ds)
+                        loader='mat')
 
     ds = loader.fetch(prepro=PreprocessingPipeline())
     assert len(np.unique(ds.sa.subject)) == 4

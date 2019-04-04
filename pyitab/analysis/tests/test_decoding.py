@@ -9,6 +9,7 @@ import os
 import pytest
 from pyitab.tests import fetch_ds
 
+
 def test_temporal_decoding(fetch_ds):
     ds = fetch_ds
     ds = SampleSlicer(subject=['subj01']).transform(ds)
@@ -61,6 +62,4 @@ def test_decoding(fetch_ds):
     roi_result = scores['brain_2.0']
     assert len(roi_result) == n_permutation + 1
     assert roi_result[0]['test_score'].shape == (n_splits,)
-
-
 

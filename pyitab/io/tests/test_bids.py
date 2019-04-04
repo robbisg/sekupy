@@ -19,7 +19,7 @@ def test_bids_data():
     configuration_file = os.path.join(datadir, 'ds105.conf')
 
     loader = DataLoader(configuration_file=configuration_file,
-                        loader=load_bids_dataset,
+                        loader='bids',
                         task="objectviewing")
 
     ds = loader.fetch()

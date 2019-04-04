@@ -14,10 +14,10 @@ currdir = os.path.abspath(os.path.join(currdir, os.pardir))
 def fetch_ds(task='fmri'):
 
     if task != 'fmri':
-        reader = load_mat_ds
+        reader = 'mat'
         prepro = PreprocessingPipeline()
     else:
-        reader = load_dataset
+        reader = 'base'
         prepro = StandardPreprocessingPipeline()
 
     datadir = os.path.join(currdir, 'io', 'data', task)

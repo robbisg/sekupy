@@ -5,11 +5,13 @@ from sklearn.svm import SVC
 from sklearn.preprocessing.label import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import LeaveOneGroupOut
-from sklearn.model_selection._validation import cross_validate
+
 
 from tqdm import tqdm
 
 from pyitab.utils.dataset import get_ds_data
+
+from pyitab.ext.sklearn._validation import cross_validate
 
 from pyitab.preprocessing.functions import FeatureSlicer
 from pyitab.analysis.base import Analyzer
