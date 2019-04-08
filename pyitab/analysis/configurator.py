@@ -6,9 +6,12 @@ from pyitab.preprocessing.mapper import function_mapper
 from pyitab.preprocessing.pipelines import PreprocessingPipeline
 from pyitab.analysis.searchlight import SearchLight
 from pyitab.io.configuration import save_configuration
+from pyitab.io.loader import DataLoader
+from pyitab.io.mapper import get_loader
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 
 class AnalysisConfigurator(object):
@@ -89,14 +92,18 @@ class AnalysisConfigurator(object):
 
         
     def fit(self):
+
+        objects = {}
+        objects['loader'] = self._get_loader()
+        objects['transformer'] = self._get_transformer()
+        objects['estimator'] = self._get_analysis()
         
-        return self._get_transformer(), self._get_analysis()
+        return objects
     
     
     def set_params(self, **params):
         logger.debug(params)
         self._default_options.update(params)
-    
     
     
     def _get_params(self, keyword):
@@ -108,6 +115,7 @@ class AnalysisConfigurator(object):
                 idx += len(keyword)+2
                 key_split = key[idx:]
                 logger.debug(key_split)
+                
                 if key_split == "%s":
                     if 'target_trans__target' in self._default_options.keys():
                         key_split = key_split %(self._default_options['target_trans__target'])
@@ -116,6 +124,15 @@ class AnalysisConfigurator(object):
     
         logger.debug("%s %s" % (keyword, str(params)))
         return params
+
+
+    def _get_loader(self):
+        params = self._get_params("loader")
+
+        if params == {}:
+            return None
+        
+        return DataLoader(**params)
     
     
     def _get_transformer(self):
@@ -131,7 +148,6 @@ class AnalysisConfigurator(object):
         
         logger.debug(transformer)
         return PreprocessingPipeline(nodes=transformer)
-    
     
     
     def _get_estimator(self):
@@ -158,7 +174,6 @@ class AnalysisConfigurator(object):
         
         params = self._get_params("analysis")
         
-
         keys = list(self._default_options.keys())
         if 'estimator' in keys:
             params['estimator'] = self._get_estimator()
@@ -170,10 +185,10 @@ class AnalysisConfigurator(object):
             params['scoring'] = self._default_options['scores']
         
         analysis = self._default_options['analysis']
-        logger.debug(params)  
+        logger.debug(params)
         
-        return analysis(**params)      
-    
+        return analysis(**params)
+  
     
     
     def _get_fname_info(self):
@@ -186,9 +201,8 @@ class AnalysisConfigurator(object):
                 
                 params_ = self._get_params(keyword)
                 if keyword == "sample_slicer":
-                    params_ = {k:"_".join([str(v) for v in value]) for k, value in params_.items()}
-                    
-                    
+                    params_ = {k: "_".join([str(v) for v in value]) for k, value in params_.items()}
+                                 
                 params.update(params_)
 
         params.update({'id': self._default_options['id']})
@@ -196,13 +210,22 @@ class AnalysisConfigurator(object):
         logger.debug(params)
         return params
         
+
+    def _get_function_kwargs(self, function='fit'):
+        params = self._get_params(function)
+        
+        if 'prepro' in params.keys():
+            params['prepro'] = PreprocessingPipeline(nodes=params['prepro'])
+        
+        return params
     
-    
+
     def _get_kwargs(self):
         params = self._get_params("kwargs")
         
         if 'prepro' in params.keys():
             params['prepro'] = PreprocessingPipeline(nodes=params['prepro'])
+        
         return params
     
     

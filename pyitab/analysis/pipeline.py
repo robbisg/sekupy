@@ -30,7 +30,7 @@ class AnalysisPipeline(Analyzer):
         self._name = name
             
 
-    def fit(self, ds, **kwargs):
+    def fit(self, ds=None, **kwargs):
         """Fit the analysis on the dataset.
         
         Parameters
@@ -42,12 +42,22 @@ class AnalysisPipeline(Analyzer):
             Optional parameters for the analysis.
         
         """
+        
+        objects = self._configurator.fit()
 
-        
-        self._transformer, self._estimator = self._configurator.fit()
+        self._loader = objects['loader']
+        self._transformer = objects['transformer']
+        self._estimator = objects['estimator']
+
+        if (ds is None) and (self._loader is not None):
+            fetch_kw = self._configurator._get_function_kwargs(function="fetch")
+            ds = self._loader.fetch(**fetch_kw)
+        elif (ds is None) and (self._loader is None):
+            raise Exception("You must specify a dataset or a loader in the Configurator!")
+
         ds_ = self._transform(ds)
-        self._estimator.fit(ds_, **kwargs)     
-        
+        self._estimator.fit(ds_, **kwargs)
+
         return self
 
 
@@ -56,9 +66,8 @@ class AnalysisPipeline(Analyzer):
         
         self._configurator._default_options['ds__target_count_pre'] = Counter(ds.targets)
         
-        ds_dict = {"ds__%s" % (k):v.value for k,v in ds.a.items()}
+        ds_dict = {"ds__%s" % (k): v.value for k, v in ds.a.items()}
         self._configurator._default_options.update(ds_dict)
-
 
         for node in self._transformer.nodes:
             ds = node.transform(ds)

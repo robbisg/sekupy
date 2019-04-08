@@ -6,6 +6,7 @@ from pyitab.io.mapper import get_loader
 import logging
 logger = logging.getLogger(__name__)
 
+
 # TODO : Documentation
 class DataLoader(object):
     """
@@ -37,21 +38,31 @@ class DataLoader(object):
     
     Parameters
     ----------
-    configuration_file : [type]
-        [description]
+    configuration_file : str
+        The path of the configuration file
     task : [type]
         [description]
     loader : [type], optional
         [description] (the default is load_dataset, which [default_description])
-    prepro : [type], optional
-        [description] (the default is StandardPreprocessingPipeline(), which [default_description])
+    **kwargs : arguments dictionary, optional
+        Arguments passed to loading functions. They override the configuration.
+
+        data_path : str, the path where data is stored
+        subjects : str, the path to subject file
+        experiment : str, pipeline name, this will be discarded in future
+        types : list of str, list of subsections of configuration file
+        sub_dir : str, sub directory where data is stored.
+        event_file : str, path or name of the event file
+        mask_dir : str, path of mask/ROIs directories
+        brain_mask : str, name of the mask/ROI to use for reduce voxels
+        roi_labels : dict, a dictionary with ROI name as key and path to ROI as value.
+        
     """      
     
     def __init__(self,
                  configuration_file,
                  task,
                  loader='base',
-                 prepro=StandardPreprocessingPipeline(),
                  **kwargs):
 
         # TODO: Use a loader mapper?
@@ -59,7 +70,6 @@ class DataLoader(object):
         self._loader = get_loader(loader)
         self._configuration_file = configuration_file
         self._task = task
-        self._prepro = prepro
         # TODO: Check configuration based on loader
         self._conf = {}
         self._conf.update(**kwargs)
@@ -84,15 +94,15 @@ class DataLoader(object):
             [description]
         """
    
-        if prepro is not None:
-            self._prepro = prepro
+        if prepro is None:
+            prepro = StandardPreprocessingPipeline()
             
-        logger.debug(self._prepro)
+        logger.debug(prepro)
             
         ds = load_ds(self._configuration_file,
                      self._task,
                      loader=self._loader,
-                     prepro=self._prepro,
+                     prepro=prepro,
                      n_subjects=n_subjects,
                      selected_subjects=subject_names,
                      **self._conf

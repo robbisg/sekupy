@@ -97,7 +97,6 @@ class Analyzer(Node):
         if self.permutation == 0:
             return [range(n_samples)]
         
-        
         indices = [range(n_samples)]
         for r in range(self.permutation):
             idx = shuffle(indices[0], random_state=r)

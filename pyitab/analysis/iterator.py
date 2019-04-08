@@ -27,14 +27,14 @@ class AnalysisIterator(object):
         configurator : [type]
             [description]
 
-        kind : str
+        kind : str | 'combination' or 'list' or 'configurations'
             Indicates the type of datum given in options field.
             (values must be 'combination', 'list' or 'configuration')
             if 'combination' all possible combination of items in options will be performed
             as a cartesian product of lists.
             if 'list' elements of dictionary lists must have the same length
             if 'configuration' the elements are single configuration to be used
-            'combination' or 'list' or 'configurations'
+            
         
         """
         

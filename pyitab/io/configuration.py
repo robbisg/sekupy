@@ -5,10 +5,9 @@ logger = logging.getLogger(__name__)
 
 
 def read_configuration(filename, section):
-    """
-    This function read the data configuration file
+    """    This function read the data configuration file, 
+    to get the information for data loading.
     the configuration file must be composed in this way
-    
     
     .. configuration.conf
 
@@ -33,7 +32,34 @@ def read_configuration(filename, section):
     lateral_ips=/media/robbis/DATA/fmri/carlo_ofp/1_single_ROIs
 
     For bids layout keywords use bids_{keyword}.
+
+
+    Parameters
+    ----------
+    filename : str
+        The pathname of the configuration file.
+
+        The configuration file must specify
+
+
+
+    section : str
+        The subsection of the configuration file to be
+    
+    Returns
+    -------
+    cfg : dictionary
+        A dictionary with all the information to load data
     """
+
+
+
+
+
+    
+    
+
+
     
     import configparser
     config = configparser.ConfigParser()
@@ -69,7 +95,7 @@ def read_configuration(filename, section):
     
     check_configuration(cfg)
     
-    return cfg   
+    return cfg
 
 
 
@@ -78,7 +104,7 @@ def check_configuration(cfg):
     mandatory_keys = ["subjects", "data_path", "event_file", "img_pattern", "brain_mask"]
     
     for key in mandatory_keys:
-        if not key in cfg.keys():
+        if key not in cfg.keys():
             logger.error("No %s field in configuration" % (key))
             
             
