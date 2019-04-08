@@ -4,10 +4,13 @@ import pytest
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 currdir = os.path.abspath(os.path.join(currdir, os.pardir))
+datadir = os.path.join(currdir, 'data', 'fmri')
+
+
 
 def test_load_subject():
 
-    datadir = os.path.join(currdir, 'data', 'fmri')
+    
     subject_file = os.path.join(datadir, 'subjects.csv')
 
     # Testing main functionality

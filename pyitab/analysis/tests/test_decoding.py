@@ -40,7 +40,7 @@ def test_decoding(fetch_ds):
     ds = fetch_ds
 
     ds = SampleSlicer(subject=['subj01'], 
-                            decision=['L', 'F']).transform(ds)
+                      decision=['L', 'F']).transform(ds)
 
     ds = TargetTransformer(attr='decision').transform(ds)
 

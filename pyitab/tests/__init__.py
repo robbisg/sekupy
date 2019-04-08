@@ -10,6 +10,16 @@ import pytest
 currdir = os.path.dirname(os.path.abspath(__file__))
 currdir = os.path.abspath(os.path.join(currdir, os.pardir))
 
+
+@pytest.fixture(scope="session")
+def get_datadir():
+    currdir = os.path.dirname(os.path.abspath(__file__))
+    currdir = os.path.abspath(os.path.join(currdir, os.pardir))
+    datadir = os.path.join(currdir, 'io', 'data', 'fmri')
+    return datadir
+
+
+
 @pytest.fixture(scope="session")
 def fetch_ds(task='fmri'):
 
