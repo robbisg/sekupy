@@ -3,7 +3,7 @@ python:
   - 2.7
   - 3.6
 install:
-  - sudo apt-get install python3-tk
+  - sudo apt-get install python3-tk swig build-essential gfortran
   - pip install -r requirements.txt
   - python setup.py develop
 script:
