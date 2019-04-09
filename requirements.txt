@@ -14,9 +14,10 @@ dask-kubernetes
 distributed
 joblib
 nilearn
+xlrd
 scikit-learn
 statsmodels
-pytest
+coverage
 codecov
+pytest
 pytest-cov
-xlrd
