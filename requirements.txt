@@ -1,7 +1,6 @@
 numpy
 scipy
 matplotlib
-python-tk
 mne
 seaborn
 nibabel
