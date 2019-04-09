@@ -1,0 +1,91 @@
+#Network,Long Name,Short Name,File Name,Voxel Value
+Auditory,Left Superior Temporal Gyrus. Heschl's Gyrus,LSTG-TPJ,Auditory,2
+Auditory,Right Superior Temporal Gyrus,RSTG-TPJ,Auditory,4
+Auditory,Right Thalamus,RThal-Aud,Auditory,6
+Basal Ganglia,Right Thalamus. Caudate,RThal-Caud,Basal_Ganglia,2
+Basal Ganglia,Left Thalamus. Caudate. Putamen,LThal-Caud,Basal_Ganglia,4
+Basal Ganglia,Left Inferior Frontal Gyrus,LMFG,Basal_Ganglia,6
+Basal Ganglia,Right Inferior Frontal Gyrus,RIFG-Gang,Basal_Ganglia,8
+Basal Ganglia,Pons,PONS,Basal_Ganglia,10
+Left DLPFC/Parietal,Left Middle Frontal Gyrus. Superior Frontal Gyrus,LMidFG-SupFG-FEF,LECN,2
+Left DLPFC/Parietal,Left Inferior Frontal Gyrus. Orbitofrontal Gyrus,lPFC-OrbFG,LECN,4
+Left DLPFC/Parietal,Left Superior Parietal Gyrus. Inferior Parietal Gyrus. Precuneus. Angular Gyrus,LSPG-LOC-IPS,LECN,6
+Left DLPFC/Parietal,Left Inferior Temporal Gyrus. Middle Temporal Gyrus,LITG-MidTG-MT+,LECN,8
+Left DLPFC/Parietal,Right Crus I,RCrus,LECN,10
+Left DLPFC/Parietal,Left Thalamus,LThal-Pariet,LECN,12
+Language,Inferior Frontal Gyrus,LIFG,Language,2
+Language,Left Middle Temporal Gyrus,LMTG,Language,4
+Language,Left Middle Temporal Gyrus. Angular Gyrus,LMTG-AngG,Language,6
+Language,Left Middle Temporal Gyrus. Superior Temporal Gyrus. Supramarginal Gyrus. Angular Gyrus,LAngG-IPL/TPJ,Language,8
+Language,Right Inferior Frontal Gyrus,RIFG,Language,10
+Language,Right Supramarginal Gyrus. Superior Temporal Gyrus. Middle Temporal Gyrus,RAngG-IPL,Language,12
+Language,Left Crus I,Lcrus,Language,14
+Precuneus,Midcingulate Cortex. Posterior Cingulate Cortex,postCingC,Precuneus,2
+Precuneus,Precuneus,posPCu,Precuneus,4
+Precuneus,Left Angular Gyrus,LAngG-PCu,Precuneus,6
+Precuneus,Right Angular Gyrus,RAngG-PCu,Precuneus,8
+Right DLPFC/Parietal,Right Middle Frontal Gyrus. Right Superior Frontal Gyrus,dmPFC-RSupFG-FEF,RECN,2
+Right DLPFC/Parietal,Right Middle Frontal Gyrus,RlpFC,RECN,4
+Right DLPFC/Parietal,Right Inferior Parietal Gyrus. Supramarginal Gyrus. Angular Gyrus,RIPG-LOC-IPS,RECN,6
+Right DLPFC/Parietal,Right Superior Frontal Gyrus,RSFG-mPFC,RECN,8
+Right DLPFC/Parietal,Left Crus 1. Crus II. Lobule VI,Lcrus-LobVI,RECN,10
+Right DLPFC/Parietal,Right Caudate,RCau,RECN,12
+Sensorimotor,Left Precentral Gyrus. Postcentral Gyrus,LPreMotC-PreCenG,Sensorimotor,2
+Sensorimotor,Right Precentral Gyrus. Postcentral Gyrus,RPreMotC-PreCenG,Sensorimotor,4
+Sensorimotor,Right Supplementary Motor Area,RSupplMotArea,Sensorimotor,6
+Sensorimotor,Left Thalamus,LThal-Mot,Sensorimotor,8
+Sensorimotor,Bilateral Lobule IV,Bil-Lob IV,Sensorimotor,10
+Sensorimotor,Right Thalamus,RThal-Mot,Sensorimotor,12
+IPS/FEF,Left Middle Frontal Gyrus. Superior Frontal Gyrus. Precentral Gyrus,LMidFG-FEF,Visuospatial,2
+IPS/FEF,Left Inferior Parietal Sulcus,LIPS,Visuospatial,4
+IPS/FEF,Left Frontal Operculum. Inferior Frontal Gyrus,LFOper,Visuospatial,6
+IPS/FEF,Left Middle Temporal Gyrus,LMTG-MT+,Visuospatial,8
+IPS/FEF,Right Middle Frontal Gyrus,RMidFG-FEF,Visuospatial,10
+IPS/FEF,Right Inferior Parietal Lobule,RIPL,Visuospatial,12
+IPS/FEF,Right Frontal Operculum. Inferior Frontal Gyrus,RFOper,Visuospatial,14
+IPS/FEF,Right Middle Temporal Gyrus,RMTG-MT+,Visuospatial,16
+IPS/FEF,Left Lobule V111. Lobule VIlb,LLob V1,Visuospatial,18
+IPS/FEF,Right Lobule VIII. Lobule VIlb,RLob VIII,Visuospatial,20
+IPS/FEF,Right Lobule VI. Crus I,RLob VI-Crus,Visuospatial,22
+Insula/dACC,Left Middle Frontal Gyrus,LMidFG-ACC,anterior_Salience,2
+Insula/dACC,Left Insula,LAntIns,anterior_Salience,4
+Insula/dACC,Anterior Cingulate Cortex. Medial Prefrontal Cortex. Supplementary Motor Area,ACingC,anterior_Salience,6
+Insula/dACC,Right Middle Frontal Gyrus,RMidFG,anterior_Salience,8
+Insula/dACC,Right Insula,RAntIns,anterior_Salience,10
+Insula/dACC,Left Lobule VI. Crus I,LLob VI,anterior_Salience,12
+Insula/dACC,Right Lobule VI. Crus I,RLob VI,anterior_Salience,14
+PCC/MPFC,Medial Prefrontal Cortex. Anterior Cingulate Cortex. Orbitofrontal Cortex,dMPFC-ACC,dorsal_DMN,2
+PCC/MPFC,Left Angular Gyrus,LIPS-AngG,dorsal_DMN,4
+PCC/MPFC,Right Superior Frontal Gyrus,RSFG,dorsal_DMN,6
+PCC/MPFC,Posterior Cingulate Cortex. Precuneus,PCC,dorsal_DMN,8
+PCC/MPFC,Midcingulate Cortex,MidCingC,dorsal_DMN,10
+PCC/MPFC,Right Angular Gyrus,RIPS-AngG,dorsal_DMN,12
+PCC/MPFC,Left and Right Thalamus,LRThal,dorsal_DMN,14
+PCC/MPFC,Left Hippocampus,LHipp,dorsal_DMN,16
+PCC/MPFC,Right Hippocampus,RHipp,dorsal_DMN,18
+V2,Left Middle Occipital Gyrus. Superior Occipital Gyrus,LMidOG-SupOG,high_Visual,2
+V2,Right Middle Occipital Gyrus. Superior Occipital Gyrus,RMidOG-SupOG,high_Visual,4
+Posterior Insula,Left Middle Frontal Gyrus,LMidFG-INS,post_Salience,2
+Posterior Insula,Left Supramarginal Gyrus. Inferior Parietal Gyrus,LSupraMG-IPL,post_Salience,4
+Posterior Insula,Left Precuneus,LPCu,post_Salience,6
+Posterior Insula,Right Midcingulate Cortex,RMidCinG,post_Salience,8
+Posterior Insula,Right Superior Parietal Gyrus. Precuneus,RSPG-PCu,post_Salience,10
+Posterior Insula,Right Supramarginal Gyrus. Inferior Parietal Gyrus,RSupramG-IPL,post_Salience,12
+Posterior Insula,Left Thalamus,LThal-Insula,post_Salience,14
+Posterior Insula,Lobule VI I,Lob VI I,post_Salience,16
+Posterior Insula,Left Posterior Insula. Putamen,LPosIns-Put,post_Salience,18
+Posterior Insula,Right Thalamus,RThal-Insula,post_Salience,20
+Posterior Insula,Lobule VI II,Lob VI II,post_Salience,22
+Posterior Insula,Right Posterior Insula,RPosIns,post_Salience,24
+V1,Calcarine Sulcus,CalcS,prim_Visual,2
+V1,Left Thalamus,LThal-V1,prim_Visual,4
+RSC/MTL,Left Retrosplenial Cortex. Posterior Cingulate Cortex,LRetC-PCC,ventral_DMN,2
+RSC/MTL,Left Middle Frontal Gyrus,LMidFG,ventral_DMN,4
+RSC/MTL,Left Parahippocampal Gyrus,LParahG,ventral_DMN,6
+RSC/MTL,Left Middle Occipital Gyrus,LMOG,ventral_DMN,8
+RSC/MTL,Right Retrosplenial Cortex. Posterior Cingulate Cortex,RRetC-PCC,ventral_DMN,10
+RSC/MTL,Precuneus,antPCu,ventral_DMN,12
+RSC/MTL,Right Superior Frontal Gyrus. Middle Frontal Gyrus,RSFG-MidFG,ventral_DMN,14
+RSC/MTL,Right Parahippocampal Gyrus,RParahG,ventral_DMN,16
+RSC/MTL,Right Angular Gyrus. Middle Occipital Gyrus,RAngG-MidOG,ventral_DMN,18
+RSC/MTL,Right Lobule IX,Rlob IX,ventral_DMN,20
