@@ -1,6 +1,7 @@
 numpy
 scipy
 matplotlib
+pymvpa2
 mne
 seaborn
 nibabel
