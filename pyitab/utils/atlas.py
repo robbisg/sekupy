@@ -5,6 +5,10 @@ import seaborn as sns
 
 from mne.viz import circular_layout
 
+currdir = os.path.dirname(os.path.abspath(__file__))
+currdir = os.path.abspath(os.path.join(currdir, os.pardir))
+atlasdir = os.path.join(currdir, 'io', 'data', 'atlas')
+
 
 def find_roi_center(img, roi_value):
     """
@@ -68,9 +72,10 @@ def get_findlab_coords():
     coords : n x 3 numpy array
         The array containing n xyz coordinates in MNI space, one for each unique value of the atlas
     """
-    roi_list = os.listdir('/media/robbis/DATA/fmri/templates_fcmri/0_findlab/')
+    atlas_dir = os.path.join(atlasdir, 'findlab')
+    roi_list = os.listdir(atlas_dir)
     roi_list.sort()
-    findlab = [ni.load('/media/robbis/DATA/fmri/templates_fcmri/0_findlab/'+roi) for roi in roi_list]
+    findlab = [ni.load(atlas_dir+roi) for roi in roi_list]
     f_coords = []
     for img_ in findlab:
 
@@ -112,9 +117,9 @@ def get_atlas90_info(background='black'):
 
     """
     
-
-    coords = get_aal_coords('/media/robbis/DATA/fmri/templates_AAL/atlas90_mni_2mm.nii.gz')
-    roi_list = np.loadtxt('/media/robbis/DATA/fmri/templates_AAL/atlas90.cod',
+    atlas_dir =  os.path.join(atlasdir, 'aal')
+    coords = get_aal_coords(os.path.join(atlas_dir, "atlas90_mni_2mm.nii.gz"))
+    roi_list = np.loadtxt(os.path.join(atlas_dir, "atlas90.cod"),
                             delimiter='=',
                             dtype=np.str)
     names = roi_list.T[1]
@@ -143,9 +148,8 @@ def get_atlas90_info(background='black'):
 def get_findlab_info(background='black'):
 
     coords = get_findlab_coords()
-    roi_list = np.loadtxt('/media/robbis/DATA/fmri/templates_fcmri/findlab_rois.txt', 
-                    delimiter=',',
-                    dtype=np.str)
+    roi_file =  os.path.join(atlasdir, 'findlab', 'findlab_rois.txt')
+    roi_list = np.loadtxt(roi_file, delimiter=',', dtype=np.str)
     networks = roi_list.T[-2]
     names = roi_list.T[2]
     
@@ -190,9 +194,11 @@ def get_findlab_info(background='black'):
 
 def get_aalmeg_info(background='black'):
 
-    coords = get_aal_coords('/media/robbis/DATA/fmri/templates_AAL/ROI_MNI_V4.nii')
+    atlas_fname = os.path.join(atlasdir, 'aal', 'ROI_MNI_V4.nii')
+    labels_fname = os.path.join(atlasdir, 'aal', 'ROI_MNI_V4.txt')
+    coords = get_aal_coords(atlas_fname)
 
-    labels = np.loadtxt("/media/robbis/DATA/fmri/templates_AAL/ROI_MNI_V4.txt", dtype=np.str)
+    labels = np.loadtxt(labels_fname, dtype=np.str)
     node_names = labels.T[1][:99]
     node_idx = np.argsort(np.array([node[-1] for node in node_names]))
 
