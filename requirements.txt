@@ -19,5 +19,5 @@ scikit-learn
 statsmodels
 coverage
 codecov
-pytest
+pytest>=3.6.0
 pytest-cov
