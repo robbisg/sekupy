@@ -1,10 +1,6 @@
 numpy
-nomkl
-python-blosc
-cytoolz
 scipy
 matplotlib
-cython
 tk
 mne
 seaborn
