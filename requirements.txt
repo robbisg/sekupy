@@ -17,5 +17,6 @@ nilearn
 scikit-learn
 statsmodels
 pytest
+codecov
 pytest-cov
 xlrd
