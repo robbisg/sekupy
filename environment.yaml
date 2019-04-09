@@ -1,0 +1,28 @@
+name: neuropy
+dependencies:
+  - python=3.6
+  - pip
+  - numpy
+  - nomkl
+  - python-blosc
+  - cytoolz
+  - scipy
+  - matplotlib
+  - cython
+  - tk
+  - pip:
+     - mne
+     - jupyter
+     - seaborn
+     - nibabel
+     - nitime
+     - imbalanced-learn
+     - pandas
+     - bokeh
+     - dask
+     - dask-jobqueue
+     - dask-kubernetes
+     - distributed
+     - joblib
+     - nilearn
+     - scikit-learn
