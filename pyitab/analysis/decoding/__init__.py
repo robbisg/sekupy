@@ -142,9 +142,6 @@ class Decoding(Analyzer):
 
         return self
 
-
-
-
     
 
     def _get_rois(self, ds, roi):

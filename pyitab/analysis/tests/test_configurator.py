@@ -97,4 +97,3 @@ def test_configurator_getfunctionkwargs_fetch(get_datadir):
     ds = loader.fetch(**fetch_kw)
 
     assert len(np.unique(ds.sa.subject)) == n_subjects
-

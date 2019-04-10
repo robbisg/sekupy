@@ -1,6 +1,6 @@
 from pyitab.io.base import load_dataset
 from pyitab.io.configuration import read_configuration
-from pyitab.io.subjects import get_subjects
+from pyitab.io.subjects import load_subjects
 from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
 
 from mvpa2.suite import vstack
@@ -36,7 +36,7 @@ def load_ds(conf_file, task, extra_sa=None,
     # Subject file should be included in configuration
     # TODO: Keep in mind BIDS
     
-    subjects, extra_sa = get_subjects(selected_subjects, n_subjects, conf)
+    subjects, extra_sa = load_subjects(conf, selected_subjects, n_subjects)
     logger.debug(subjects)
 
     logger.info('Merging %s subjects from %s' % (str(len(subjects)), data_path))
