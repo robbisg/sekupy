@@ -50,8 +50,7 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6',
     ],
 
     # What does your project relate to?
@@ -68,6 +67,9 @@ setup(
                         'nibabel',
                         'mne',
                         'imbalanced-learn',
+                        'tqdm',
+                        'scikit-learn',
+                        'pymvpa2',
                         'seaborn',
                         'pandas'],
 
@@ -78,8 +80,10 @@ setup(
        'pyitab.io': ['data/*/*/*.*'],
     },
 
-    dependency_links=['http://github.com/robbisg/scikit-learn/tarball/group_cv#egg=package-1.0',
-                      'http://github.com/robbisg/nilearn/tarball/scores_sl#egg=package-1.0'],
+
+    # Included in external package
+    #dependency_links=['http://github.com/robbisg/scikit-learn/tarball/group_cv#egg=package-1.0',
+    #                  'http://github.com/robbisg/nilearn/tarball/scores_sl#egg=package-1.0'],
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages.
