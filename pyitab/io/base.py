@@ -255,39 +255,6 @@ def load_fmri(filelist, skip_vols=0):
     
     return image_list
 
-      
-
-def load_spatiotemporal_dataset(ds, **kwargs):
-    
-    onset = 0
-    
-    for arg in kwargs:
-        if (arg == 'onset'):
-            onset = kwargs[arg]
-        if (arg == 'duration'):
-            duration = kwargs[arg]
-        if (arg == 'enable_results'):
-            enable_results = kwargs[arg]
-        
-        
-        
-    events = find_events(targets = ds.sa.targets, chunks = ds.sa.chunks)   
-    
-    #task_events = [e for e in events if e['targets'] in ['Vipassana','Samatha']]
-    
-    if 'duration' in locals():
-        events = [e for e in events if e['duration'] >= duration]
-    else:
-        duration = np.min([ev['duration'] for ev in events])
-
-    for e in events:
-        e['onset'] += onset           
-        e['duration'] = duration
-        
-    evds = eventrelated_dataset(ds, events = events)
-    
-    return evds
-
 
 
 def load_mask(path, **kwargs):

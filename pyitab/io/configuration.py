@@ -52,14 +52,6 @@ def read_configuration(filename, section):
         A dictionary with all the information to load data
     """
 
-
-
-
-
-    
-    
-
-
     
     import configparser
     config = configparser.ConfigParser()
@@ -148,23 +140,6 @@ def read_json_configuration(path, json_fname, experiment):
     logger.info(conf)
     
     return conf
-
-
-def read_remote_configuration(path):
-        
-    import configparser
-    config = configparser.ConfigParser()
-    config.read(os.path.join(path, 'remote.conf'))
-    
-    configuration = []
-    
-    for sec in config.sections():
-        
-        for item in config.items(sec):
-            configuration.append(item)
-            logger.debug(item)
-    
-    return dict(configuration) 
     
     
     
