@@ -4,7 +4,6 @@ import os
 from nilearn.image.resampling import coord_transform
 from nilearn import masking
 
-
 from sklearn.metrics.scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
 from sklearn.preprocessing.label import LabelEncoder
@@ -19,6 +18,7 @@ from pyitab.analysis.base import Analyzer
 from pyitab.utils.dataset import get_ds_data
 from pyitab.utils.image import save_map
 from pyitab.utils.files import make_dir
+from pyitab.analysis.utils import get_params
 
 import logging
 logger = logging.getLogger(__name__)
@@ -97,7 +97,9 @@ class SearchLight(Analyzer):
                  cv=LeaveOneGroupOut(), 
                  permutation=0,
                  verbose=1,
-                 save_partial=False):
+                 save_partial=False,
+                 **kwargs,
+                 ):
 
         if estimator is None:
             estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
@@ -116,7 +118,7 @@ class SearchLight(Analyzer):
         self.cv = cv
         self.verbose = verbose
         
-        Analyzer.__init__(self, name='searchlight')
+        Analyzer.__init__(self, name='searchlight', **kwargs)
 
 
 
@@ -166,7 +168,7 @@ class SearchLight(Analyzer):
 
         splits = self._split_name(X, y, self.cv, groups)
 
-        self._info = self._store_ds_info(ds, cv_attr=cv_attr, test_order=splits)
+        self._info = self._store_info(ds, cv_attr=cv_attr, test_order=splits)
 
         return self
 
@@ -199,12 +201,21 @@ class SearchLight(Analyzer):
 
     
 
-    def _save_image(self, path, image, score, n_permutation, img_type, fx):
+    def _save_image(self, path, image, score, n_permutation, suffix, fx, **kwargs):
 
         reverse = self._info['a'].mapper.reverse1
         affine = self._info['a'].imgaffine
+        
+        params = {
+              'score': score,
+              'perm': "%04d" % (n_permutation),
+              'suffix': suffix,
+        }
 
-        filename = "%s_perm_%04d_%s.nii.gz" %(score, n_permutation, img_type)
+        kwargs.update(params)
+        filename = self._get_filename(**kwargs)
+
+        #filename = "%s_perm_%04d_%s.nii.gz" %(score, n_permutation, suffix)
         logger.info("Saving %s" , filename)
         filename = os.path.join(path, filename)
         image = fx(image)
@@ -214,23 +225,27 @@ class SearchLight(Analyzer):
 
 
 
-    def save(self, path=None, operations={"cv": lambda x: x,
-                                          "avg": lambda x: np.mean(x, axis=1)}):
+    def save(self, path=None, operations={"full": lambda x: x,
+                                          "mean": lambda x: np.mean(x, axis=1)}, **kwargs):
         """This function is used to store searchlight images on disk.
         
         Parameters
         ----------
         path : string, optional
-            destination path of files (the default is None, but look at AnalysisPipeline documentation)
+            destination path of files (the default is None, 
+            but look at AnalysisPipeline documentation)
         operations : dict, optional
             List of operation to be performed on data.
-            The default is {"cv": lambda x: x,"avg": lambda x: np.mean(x, axis=1)}, which imply that
-            a full image with label "cv" and an average image with label "avg" are stored.
-            You can do several operation by defining a function and adding it to the dictionary
+            The default is {"full": lambda x: x,"avg": lambda x: np.mean(x, axis=1)}, 
+            which imply that a full image with label "full" 
+            and an across-folds average image with label "mean" are stored.
+            You can do several operation by defining a function 
+            and adding it to the dictionary
         """
 
         
-        path = Analyzer.save(self, path)
+        path, prefix = Analyzer.save(self, path, **kwargs)
+        kwargs['prefix'] = prefix
 
 
         for i in range(len(self.scores)): # Permutation
@@ -239,7 +254,7 @@ class SearchLight(Analyzer):
                     self._clean_partial(score)
 
                 for key, fx in operations.items():
-                    self._save_image(path, image, score, i, key, fx)                  
+                    self._save_image(path, image, score, i, key, fx, **kwargs)                  
     
     
     def _get_analysis_info(self):
@@ -249,4 +264,39 @@ class SearchLight(Analyzer):
         
         return info
         
+
+    def _get_filename(self, **kwargs):
+        ""
+        logger.debug(kwargs)
+       
+        params = dict()
+        if len(kwargs.keys()) != 0:
+
+            for keyword in ["sample_slicer", "target_trans"]:
+                if keyword in kwargs['prepro']:
+                    params_ = get_params(kwargs, keyword)
+
+                    if keyword == "sample_slicer":
+                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
+
+                    params.update(params_)
+        else:
+            params['targets'] = "+".join(list(self._info['sa']['targets']))
+        
+        kwargs.update(params)
+
+        logger.debug(params)
+        
+        # TODO: Solve empty prefix
+        prefix = kwargs.pop('prefix')
+        suffix = kwargs.pop('suffix')
+        
+        params_keys = list(params.keys())
+        params_keys += ['score', 'perm']
+        logger.debug(params_keys)
+        midpart = "_".join(["%s-%s" % (k, kwargs[k]) for k in params_keys])
+        
+        filename = "%s.nii.gz" % ("_".join([prefix, midpart, suffix]))
+
+        return filename
    

@@ -27,7 +27,7 @@ class AnalysisPipeline(Analyzer):
         """
      
         self._configurator = configurator
-        self._name = name
+        self.name = name
             
 
     def fit(self, ds=None, **kwargs):
@@ -78,36 +78,26 @@ class AnalysisPipeline(Analyzer):
         return ds
 
 
-    def save(self, subdir="0_results", **kwargs):
+    def save(self, path=None, subdir="0_results", **kwargs):
+        # TODO: Mantain subdir for compatibility purposes?
         
-        params = self._configurator._get_fname_info()
-        params.update(self._estimator._get_fname_info())
+        #params = self._configurator._get_fname_info()
+        #params.update(self._estimator._get_fname_info())
+        params = self._configurator._default_options
         
         logger.info(params)
-
-        _ = params.pop('id')
         
-        path = params.pop("path")
         if 'path' in kwargs.keys():
             path = kwargs.pop("path")
-            
-        dir_ = "%s_%03d_%s_%s_%s_%s" %(
-                                        get_time(),
-                                        params.pop('num'),
-                                        self._name,
-                                        params.pop("analysis"),
-                                        params.pop("experiment"),
-                                        "_".join(["%s_%s" % (k, v) for k, v in params.items()])
-                                        )
-                               
-        full_path = os.path.join(path, subdir, dir_)
-        make_dir(full_path)
         
-        self._path = full_path
+        if 'path' in params.keys():
+            path = params.pop("path")
+
+        params['pipeline'] = self.name
+        params.update(kwargs)
         
         # Save results
-        self._configurator.save(path=full_path, **kwargs)
-        self._estimator.save(path=full_path, **kwargs)    
+        self._estimator.save(path=path, **params)
         
         return
     

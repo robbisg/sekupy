@@ -3,7 +3,7 @@ from pyitab.analysis.pipeline import AnalysisPipeline
 from sklearn.model_selection import StratifiedShuffleSplit, LeaveOneGroupOut
 from pyitab.analysis.decoding.roi_decoding import RoiDecoding
 
-from pyitab.tests import fetch_ds, get_datadir
+from pyitab.tests import fetch_ds, get_datadir, tmpdir
 
 import pytest
 import numpy as np
@@ -51,8 +51,6 @@ def test_fit_without_ds():
         a.fit()
 
 
-
-
 def test_fit_with_ds(fetch_ds, get_datadir):
     import os
     datadir = get_datadir
@@ -84,3 +82,36 @@ def test_fit_with_ds(fetch_ds, get_datadir):
     scores = a._estimator.scores    
     roi_result = scores['brain_2.0']
     assert roi_result[0]['test_accuracy'].shape == (4,)
+
+
+def test_save_pipeline_decoding(fetch_ds, tmpdir):
+
+    import os
+
+    ds = fetch_ds
+    conf = AnalysisConfigurator(**example_configuration)
+    a = AnalysisPipeline(conf, name='test')
+    a.fit(ds)
+
+    path = tmpdir
+    a.save(path=path)
+
+    print(path)
+    print(os.listdir(path))
+
+    pipeline_folder = "%s-analysis_%s-area_%s-id_%s" % ('test', 'roi_decoding', 'brain', a._get_id())
+    expected_folder = os.path.join(path, 'derivatives', pipeline_folder)
+    assert os.path.exists(expected_folder)
+    subject_folder = os.path.join(expected_folder, 'sub-0001')
+    assert os.path.exists(subject_folder)
+
+    pattern = "mask-%s_value-%s_attr-%s_target-%s_iter-%s_perm-%s_data.%s" 
+    fname = pattern % ('brain', '2.0', 'decision', 'L_F', '001', '0000', 'mat')
+    conf_fname = pattern % ('brain', '2.0', 'decision', 'L_F', '001', '0000', 'json')
+    
+    assert os.path.exists(os.path.join(subject_folder, fname))
+    assert os.path.exists(os.path.join(subject_folder, conf_fname))
+    
+    assert len(os.listdir(subject_folder)) == 2 * 26 
+
+

@@ -8,6 +8,8 @@ from pyitab.analysis.searchlight import SearchLight
 from pyitab.io.configuration import save_configuration
 from pyitab.io.loader import DataLoader
 from pyitab.io.mapper import get_loader
+from pyitab.analysis.utils import get_params
+from pyitab.utils import get_id
 
 import logging
 logger = logging.getLogger(__name__)
@@ -87,8 +89,7 @@ class AnalysisConfigurator(object):
         self._default_options.update(kwargs)
 
         if not 'id' in list(self._default_options.keys()):
-            import uuid
-            self._default_options['id'] = uuid.uuid4()
+            self._default_options['id'] = get_id()
 
         
     def fit(self):
@@ -107,23 +108,7 @@ class AnalysisConfigurator(object):
     
     
     def _get_params(self, keyword):
-       
-        params = dict()
-        for key in self._default_options.keys():
-            idx = key.find(keyword)
-            if idx == 0 and len(key.split("__")) > 1:
-                idx += len(keyword)+2
-                key_split = key[idx:]
-                logger.debug(key_split)
-                
-                if key_split == "%s":
-                    if 'target_trans__target' in self._default_options.keys():
-                        key_split = key_split %(self._default_options['target_trans__target'])
-                        
-                params[key_split] = self._default_options[key]
-    
-        logger.debug("%s %s" % (keyword, str(params)))
-        return params
+        return get_params(self._default_options, keyword)
 
 
     def _get_loader(self):
@@ -173,6 +158,8 @@ class AnalysisConfigurator(object):
     def _get_analysis(self):
         
         params = self._get_params("analysis")
+        params['id'] = self._default_options['id']
+        params['num'] = self._default_options['num']
         
         keys = list(self._default_options.keys())
         if 'estimator' in keys:

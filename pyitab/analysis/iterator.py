@@ -1,15 +1,8 @@
+from pyitab.utils import get_id
+
 import logging
 logger = logging.getLogger(__name__)
 
-_default_options = {
-       
-                       'sampleslicer__condition' : [['vipassana'], ['samatha']],
-                       'estimator__svr__C': [1, 10],                          
-                       'cv__n_splits': [10, 15],
-                       'analysis__radius':[9,18],
-                           
-                        }
-     
 
 class AnalysisIterator(object):
 
@@ -17,6 +10,15 @@ class AnalysisIterator(object):
     def __init__(self, options, configurator, kind='combination'):
         """This class allows to configure different analysis to be
         iterated using a set of options.
+
+        _default_options = {
+       
+                       'sampleslicer__condition' : [['vipassana'], ['samatha']],
+                       'estimator__svr__C': [1, 10],                          
+                       'cv__n_splits': [10, 15],
+                       'analysis__radius': [9,18],
+                           
+                        }
                 
         Parameters
         ----------
@@ -50,8 +52,7 @@ class AnalysisIterator(object):
     
         self.configurations, self.i, self.n = fx(**options)
         self._configurator = configurator
-        import uuid
-        self._id = uuid.uuid4()
+        self._id = get_id()
 
 
     def _configuration_setup(self, **kwargs):

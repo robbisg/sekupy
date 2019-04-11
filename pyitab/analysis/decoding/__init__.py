@@ -6,16 +6,15 @@ from sklearn.preprocessing.label import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import LeaveOneGroupOut
 
-
 from tqdm import tqdm
 
-from pyitab.utils.dataset import get_ds_data
 
 from pyitab.ext.sklearn._validation import cross_validate
-
-from pyitab.preprocessing.functions import FeatureSlicer
 from pyitab.analysis.base import Analyzer
-from pyitab.base import Transformer
+from pyitab.analysis.utils import get_params
+from pyitab.utils.dataset import get_ds_data
+from pyitab.utils.time import get_time
+from pyitab.utils import get_id
 
 from scipy.io.matlab.mio import savemat
 
@@ -72,7 +71,7 @@ class Decoding(Analyzer):
                  cv=LeaveOneGroupOut(),
                  permutation=0,
                  verbose=1,
-                 name="decoding"):
+                 **kwargs):
         
         if estimator is None:
             estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
@@ -88,7 +87,8 @@ class Decoding(Analyzer):
         self.verbose = verbose
         self.scoring, _ = _check_multimetric_scoring(self.estimator, 
                                                      scoring=self.scoring)
-        Analyzer.__init__(self, name=name)
+
+        Analyzer.__init__(self, **kwargs)
 
     
     def _get_data(self, ds, cv_attr, **kwargs):
@@ -184,7 +184,8 @@ class Decoding(Analyzer):
 
         return split_
 
-    def save(self, path=None):
+
+    def save(self, path=None, **kwargs):
         """[summary]
         
         Parameters
@@ -196,20 +197,25 @@ class Decoding(Analyzer):
         -------
         [type]
             [description]
+
+        <source_keywords>_target-<values>_task-<task>_mask-<mask>_value-<roi_value>_date-<datetime>_num-<num>_<key>-<value>_data.mat
         """
         
         import os
         
-        path = Analyzer.save(self, path=path)
+        path, prefix = Analyzer.save(self, path=path, **kwargs)
+        kwargs.update({'prefix': prefix})
+
         
         for roi, scores in self.scores.items():
-                                   
             for p, score in enumerate(scores):
                     
                 mat_score = self._save_score(score)
                     
                 # TODO: Better use of cv and attributes for leave-one-subject-out
-                filename = "%s_perm_%04d_data.mat" %(roi, p)
+                kwargs.update({'mask': roi, 'perm': "%04d" % p})
+
+                filename = self._get_filename(**kwargs)
                 logger.info("Saving %s" %(filename))
                 
                 savemat(os.path.join(path, filename), mat_score)
@@ -218,8 +224,8 @@ class Decoding(Analyzer):
                 
         return
 
-        
-        
+
+    # TODO: Is it better to use a function in utils?
     def _save_score(self, score):
          
         mat_file = dict()
@@ -246,11 +252,10 @@ class Decoding(Analyzer):
             elif key == 'decisions':
                 mat_file[key] = list(value)
             
-        
         return mat_file
         
-    
-    
+
+    # TODO: Is it better to use a function in utils?
     def _save_estimator(self, estimator):
         
         mat_ = dict()
@@ -269,7 +274,7 @@ class Decoding(Analyzer):
         return mat_
         
         
-        
+    # TODO: Is it better to use a function in utils?
     def _save_splits(self, splits):
         
         mat_ = dict()
@@ -282,4 +287,37 @@ class Decoding(Analyzer):
                 mat_[set_].append(spl[set_])
 
                 
-        return mat_        
+        return mat_
+
+    
+    def _get_filename(self, **kwargs):
+        "target-<values>_id-<datetime>_mask-<mask>_value-<roi_value>_data.mat"
+        logger.debug(kwargs)
+       
+        params = dict()
+        if len(kwargs.keys()) != 0:
+
+            for keyword in ["sample_slicer", "target_trans"]:
+                if keyword in kwargs['prepro']:
+                    params_ = get_params(kwargs, keyword)
+
+                    if keyword == "sample_slicer":
+                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
+
+                    params.update(params_)
+        else:
+            params['targets'] = "+".join(list(self._info['sa']['targets']))
+
+
+        logger.debug(params)
+
+
+        trailing = kwargs.pop('mask')
+        trailing += "_perm-%s" % (kwargs.pop('perm'))
+        # TODO: Solve empty prefix
+        prefix = kwargs.pop('prefix')
+        midpart = "_".join(["%s-%s" % (k, v) for k, v in params.items()])
+        
+        filename = "%s_data.mat" % ("_".join([prefix, midpart, trailing]))
+
+        return filename

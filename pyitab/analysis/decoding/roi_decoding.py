@@ -72,8 +72,8 @@ class RoiDecoding(Decoding):
                  scoring='accuracy', 
                  cv=LeaveOneGroupOut(),
                  permutation=0,
-                 name='roi_decoding',
-                 verbose=1):
+                 verbose=1,
+                 **kwargs):
 
 
         Decoding.__init__(self,
@@ -83,7 +83,9 @@ class RoiDecoding(Decoding):
                           cv=cv,
                           permutation=permutation,
                           verbose=verbose,
-                          name=name)
+                          name='roi_decoding',
+                          **kwargs,
+                          )
 
 
     def _get_rois(self, ds, roi):
@@ -121,10 +123,13 @@ class RoiDecoding(Decoding):
             [description]
         cv_attr : str, optional
             [description] (the default is 'chunks', which [default_description])
-        roi : str, optional
-            [description] (the default is 'all', which [default_description])
-        roi_values : [type], optional
-            [description] (the default is None, which [default_description])
+        roi : list, optional
+            list of strings that must be present in ds.fa keys
+            (the default is 'all', which [default_description])
+        roi_values : list, optional
+            A list of key, value tuple where the key is the
+            roi name, specified in ds.fa.roi and value is the value of the
+            subroi. (the default is None, which [default_description])
         prepro : [type], optional
             [description] (the default is Transformer(), which [default_description])
         return_predictions : bool, optional
@@ -145,10 +150,12 @@ class RoiDecoding(Decoding):
         # TODO: How to use multiple ROIs
         for r, value in roi_values:
             
-            ds_ = FeatureSlicer(**{r:value}).transform(ds)
+            ds_ = FeatureSlicer(**{r: value}).transform(ds)
             ds_ = prepro.transform(ds_)
             
             logger.info("Dataset shape %s" % (str(ds_.shape)))
+            
+            # TODO: Unused variable
             summary_cv = cv_attr
             if isinstance(cv_attr, list):
                 summary_cv = cv_attr[0]
@@ -162,19 +169,25 @@ class RoiDecoding(Decoding):
 
 
             
-            string_value = "_".join([str(v) for v in value])
-            scores["%s_%s" % (r, string_value)] = self.scores
+            string_value = "+".join([str(v) for v in value])
+            scores["mask-%s_value-%s" % (r, string_value)] = self.scores
         
         
-        self._info = self._store_ds_info(ds, 
-                                         cv_attr=cv_attr,
-                                         roi=roi,
-                                         prepro=prepro)
+        self._info = self._store_info(ds, 
+                                      cv_attr=cv_attr,
+                                      roi=roi,
+                                      prepro=prepro)
 
         self.scores = scores
         
         return self    
 
     
-    
+    # Only in subclasses
+    def _get_analysis_info(self):
+
+        info = Decoding._get_analysis_info(self)
+        info['roi'] = self._info['roi']
+
+        return info
 
