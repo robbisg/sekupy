@@ -143,11 +143,11 @@ def read_json_configuration(path, json_fname, experiment):
     
     
     
-def save_configuration(path, dictionary):
+def save_configuration(path, dictionary, filename="configuration.json"):
     
     import json   
         
-    fname = os.path.join(path, "configuration.json")
+    fname = os.path.join(path, filename)
         
     json_dict = {k: str(v) for k, v in dictionary.items()}
         

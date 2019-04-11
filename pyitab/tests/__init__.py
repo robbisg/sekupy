@@ -41,3 +41,14 @@ def fetch_ds(task='fmri'):
 
     return ds
 
+@pytest.fixture(scope="session")
+def tmpdir():
+    import tempfile
+    import os
+    import shutil
+
+    path = tempfile.mktemp()
+    yield path
+
+    if os.path.exists(path):
+        shutil.rmtree(path)

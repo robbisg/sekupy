@@ -1,5 +1,5 @@
 
-def load_test_dataset(task='fmri'):
+def load_test_dataset(task='fmri', n_subjects=1):
     from pyitab.io.loader import DataLoader
     from pyitab.io.base import load_dataset
     from pyitab.io.connectivity import load_mat_ds
@@ -9,10 +9,10 @@ def load_test_dataset(task='fmri'):
     currdir = os.path.dirname(os.path.abspath(__file__))
     currdir = os.path.abspath(os.path.join(currdir, os.pardir))
     if task != 'fmri':
-        reader = load_mat_ds
+        reader = 'meg'
         prepro = PreprocessingPipeline()
     else:
-        reader = load_dataset
+        reader = 'base'
         prepro = StandardPreprocessingPipeline()
 
     datadir = os.path.join(currdir, 'io', 'data', task)
@@ -22,7 +22,7 @@ def load_test_dataset(task='fmri'):
                         task=task,
                         loader=reader)
 
-    ds = loader.fetch(prepro=prepro)
+    ds = loader.fetch(prepro=prepro, n_subjects=n_subjects)
 
     return ds
 
@@ -37,3 +37,8 @@ def enable_logging():
     root.setLevel(logging.INFO)
     
     return root
+
+
+def get_id():
+    import tempfile
+    return tempfile.mkdtemp()[-8:]

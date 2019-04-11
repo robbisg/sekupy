@@ -14,7 +14,7 @@ def get_time():
         if len(str(elem)) < 2:
             elem = '0'+str(elem)
         if i == 4:
-            datetime += '_'
+            datetime += '.'
         datetime += str(elem)
 
     return datetime
