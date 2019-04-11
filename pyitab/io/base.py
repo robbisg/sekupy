@@ -40,13 +40,10 @@ def load_dataset(path, subj, folder, **kwargs):
     ds : ``Dataset``
        Instance of ``mvpa2.datasets.Dataset``
     '''
-    
-    skip_vols = 0
+
     roi_labels = dict()
       
     for arg in kwargs:
-        if arg == 'skip_vols':              # no. of canceled volumes
-            skip_vols = np.int(kwargs[arg])
         if arg == 'roi_labels':             # dictionary of mask {'mask_label': string}
             roi_labels = kwargs[arg]
     
@@ -57,7 +54,7 @@ def load_dataset(path, subj, folder, **kwargs):
     
     # Load data
     try:
-        fmri_list = load_fmri(file_list, skip_vols=skip_vols)
+        fmri_list = load_fmri(file_list)
     except IOError as err:
         logger.error(err)
         return
@@ -112,13 +109,14 @@ def load_dataset(path, subj, folder, **kwargs):
 
 def add_filename(ds, fmri_list):
     
-    f_list = []
-    for i, img_ in enumerate(fmri_list):
-        f_list += [i+1 for _ in range(img_.shape[-1])]
+    filenames = []
+    for i, img in enumerate(fmri_list):
+        for _ in range(img.shape[-1]):
+            filenames.append(img.get_filename())
         
     # For each volume we store to which file it belongs to
-    ds.sa['file'] = f_list
-    
+    ds.sa['file'] = filenames
+
     return ds
     
 
@@ -215,15 +213,13 @@ def load_roi_labels(roi_labels):
 
 
 
-def load_fmri(filelist, skip_vols=0):
+def load_fmri(filelist):
     """Load data specified in the file list as nibabel image.
     
     Parameters
     ----------
     filelist : list
         List of pathnames specifying the location of image to be loaded
-    skip_vols : int, optional
-        Number of volumes to be discarded (the default is 0)
     
     Returns
     -------
@@ -238,18 +234,10 @@ def load_fmri(filelist, skip_vols=0):
         logger.info('Now loading '+file_)     
         
         img = ni.load(file_)
-        data = img.get_data()
-        
-        
-        if len(data.shape) == 4:
-        
-            img = img.__class__(data[..., skip_vols:], 
-                                  affine=img.affine, 
-                                  header=img.header)
-        del data
         image_list.append(img)
         
         logger.debug(img.shape)
+        logger.debug(img.get_filename())
     
     logger.debug('The image list is of ' + str(len(image_list)) + ' images.')
     
