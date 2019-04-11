@@ -10,13 +10,18 @@ class RoiRegression(RoiDecoding):
                  n_jobs=1,
                  scoring=['r2'],
                  permutation=0, 
-                 verbose=1):
+                 verbose=1,
+                 **kwargs
+                 ):
 
         return RoiDecoding.__init__(estimator=estimator,
                                     n_jobs=n_jobs, 
                                     scoring=scoring, 
                                     permutation=permutation, 
-                                    verbose=verbose)
+                                    verbose=verbose,
+                                    name='roi_regression',
+                                    **kwargs
+                                    )
 
 
 class TemporalRegression(TemporalDecoding):
@@ -26,10 +31,15 @@ class TemporalRegression(TemporalDecoding):
                  n_jobs=1, 
                  scoring='r2',
                  permutation=0, 
-                 verbose=1):
+                 verbose=1,
+                 **kwargs
+                 ):
 
         return TemporalDecoding.__init__(estimator=estimator, 
                                          n_jobs=n_jobs, 
                                          scoring=scoring,
                                          permutation=permutation, 
-                                         verbose=verbose)
+                                         verbose=verbose,
+                                         name='temporal_regression',
+                                         **kwargs
+                                         )

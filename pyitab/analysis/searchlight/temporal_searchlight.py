@@ -76,7 +76,9 @@ class TemporalSearchLight(SearchLight):
                  scoring='accuracy', 
                  cv=LeaveOneGroupOut(), 
                  permutation=0,
-                 verbose=1):
+                 verbose=1,
+                 **kwargs
+                 ):
 
 
         super().__init__(radius=radius,
@@ -85,7 +87,7 @@ class TemporalSearchLight(SearchLight):
                          scoring=scoring, 
                          cv=cv, 
                          permutation=permutation,
-                         verbose=verbose)
+                         verbose=verbose, **kwargs)
 
         if estimator is None:
             estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])

@@ -74,16 +74,20 @@ class TemporalDecoding(RoiDecoding):
                  scoring='accuracy', 
                  cv=LeaveOneGroupOut(),
                  permutation=0,
-                 verbose=1):
+                 verbose=1,
+                 **kwargs
+                 ):
         
         RoiDecoding.__init__(self,
-                          estimator=estimator,
-                          n_jobs=n_jobs,
-                          scoring=scoring,
-                          cv=cv,
-                          permutation=permutation,
-                          verbose=verbose,
-                          name='temporal_decoding')
+                             estimator=estimator,
+                             n_jobs=n_jobs,
+                             scoring=scoring,
+                             cv=cv,
+                             permutation=permutation,
+                             verbose=verbose,
+                             name='temporal_decoding',
+                             **kwargs
+                             )
         
         if estimator is None:
             estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
