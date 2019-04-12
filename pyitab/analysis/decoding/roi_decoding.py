@@ -73,6 +73,7 @@ class RoiDecoding(Decoding):
                  cv=LeaveOneGroupOut(),
                  permutation=0,
                  verbose=1,
+                 name='roi_decoding',
                  **kwargs):
 
 
@@ -83,7 +84,7 @@ class RoiDecoding(Decoding):
                           cv=cv,
                           permutation=permutation,
                           verbose=verbose,
-                          name='roi_decoding',
+                          name=name,
                           **kwargs,
                           )
 

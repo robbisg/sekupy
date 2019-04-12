@@ -36,12 +36,9 @@ def load_bids_dataset(path, subj, task, **kwargs):
        Instance of ``mvpa2.datasets.Dataset``
     '''
     
-    skip_vols = 0
     roi_labels = dict()
     derivatives = False
 
-    if 'skip_vols' in kwargs.keys():              # no. of canceled volumes
-        skip_vols = np.int(kwargs['skip_vols'])
     if 'roi_labels' in kwargs.keys():             # dictionary of mask {'mask_label': string}
         roi_labels = kwargs['roi_labels']
     
@@ -71,7 +68,7 @@ def load_bids_dataset(path, subj, task, **kwargs):
     logger.debug(file_list)
     # Load data
     try:
-        fmri_list = load_fmri(file_list, skip_vols=skip_vols)
+        fmri_list = load_fmri(file_list)
         
     except IOError as err:
         logger.error(err)

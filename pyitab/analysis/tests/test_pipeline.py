@@ -2,6 +2,8 @@ from pyitab.analysis.configurator import AnalysisConfigurator
 from pyitab.analysis.pipeline import AnalysisPipeline
 from sklearn.model_selection import StratifiedShuffleSplit, LeaveOneGroupOut
 from pyitab.analysis.decoding.roi_decoding import RoiDecoding
+from pyitab.analysis.utils import get_params
+
 
 from pyitab.tests import fetch_ds, get_datadir, tmpdir
 
@@ -38,7 +40,7 @@ def test_fit(fetch_ds):
     scores = a._estimator.scores
     assert len(scores.keys()) == 26 # No. of ROI
     
-    roi_result = scores['brain_2.0']
+    roi_result = scores['mask-brain_value-2.0']
     assert roi_result[0]['test_accuracy'].shape == (2,)
 
 
@@ -80,7 +82,7 @@ def test_fit_with_ds(fetch_ds, get_datadir):
     a.fit(ds, cv_attr='subject')
 
     scores = a._estimator.scores    
-    roi_result = scores['brain_2.0']
+    roi_result = scores['mask-brain_value-2.0']
     assert roi_result[0]['test_accuracy'].shape == (4,)
 
 
@@ -97,21 +99,26 @@ def test_save_pipeline_decoding(fetch_ds, tmpdir):
     a.save(path=path)
 
     print(path)
-    print(os.listdir(path))
 
-    pipeline_folder = "%s-analysis_%s-area_%s-id_%s" % ('test', 'roi_decoding', 'brain', a._get_id())
+    pipeline_folder = "pipeline-%s_analysis-%s_experiment-%s"+ \
+                      "_area-%s_id-%s" % \
+        ('test', 'roi_decoding', 'brain', a._estimator._test_id)
+    print(pipeline_folder)
+    
     expected_folder = os.path.join(path, 'derivatives', pipeline_folder)
     assert os.path.exists(expected_folder)
-    subject_folder = os.path.join(expected_folder, 'sub-0001')
+    
+    subject_folder = os.path.join(expected_folder, 'subj01')
     assert os.path.exists(subject_folder)
+     
+    params = get_params(conf._default_options, 'sample_slicer')
+    experiment = conf._default_options['experiment']
+    slicers = "_".join(["%s-%s" % (k, "+".join(v)) for k, v in params.items()])
 
-    pattern = "mask-%s_value-%s_attr-%s_target-%s_iter-%s_perm-%s_data.%s" 
-    fname = pattern % ('brain', '2.0', 'decision', 'L_F', '001', '0000', 'mat')
-    conf_fname = pattern % ('brain', '2.0', 'decision', 'L_F', '001', '0000', 'json')
+    fname = "bids_%s_mask-%s_value-%s_perm-%s_data.%s" % \
+                (slicers, 'brain', '1.0', '0000', 'mat')
     
     assert os.path.exists(os.path.join(subject_folder, fname))
-    assert os.path.exists(os.path.join(subject_folder, conf_fname))
+    # assert os.path.exists(os.path.join(subject_folder, conf_fname))
     
-    assert len(os.listdir(subject_folder)) == 2 * 26 
-
-
+    assert len(os.listdir(subject_folder)) == 26 + 1

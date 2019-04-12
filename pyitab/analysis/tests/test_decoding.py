@@ -30,7 +30,7 @@ def test_temporal_decoding(fetch_ds):
     scores = analysis.scores
     assert len(scores.keys()) == 26 # No. of ROI
     
-    roi_result = scores['brain_2.0']
+    roi_result = scores['mask-brain_value-2.0']
     assert len(roi_result) == n_permutation + 1
     assert roi_result[0]['test_score'].shape == (n_splits, 3, 3)
 
@@ -59,7 +59,7 @@ def test_decoding(fetch_ds):
     scores = analysis.scores
     assert len(scores.keys()) == 26 # No. of ROI
     
-    roi_result = scores['brain_2.0']
+    roi_result = scores['mask-brain_value-2.0']
     assert len(roi_result) == n_permutation + 1
     assert roi_result[0]['test_score'].shape == (n_splits,)
 

@@ -66,11 +66,13 @@ class AnalysisPipeline(Analyzer):
         
         self._configurator._default_options['ds__target_count_pre'] = Counter(ds.targets)
         
-        ds_dict = {"ds__%s" % (k): v.value for k, v in ds.a.items()}
+        # TODO: Is it useful??
+        ds_dict = {"ds.a.%s" % (k): v.value for k, v in ds.a.items()}
         self._configurator._default_options.update(ds_dict)
 
         for node in self._transformer.nodes:
             ds = node.transform(ds)
+            
             if node.name in ['balancer', 'target_transformer']:
                 key = 'ds__target_count_%s' % (node.name)
                 self._configurator._default_options[key] = Counter(ds.targets)
@@ -78,11 +80,12 @@ class AnalysisPipeline(Analyzer):
         return ds
 
 
+
     def save(self, path=None, subdir="0_results", **kwargs):
         # TODO: Mantain subdir for compatibility purposes?
         
-        #params = self._configurator._get_fname_info()
-        #params.update(self._estimator._get_fname_info())
+        # params = self._configurator._get_fname_info()
+        # params.update(self._estimator._get_fname_info())
         params = self._configurator._default_options
         
         logger.info(params)

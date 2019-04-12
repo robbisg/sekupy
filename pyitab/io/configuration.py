@@ -41,8 +41,6 @@ def read_configuration(filename, section):
 
         The configuration file must specify
 
-
-
     section : str
         The subsection of the configuration file to be
     
@@ -153,7 +151,3 @@ def save_configuration(path, dictionary, filename="configuration.json"):
         
     with open(fname, "w") as f:
         f.write(json.dumps(json_dict, indent=0))
-        
-        
-        
-        

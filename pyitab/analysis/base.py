@@ -23,7 +23,7 @@ class Analyzer(Node):
             self.num = kwargs['num']
         
         
-        Node.__init__(self, name=name)
+        Node.__init__(self, name=name, **kwargs)
         
         
     def fit(self, ds, **kwargs):
@@ -60,7 +60,6 @@ class Analyzer(Node):
             
             return None
         
-
         # Build path and make dir
         path_info = self._get_analysis_info()
 
@@ -81,7 +80,9 @@ class Analyzer(Node):
         # Filter some params ?
         # Do it in the subclasses ?
         # Add self._info ?
+        logger.debug(kwargs)
         
+        kwargs.update(self._info)
         save_configuration(path, kwargs)
 
         return path, prefix
@@ -98,17 +99,18 @@ class Analyzer(Node):
                 pipeline_directory += ["%s-%s" % (k, info.pop(k))]
         
         path = info.pop('path')
+        id_ = info.pop('id')
 
         for k, v in info.items():
             pipeline_directory += ["%s-%s" % (k, v)]
 
+        pipeline_directory += ["%s-%s" % ('id', id_)]
 
         subjects = self._info['subjects']
         if len(subjects) != 1:
             subdir = 'group'
         else:
             subdir = subjects[0]
-
 
         result_path = os.path.join(path, 
                                    'derivatives', 
@@ -130,10 +132,9 @@ class Analyzer(Node):
             prefix_list[0] = "group"
 
         if len(prefix_list) == 1:
-            prefix_list = ["", ""]
+            prefix_list = ["bids", ""]
 
         return "_".join(prefix_list[:-1])
-        
 
 
     # Deprecated maybe
@@ -144,27 +145,34 @@ class Analyzer(Node):
         info['path'] = self._info['a'].data_path
         
         info['task'] = self._info['a'].task
+        
         info['analysis'] = self.name
         info['subjects'] = self._info['subjects']
         info['is_group'] = len(info['subjects']) != 1
                
         return info
             
-            
+
+
     def _store_info(self, ds, **kwargs):
 
         import numpy as np
+
         info = dict()
         info['a'] = ds.a.copy()
         info['sa'] = ds.sa.copy()
+
+        info.update({'ds.a.%s' % k: ds.a[k].value for k in ds.a.keys()})
+        info.update({'ds.sa.%s' % k: np.unique(ds.sa[k].value) for k in ds.sa.keys()})
+
         info['targets'] = np.unique(ds.targets)
         info['summary'] = ds.summary()
-        
+
         for k, v in kwargs.items():
             info[k] = str(v)
             if k == 'prepro':
                 info[k] = [v.name]
-        
+
         # TODO: Use unique field
         if 'subject' in ds.sa.keys():
             info['subjects'] = list(np.unique(ds.sa.subject))
@@ -177,6 +185,7 @@ class Analyzer(Node):
         return info
     
 
+
     def _get_analysis_info(self):
 
         info = dict()
@@ -185,8 +194,14 @@ class Analyzer(Node):
         info['id'] = ".".join([get_time(), "%04d" % self.num, self.id])
         info['experiment'] = self._info['a'].experiment
 
+        # Only for testing purposes
+        self._test_id = info['id']
+        print(self._test_id)
+        print(self.__class__)
+
         return info
 
+    
     
     def _get_info(self, attributes=['estimator', 
                                              'scoring', 
@@ -227,3 +242,8 @@ class Analyzer(Node):
             indices.append(idx)
         
         return indices
+
+
+    def _get_test_id(self):
+        if '_test_id' in self.__dict__.keys():
+            return getattr(self, '_test_id')

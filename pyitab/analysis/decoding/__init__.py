@@ -71,6 +71,7 @@ class Decoding(Analyzer):
                  cv=LeaveOneGroupOut(),
                  permutation=0,
                  verbose=1,
+                 name='decoding',
                  **kwargs):
         
         if estimator is None:
@@ -88,7 +89,7 @@ class Decoding(Analyzer):
         self.scoring, _ = _check_multimetric_scoring(self.estimator, 
                                                      scoring=self.scoring)
 
-        Analyzer.__init__(self, **kwargs)
+        Analyzer.__init__(self, name=name, **kwargs)
 
     
     def _get_data(self, ds, cv_attr, **kwargs):
@@ -106,7 +107,6 @@ class Decoding(Analyzer):
         return X, y, groups
 
 
-    
 
     def fit(self, ds, 
             cv_attr=None,
@@ -139,11 +139,9 @@ class Decoding(Analyzer):
                                                         cv_attr,
                                                         groups)
        
-
         return self
 
     
-
     def _get_rois(self, ds, roi):
         """Gets the roi list if the attribute is all"""
         
@@ -198,15 +196,17 @@ class Decoding(Analyzer):
         [type]
             [description]
 
-        <source_keywords>_target-<values>_task-<task>_mask-<mask>_value-<roi_value>_date-<datetime>_num-<num>_<key>-<value>_data.mat
+        <source_keywords>_target-<values>_task-<task>_mask-<mask>_
+        value-<roi_value>_date-<datetime>_num-<num>_<key>-<value>_data.mat
         """
         
         import os
+
         
+
         path, prefix = Analyzer.save(self, path=path, **kwargs)
         kwargs.update({'prefix': prefix})
 
-        
         for roi, scores in self.scores.items():
             for p, score in enumerate(scores):
                     
@@ -216,7 +216,7 @@ class Decoding(Analyzer):
                 kwargs.update({'mask': roi, 'perm': "%04d" % p})
 
                 filename = self._get_filename(**kwargs)
-                logger.info("Saving %s" %(filename))
+                logger.info("Saving %s" % (filename))
                 
                 savemat(os.path.join(path, filename), mat_score)
                 #logger.debug(hpy().heap())
@@ -285,17 +285,17 @@ class Decoding(Analyzer):
             
             for set_ in mat_.keys():
                 mat_[set_].append(spl[set_])
-
                 
         return mat_
 
     
+
     def _get_filename(self, **kwargs):
         "target-<values>_id-<datetime>_mask-<mask>_value-<roi_value>_data.mat"
         logger.debug(kwargs)
        
         params = dict()
-        if len(kwargs.keys()) != 0:
+        if 'prepro' in kwargs.keys():
 
             for keyword in ["sample_slicer", "target_trans"]:
                 if keyword in kwargs['prepro']:
@@ -306,11 +306,9 @@ class Decoding(Analyzer):
 
                     params.update(params_)
         else:
-            params['targets'] = "+".join(list(self._info['sa']['targets']))
-
+            params['targets'] = "+".join(list(np.unique(self._info['sa']['targets'])))
 
         logger.debug(params)
-
 
         trailing = kwargs.pop('mask')
         trailing += "_perm-%s" % (kwargs.pop('perm'))
