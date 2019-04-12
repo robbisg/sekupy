@@ -60,7 +60,8 @@ class Transformer(Node):
     
 
     def map_transformer(self, ds):
-        if 'prepro' in ds.a.keys():
+
+        if 'prepro' not in ds.a.keys():
             ds.a['prepro'] = [self._mapper]
         else:
             ds.a['prepro'].append(self._mapper)

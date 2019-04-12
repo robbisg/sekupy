@@ -127,17 +127,18 @@ class FeatureSlicer(Transformer):
     """
     
     def __init__(self, **kwargs):
+        print(kwargs)
         
         self._selection = dict()
         for arg in kwargs:
             self._selection[arg] = kwargs[arg]
-        Transformer.__init__(self, name='feature_slicer', **kwargs)  
+        Transformer.__init__(self, name='feature_slicer', **self._selection)  
 
     
     def _set_mapper(self, **kwargs):
 
         for k, v in kwargs.items():
-            kwargs[k] = "+".join(v) 
+            kwargs[k] = "+".join(str(v)) 
 
         return Transformer._set_mapper(self, **kwargs)
 
@@ -196,7 +197,7 @@ class SampleSlicer(Transformer):
     def _set_mapper(self, **kwargs):
 
         for k, v in kwargs.items():
-            kwargs[k] = "+".join(v) 
+            kwargs[k] = "+".join(str(v)) 
 
         return Transformer._set_mapper(self, **kwargs)
 
@@ -255,7 +256,7 @@ class FeatureStacker(Transformer):
     def _set_mapper(self, **kwargs):
 
         for k, v in kwargs.items():
-            kwargs[k] = "+".join(v) 
+            kwargs[k] = "+".join(str(v)) 
 
         return Transformer._set_mapper(self, **kwargs)
 
