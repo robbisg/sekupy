@@ -11,6 +11,7 @@ from pyitab.preprocessing.math import ZFisherTransformer, \
 from pyitab.preprocessing.memory import MemoryReducer
 
 
+
 def function_mapper(name):
 
     mapper = {

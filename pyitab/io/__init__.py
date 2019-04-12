@@ -67,7 +67,6 @@ def load_ds(conf_file, task, extra_sa=None,
             
         del ds
     
-    ds_merged.a['prepro'] = prepro.get_names()
     ds_merged.a.update(conf)
     ds_merged.a['task'] = task
     

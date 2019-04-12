@@ -8,7 +8,7 @@ class MemoryReducer(Transformer):
     
     def __init__(self, dtype, **kwargs):
         self._dtype = dtype
-        Transformer.__init__(self, name='memory_reducer', **kwargs)
+        Transformer.__init__(self, name='memory_reducer', dtype=dtype)
         
         
     def transform(self, ds):

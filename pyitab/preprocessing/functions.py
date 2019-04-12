@@ -33,7 +33,8 @@ class Detrender(Transformer):
 
         self._degree = degree
         self.node = PolyDetrendMapper(chunks_attr=chunks_attr, polyord=degree)
-        Transformer.__init__(self, name='detrending')
+        Transformer.__init__(self, name='detrender', 
+                            degree=degree, chunks_attr=chunks_attr)
             
     
     def transform(self, ds):
@@ -60,7 +61,7 @@ class Detrender(Transformer):
 class SampleAverager(Transformer):
     """This transformer is used to average data.
     
-    Parameters
+    Parameters          
     ----------
     attributes : list
       List of sample attributes whose unique values will be used to identify the
@@ -70,7 +71,11 @@ class SampleAverager(Transformer):
     
     def __init__(self, attributes):
         self.node = mean_group_sample(attributes)
-        Transformer.__init__(self, name='sample_averager')
+
+        attr_string = '.'.join(attributes)
+
+        Transformer.__init__(self, name='sample_averager',
+                            attributes=attr_string)
         
         
     def transform(self, ds):
@@ -95,7 +100,7 @@ class TargetTransformer(Transformer):
     
     def __init__(self, attr=None, **kwargs):
         self._attribute = attr
-        Transformer.__init__(self, name='target_transformer')
+        Transformer.__init__(self, name='target_transformer', attr=attr)
     
     def transform(self, ds):
         logger.info("Dataset preprocessing: Target set to %s" , (self._attribute))
@@ -126,8 +131,15 @@ class FeatureSlicer(Transformer):
         self._selection = dict()
         for arg in kwargs:
             self._selection[arg] = kwargs[arg]
-        Transformer.__init__(self, name='feature_slicer')  
+        Transformer.__init__(self, name='feature_slicer', **kwargs)  
 
+    
+    def _set_mapper(self, **kwargs):
+
+        for k, v in kwargs.items():
+            kwargs[k] = "+".join(v) 
+
+        return Transformer._set_mapper(self, **kwargs)
 
 
     def transform(self, ds):
@@ -178,7 +190,16 @@ class SampleSlicer(Transformer):
         for arg in kwargs:
             self._selection[arg] = kwargs[arg]
          
-        Transformer.__init__(self, name='sample_slicer')
+        Transformer.__init__(self, name='sample_slicer', **kwargs)
+
+    
+    def _set_mapper(self, **kwargs):
+
+        for k, v in kwargs.items():
+            kwargs[k] = "+".join(v) 
+
+        return Transformer._set_mapper(self, **kwargs)
+
 
 
     def transform(self, ds):
@@ -203,7 +224,7 @@ class SampleSlicer(Transformer):
     
 
 
-
+# TODO: Document
 class FeatureStacker(Transformer):
     """
     Use features in the dictionary to build a rich dataset
@@ -225,7 +246,18 @@ class FeatureStacker(Transformer):
         
         self._selection = selection_dictionary
         self._attr = stack_attr
-        Transformer.__init__(self, name='sample_stacker')    
+        Transformer.__init__(self, name='sample_stacker', 
+                                   selection=selection_dictionary,
+                                   attr=stack_attr
+                                   )   
+
+    
+    def _set_mapper(self, **kwargs):
+
+        for k, v in kwargs.items():
+            kwargs[k] = "+".join(v) 
+
+        return Transformer._set_mapper(self, **kwargs)
 
 
     def transform(self, ds):

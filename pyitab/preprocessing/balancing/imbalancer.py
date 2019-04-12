@@ -15,7 +15,7 @@ class Imbalancer(Transformer):
         
         self.ratio = sampling_strategy
         self._attr = attr
-        Transformer.__init__(self, name='imbalancer')
+        Transformer.__init__(self, name='imbalancer', attr=attr, ratio=sampling_strategy)
         
         
     def _balance(self, ds):

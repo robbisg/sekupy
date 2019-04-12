@@ -11,8 +11,10 @@ logger = logging.getLogger(__name__)
 class FeatureZNormalizer(Transformer):
     
     def __init__(self, chunks_attr='chunks', param_est=None, **kwargs):
+        
         self.node = ZScoreMapper(chunks_attr=chunks_attr, param_est=param_est)
-        Transformer.__init__(self, name='feature_znormalizer')
+        Transformer.__init__(self, name='feature_znormalizer', 
+                                    chunks_attr=chunks_attr)
         
     
     def transform(self, ds):
@@ -56,7 +58,7 @@ class FeatureSigmaNormalizer(Transformer):
     # TODO: This is for a particular variable, not the join and so on
     def __init__(self, name='sample_sigma_normalizer', attr='targets'):
         self.attr = attr
-        Transformer.__init__(self, name=name)       
+        Transformer.__init__(self, name=name, attr=attr)       
 
     def transform(self, ds):
         
@@ -110,7 +112,7 @@ class FeatureAttrNormalizer(Transformer):
 
 class DatasetFxNormalizer(Transformer):
 
-    def __init__(self, name='ds_sigma_normalizer', norm_fx=np.divide, ds_fx=np.std):
+    def __init__(self, name='ds_fx_normalizer', norm_fx=np.divide, ds_fx=np.std):
         """This class normalize the entire dataset using a function norm_fx that is used
         to normalize the dataset with respect to a number calculated on the same dataset
         using a ds_fx.

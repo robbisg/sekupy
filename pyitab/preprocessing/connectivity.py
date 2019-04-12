@@ -10,7 +10,7 @@ from scipy.spatial.distance import euclidean
 
 logger = logging.getLogger(__name__)
 
-
+# TODO: Document better!
 class SingleRowMatrixTransformer(Transformer):
     """This transformer change a row dataset representing a matrix
     in a square matrix dataset.       
@@ -18,7 +18,7 @@ class SingleRowMatrixTransformer(Transformer):
 
     def __init__(self, name='upper_matrix', **kwargs):
 
-        Transformer.__init__(self, name=name, **kwargs)       
+        Transformer.__init__(self, name=name, **kwargs)  
 
 
     def transform(self, ds):
@@ -89,6 +89,9 @@ class SpeedEstimator(Transformer):
 
 
 class AverageEstimator(Transformer):
+
+    def __init__(self, name='average_estimator', **kwargs):
+        Transformer.__init__(self, name=name, **kwargs)
 
     def transform(self, ds):
         return super().transform(ds)()

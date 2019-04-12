@@ -41,7 +41,10 @@ class Balancer(Transformer):
         self._balancer_algorithm = balancer
         self._balancer = self._check_balancer(balancer)     
                    
-        Transformer.__init__(self, name='balancer', **kwargs)
+        Transformer.__init__(self, 
+                            name=self._balancer.name, 
+                            attr=attr, 
+                            balancer=self._balancer._balancer)
         
     
     
