@@ -26,10 +26,10 @@ class Imbalancer(Transformer):
         logger.debug('Attribute balanced dataset: %s', Counter(ds.targets))
         
         ratio = self.get_ratio(y)
-        _, _, idx = RandomUnderSampler(sampling_strategy=ratio, 
-                                       return_indices=True).fit_sample(X, y)
+        balancer = RandomUnderSampler(sampling_strategy=ratio)
+        _ = balancer.fit_sample(X, y)
         
-        mask[idx] = True
+        mask[balancer.sample_indices_] = True
         
         logger.debug('Attribute imbalanced dataset: %s', Counter(ds[mask].targets))
         

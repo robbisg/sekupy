@@ -32,7 +32,7 @@ class Balancer(Transformer):
     
     
     def __init__(self, 
-                 balancer=RandomUnderSampler(return_indices=True), 
+                 balancer=RandomUnderSampler(), 
                  attr='chunks', **kwargs):
 
         # TODO: attribute list
@@ -130,7 +130,7 @@ class UnderSamplingBalancer(SamplingBalancer):
         if not balancer.return_indices:
             logger.info("Balancer must return indices, set return_indices to True")
             logger.info("Balancer set to default RandomUnderSampler.")
-            balancer = RandomUnderSampler(return_indices=True)
+            balancer = RandomUnderSampler()
         
         SamplingBalancer.__init__(self, balancer, attr, name='under_balancer', **kwargs)
         
@@ -146,10 +146,10 @@ class UnderSamplingBalancer(SamplingBalancer):
             logger.debug(count)
             return ds
         
-        _, _, indices = self._balancer.fit_sample(X, y)
-        self._mask = indices
+        _ = self._balancer.fit_sample(X, y)
+        self._mask = self._balancer.sample_indices_
         
-        return ds[indices]
+        return ds[self._mask]
     
 
         
