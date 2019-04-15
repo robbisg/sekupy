@@ -45,7 +45,7 @@ class SingleRowMatrixTransformer(Transformer):
         ds_ = Dataset.from_wizard(data)
         ds_ = add_attributes(ds_, attr)
                 
-        return ds_
+        return Transformer.transform(self, ds_)
         
         
         
@@ -84,7 +84,7 @@ class SpeedEstimator(Transformer):
 
         ds_.samples = np.array(trajectory)
 
-        return ds_
+        return Transformer.transform(self, ds_)
     
 
 

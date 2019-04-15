@@ -17,4 +17,4 @@ class MemoryReducer(Transformer):
         
         ds.samples = self._dtype(ds.samples)
                         
-        return ds
+        return Transformer(self, ds)

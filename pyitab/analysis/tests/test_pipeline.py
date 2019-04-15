@@ -89,7 +89,22 @@ def test_fit_with_ds(fetch_ds, get_datadir):
 def test_save_pipeline_decoding(fetch_ds, tmpdir):
 
     import os
-
+    example_configuration = {   
+                                'prepro': ['sample_slicer', 'target_transformer'],
+                                'sample_slicer__subject': ['subj01'], 
+                                'sample_slicer__decision': ['L', 'F'],
+                                'target_transformer__attr': 'decision',
+                                
+                                'estimator__clf__C': 1,
+                                'estimator__clf__kernel': 'linear',
+                                
+                                'cv': StratifiedShuffleSplit,
+                                'cv__n_splits': 2,
+                                'cv__test_size': 0.2,
+                                                            
+                                'analysis': RoiDecoding,
+                                'cv_attr': 'chunks'
+                            }
     ds = fetch_ds
     conf = AnalysisConfigurator(**example_configuration)
     a = AnalysisPipeline(conf, name='test')
@@ -99,10 +114,11 @@ def test_save_pipeline_decoding(fetch_ds, tmpdir):
     a.save(path=path)
 
     print(path)
+    print(a._estimator._test_id)
 
-    pipeline_folder = "pipeline-%s_analysis-%s_experiment-%s"+ \
-                      "_area-%s_id-%s" % \
-        ('test', 'roi_decoding', 'brain', a._estimator._test_id)
+    pipeline_folder = "pipeline-%s_analysis-%s_experiment-%s_roi-%s_id-%s" % \
+        ('test', 'roi_decoding', conf._default_options['ds.a.experiment'], 
+            'all', str(a._estimator._test_id))
     print(pipeline_folder)
     
     expected_folder = os.path.join(path, 'derivatives', pipeline_folder)
@@ -110,14 +126,14 @@ def test_save_pipeline_decoding(fetch_ds, tmpdir):
     
     subject_folder = os.path.join(expected_folder, 'subj01')
     assert os.path.exists(subject_folder)
-     
-    params = get_params(conf._default_options, 'sample_slicer')
-    experiment = conf._default_options['experiment']
-    slicers = "_".join(["%s-%s" % (k, "+".join(v)) for k, v in params.items()])
 
-    fname = "bids_%s_mask-%s_value-%s_perm-%s_data.%s" % \
-                (slicers, 'brain', '1.0', '0000', 'mat')
+    print(conf._default_options) 
+    params = get_params(conf._default_options, 'sample_slicer')
     
+    slicers = "_".join(["%s-%s" % (k, "+".join(v)) for k, v in params.items()])
+    fname = "bids_%s_mask-%s_value-%s_perm-%s_data.%s" % \
+                (slicers, 'brain', '2.0', '0000', 'mat')
+    print(os.listdir(os.path.join(path, 'derivatives', pipeline_folder, 'subj01')))
     assert os.path.exists(os.path.join(subject_folder, fname))
     # assert os.path.exists(os.path.join(subject_folder, conf_fname))
     

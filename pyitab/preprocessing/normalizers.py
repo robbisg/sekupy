@@ -20,7 +20,8 @@ class FeatureZNormalizer(Transformer):
     def transform(self, ds):
         logger.info('Dataset preprocessing: Zscoring feature-wise...')
         self.node.train(ds)
-        return self.node.forward(ds)
+        ds = self.node.forward(ds)
+        return Transformer.transform(self, ds)
     
 
 
@@ -36,7 +37,7 @@ class SampleZNormalizer(Transformer):
         
         ds.samples[np.isnan(ds.samples)] = 0
         
-        return ds
+        return Transformer.transform(self, ds)
 
 
 class SampleSigmaNormalizer(Transformer):
@@ -50,7 +51,7 @@ class SampleSigmaNormalizer(Transformer):
         
         ds.samples[np.isnan(ds.samples)] = 0
         
-        return ds
+        return Transformer.transform(self, ds)
 
 
 class FeatureSigmaNormalizer(Transformer):
@@ -76,7 +77,7 @@ class FeatureSigmaNormalizer(Transformer):
         ds_merged = vstack(ds_merged)
         ds_merged.a.update(ds.a)
         
-        return ds_merged
+        return Transformer.transform(self, ds_merged)
 
 
 class FeatureAttrNormalizer(Transformer):
@@ -106,7 +107,7 @@ class FeatureAttrNormalizer(Transformer):
         ds_merged = vstack(ds_merged)
         ds_merged.a.update(ds.a)
         
-        return ds_merged
+        return Transformer.transform(self, ds_merged)
 
 
 
@@ -139,4 +140,4 @@ class DatasetFxNormalizer(Transformer):
         
         ds.samples = self._norm_fx(ds.samples, self._ds_fx(ds.samples))
         
-        return ds
+        return Transformer.transform(self, ds)

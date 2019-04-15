@@ -96,7 +96,7 @@ class SamplingBalancer(Transformer):
 
         logger.info("Final: %s" % (str(Counter(balanced_ds.targets))))
         
-        return balanced_ds
+        return Transformer.transform(self, balanced_ds)
 
     def _balance(self, ds):
         return

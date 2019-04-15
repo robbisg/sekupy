@@ -72,7 +72,8 @@ class Imbalancer(Transformer):
         logger.info('Imbalanced dataset is: %s', 
             Counter(ds[np.hstack(masks)].targets))
 
-        return ds[np.hstack(masks)]
+        ds = ds[np.hstack(masks)]
+        return Transformer.transform(self, ds)
 
     
     

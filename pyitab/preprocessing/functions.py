@@ -54,7 +54,8 @@ class Detrender(Transformer):
         self.node.train(ds)
 
         logger.info('Dataset preprocessing: Detrending with polynomial of order %s...', (str(self._degree)))
-        return self.node.forward(ds)
+        ds = self.node.forward(ds)
+        return Transformer.transform(self, ds)
                    
 
 
@@ -92,7 +93,10 @@ class SampleAverager(Transformer):
             The transformed dataset
         """
         logger.info('Dataset preprocessing: Averaging samples...')
-        return ds.get_mapped(self.node)  
+
+        ds = ds.get_mapped(self.node)  
+
+        return Transformer.transform(self, ds)  
 
 
 
@@ -106,8 +110,7 @@ class TargetTransformer(Transformer):
         logger.info("Dataset preprocessing: Target set to %s" , (self._attribute))
         ds.targets = ds.sa[self._attribute]
         
-        return ds
-
+        return Transformer.transform(self, ds)
 
 
 class FeatureSlicer(Transformer):
@@ -166,7 +169,7 @@ class FeatureSlicer(Transformer):
             selection_mask = np.logical_and(selection_mask, condition_mask)
             
         
-        return ds[:, selection_mask]
+        return Transformer.transform(self, ds[:, selection_mask])
 
 
 
@@ -177,7 +180,7 @@ class SampleSlicer(Transformer):
     with conditions to be selected:
     
     selection_dict = {
-                        'frame':[1,2,3]
+                        'frame': [1,2,3]
                         }
                         
     This dictionary means that we will select all samples with frame attribute
@@ -197,7 +200,7 @@ class SampleSlicer(Transformer):
     def _set_mapper(self, **kwargs):
 
         for k, v in kwargs.items():
-            kwargs[k] = "+".join(str(v)) 
+            kwargs[k] = "+".join([str(vv) for vv in v])
 
         return Transformer._set_mapper(self, **kwargs)
 
@@ -221,7 +224,7 @@ class SampleSlicer(Transformer):
             selection_mask = np.logical_and(selection_mask, condition_mask)
             
         
-        return ds[selection_mask]
+        return Transformer.transform(self, ds[selection_mask])
     
 
 
@@ -256,7 +259,7 @@ class FeatureStacker(Transformer):
     def _set_mapper(self, **kwargs):
 
         for k, v in kwargs.items():
-            kwargs[k] = "+".join(str(v)) 
+            kwargs[k] = "+".join([str(vv) for vv in v]) 
 
         return Transformer._set_mapper(self, **kwargs)
 
@@ -279,7 +282,8 @@ class FeatureStacker(Transformer):
             ds_stacked = self.update_attribute(ds_stacked)
             ds_stack.append(ds_stacked)
         
-        return vstack(ds_stack)
+        ds = vstack(ds_stack)
+        return Transformer.transform(self, ds)
     
     
     def update_attribute(self, ds):
@@ -313,5 +317,6 @@ class DatasetMasker(Transformer):
         if self._mask is None:
             self._mask = np.ones_like(ds.samples[:,0])
 
-        return ds[self._mask]
+        ds = ds[self._mask]
         
+        return Transformer.transform(self, ds)

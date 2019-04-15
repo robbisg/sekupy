@@ -23,7 +23,7 @@ class MathTransformer(Transformer):
         
         ds_.samples = samples
         
-        return ds_
+        return Transformer.transform(self, ds_)
 
 
 
