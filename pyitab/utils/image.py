@@ -76,48 +76,6 @@ def remove_value_nifti(img_fname, value, output_fname, mask_fname=None):
     return out_img
 
 
-def remove_mean_brick(img_fname, output_fname, mask_fname=None):
-    """This function is used to remove the average value from a 
-    nifti file. If a mask is provided, the average is calculated only in the mask
-    voxels.
-    
-    Parameters
-    ----------
-    filename : string
-        The filename of the input image
-    output_fname : string
-        The output filename of the stored image
-    mask : ndarray, optional
-        The mask on which average is calculated (the default is None)
-    
-    Returns
-    -------
-    output_image
-        The nifti image
-    """
-    import warnings
-    warnings.warn("We are deprecating this method!", 
-                   warnings.DeprecationWarning)
-    
-    img = ni.load(img_fname)
-    
-    data = img.get_data()
-
-    mask_data = None
-    if mask_fname is not None:
-        mask_data = ni.load(mask_fname).get_data() != 0
-        mask_data = mask_data.squeeze()
-    
-    logger.debug(mask_data.shape)
-    logger.debug(data.shape)
-    img_mean = np.zeros_like(data)
-    img_mean[mask_data] = data[mask_data] - data[mask_data].mean(0)
-
-    out_img = save_map(output_fname, img_mean, affine=img.affine)
-    
-    return out_img    
-
-
 
 def remove_mean_nifti(img_fname, output_fname, mask_fname=None):
     """This function is used to remove the average value from an 
