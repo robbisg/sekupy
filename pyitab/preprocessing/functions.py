@@ -223,34 +223,39 @@ class SampleSlicer(Transformer):
                 
             selection_mask = np.logical_and(selection_mask, condition_mask)
             
-        
         return Transformer.transform(self, ds[selection_mask])
     
 
 
-# TODO: Document
 class FeatureStacker(Transformer):
-    """
-    Use features in the dictionary to build a rich dataset
-    The dictionary indicates the attributes to be used as key and a list
-    with conditions to be selected:
+    """This function is used to stack features with different sample attribute keys, to
+    have a jointly use these features.
     
-    selection_dict = {
-                        'frame':[1,2,3]
-                        }
-                        
-    This dictionary means that we will select all samples with frame attribute
-    equal to 1 OR 2 OR 3 AND all samples with accuracy equal to 'I'.   
+    Parameters
+    ----------
+    stack_attr : list, optional
+        This is the attribute to be used for stacking, the resulting dataset will have
+        a sample attribute given by the union of unique attributes
+         (the default is 'chunks')
+    keep_attr : list, optional
+        The attributes to keep, unique values of these attributes will be used 
+        to mask the dataset. (the default is ['targets'])
+    selection_dictionary : dict, optional
+        This will be used to filter the dataset see ```SampleSlicer```.
+    
     """
 
     def __init__(self, 
-                 selection_dictionary=None, 
-                 stack_attr=['targets', 'chunks'], 
-                 **kwargs):
-        
+                 stack_attr=['chunks'],
+                 keep_attr=['targets'],
+                 selection_dictionary={}, 
+                 **kwargs):             
+
+
         self._selection = selection_dictionary
-        self._attr = stack_attr
-        Transformer.__init__(self, name='sample_stacker', 
+        self._stack_attr = stack_attr
+        self._attr = keep_attr
+        Transformer.__init__(self, name='feature_stacker', 
                                    selection=selection_dictionary,
                                    attr=stack_attr
                                    )   
@@ -258,38 +263,45 @@ class FeatureStacker(Transformer):
     
     def _set_mapper(self, **kwargs):
 
-        for k, v in kwargs.items():
-            kwargs[k] = "+".join([str(vv) for vv in v]) 
+        if self._selection != {}:
+            for k, v in kwargs.items():
+                kwargs[k] = "+".join([str(vv) for vv in v]) 
 
         return Transformer._set_mapper(self, **kwargs)
 
 
     def transform(self, ds):
+        print(self._selection)
         
         ds_ = SampleSlicer(**self._selection).transform(ds)
-        
+  
         iterable = [np.unique(ds_.sa[a].value) for a in self._attr]
+        
         
         ds_stack = []
         for attr in product(*iterable):
+            logger.debug(attr)
             
             mask = np.ones_like(ds_.targets, dtype=np.bool)
             
             for i, a in enumerate(attr):
                 mask = np.logical_and(mask, ds_.sa[self._attr[i]].value == a)
+
+            logger.debug(ds_[mask].shape)
             
             ds_stacked = hstack([d for d in ds_[mask]])
-            ds_stacked = self.update_attribute(ds_stacked)
+            ds_stacked = self.update_attribute(ds_stacked, ds_[mask])
             ds_stack.append(ds_stacked)
         
         ds = vstack(ds_stack)
         return Transformer.transform(self, ds)
     
     
-    def update_attribute(self, ds):
-        
-        key = self._selection.keys()[0]
-        value = "-".join(self._selection[key])
+    def update_attribute(self, ds, ds_orig):
+
+        key = list(self._stack_attr)[0]
+        uniques = np.unique(ds_orig.sa[key].value)
+        value = "-".join([str(v) for v in uniques])
         
         logger.debug(key)
         logger.debug(value)
