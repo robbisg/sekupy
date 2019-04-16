@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class MemoryReducer(Transformer):
     
-    def __init__(self, dtype, **kwargs):
+    def __init__(self, dtype=np.float16, **kwargs):
         self._dtype = dtype
         Transformer.__init__(self, name='memory_reducer', dtype=dtype)
         
@@ -17,4 +17,4 @@ class MemoryReducer(Transformer):
         
         ds.samples = self._dtype(ds.samples)
                         
-        return Transformer(self, ds)
+        return Transformer.transform(self, ds)

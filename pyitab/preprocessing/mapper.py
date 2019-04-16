@@ -25,7 +25,7 @@ def function_mapper(name):
               'sample_sigmanorm': SampleSigmaNormalizer,
               'feature_sigmanorm': FeatureSigmaNormalizer,
               'ds_normalizer': DatasetFxNormalizer,
-              'sample_stacker': FeatureStacker,
+              'feature_stacker': FeatureStacker,
               'balancer': Balancer,
               'imbalancer': Imbalancer,
               'abs': AbsoluteValueTransformer,

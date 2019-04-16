@@ -51,35 +51,3 @@ class StandardPreprocessingPipeline(PreprocessingPipeline):
                       ]
         
         PreprocessingPipeline.__init__(self, nodes=self.nodes)
-        
-
-
-class MonksPreprocessingPipeline(PreprocessingPipeline):
-    
-    def __init__(self, **kwargs):
-        
-        self.nodes = [
-                      Detrender(chunks_attr='file'),
-                      Detrender(),
-                      FeatureZNormalizer(),
-                      SampleSlicer(selection_dictionary={'events_number':range(1, 13)})                 
-                      
-                      ]
-        
-        PreprocessingPipeline.__init__(self, nodes=self.nodes)
-        
-        
-
-class MonksConnectivityPipeline(PreprocessingPipeline):
-    
-    def __init__(self, **kwargs):
-        
-        self.nodes = [
-                      Detrender(chunks_attr='file'),
-                      Detrender(),
-                      FeatureZNormalizer(),
-                      SampleSlicer(selection_dictionary={'events_number':range(1,13)})                 
-                      
-                      ]
-        
-        PreprocessingPipeline.__init__(self, nodes=self.nodes)              
