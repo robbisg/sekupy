@@ -9,7 +9,7 @@ def load_test_dataset(task='fmri', n_subjects=1):
     currdir = os.path.dirname(os.path.abspath(__file__))
     currdir = os.path.abspath(os.path.join(currdir, os.pardir))
     if task != 'fmri':
-        reader = 'meg'
+        reader = 'mat'
         prepro = PreprocessingPipeline()
     else:
         reader = 'base'

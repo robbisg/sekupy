@@ -50,9 +50,6 @@ def build_pathnames(path, name, sub_dirs):
 
 
 
-    
-
-
 def make_dir(path):
     """ Make dir unix command wrapper """
     #os.mkdir(os.path.join(path))
