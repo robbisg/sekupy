@@ -24,7 +24,8 @@ def test_bids_data():
 
     ds = loader.fetch()
 
-    assert len(np.unique(ds.sa.name)) == 2
+    assert 'name' not in ds.sa.keys()
+    assert len(np.unique(ds.sa.subject)) == 2
     assert ds.shape[0] == 121 * 2 * 2
 
 
