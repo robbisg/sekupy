@@ -69,5 +69,8 @@ def load_ds(conf_file, task, extra_sa=None,
     
     ds_merged.a.update(conf)
     ds_merged.a['task'] = task
+
+    if 'name' in ds_merged.sa.keys():
+        ds_merged.sa['subject'] = ds_merged.sa.pop('name')
     
     return ds_merged
