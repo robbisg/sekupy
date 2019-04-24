@@ -1,12 +1,12 @@
 from pyitab.utils import get_id
-
+import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
 
 class AnalysisIterator(object):
 
-    
+    # TODO: Document other kind of options
     def __init__(self, options, configurator, kind='combination'):
         """This class allows to configure different analysis to be
         iterated using a set of options.
@@ -49,10 +49,13 @@ class AnalysisIterator(object):
             options['options'] = list_opt
         else:
             fx = self._setup
-    
+        
+        self.n_subjects = 1
+
         self.configurations, self.i, self.n = fx(**options)
         self._configurator = configurator
         self._id = get_id()
+        
 
 
     def _configuration_setup(self, **kwargs):
@@ -91,7 +94,16 @@ class AnalysisIterator(object):
     def _setup(self, **kwargs):
         
         import itertools
+        subject_keys = ['sample_slicer__subject', 
+                        'fetch__subject_names']
+
+        for k in subject_keys:
+            if k in kwargs.keys():
+                v = kwargs.pop(k)
+                kwargs[k] = v
+                self.n_subjects = len(v)
             
+        logger.debug(self.n_subjects)
         args = [arg for arg in kwargs]
         logger.info(kwargs)
         combinations_ = list(itertools.product(*[kwargs[arg] for arg in kwargs]))
@@ -115,10 +127,17 @@ class AnalysisIterator(object):
         if self.i < self.n:
             value = self.configurations[self.i]
             self.i += 1
-            logger.info("Iteration %d/%d" %(self.i, self.n))
+            logger.info("Iteration %d/%d" % (self.i, self.n))
             self._configurator.set_params(**value)
+            
             self._configurator.set_params(id=self._id)
-            self._configurator.set_params(num=self.i)
+
+            num = self.i
+            if self.n_subjects > 1:
+                num = np.floor((self.i-1) / self.n_subjects) + 1
+                logger.debug(num)
+            self._configurator.set_params(num=int(num))
+        
         else:
             raise StopIteration()
         
