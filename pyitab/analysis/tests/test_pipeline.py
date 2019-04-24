@@ -115,14 +115,17 @@ def test_save_pipeline_decoding(fetch_ds, tmpdir):
 
     print(path)
     print(a._estimator._test_id)
+    experiment = conf._default_options['ds.a.experiment']
+    experiment = experiment.replace("_","+")
 
     pipeline_folder = "pipeline-%s_analysis-%s_experiment-%s_roi-%s_id-%s" % \
-        ('test', 'roi_decoding', conf._default_options['ds.a.experiment'], 
+        ('test', 'roi+decoding', experiment, 
             'all', str(a._estimator._test_id))
     print(pipeline_folder)
     
     expected_folder = os.path.join(path, 'derivatives', pipeline_folder)
     assert os.path.exists(expected_folder)
+    assert os.path.exists(os.path.join(expected_folder, "dataset_description.json"))
     
     subject_folder = os.path.join(expected_folder, 'subj01')
     assert os.path.exists(subject_folder)
@@ -138,3 +141,4 @@ def test_save_pipeline_decoding(fetch_ds, tmpdir):
     # assert os.path.exists(os.path.join(subject_folder, conf_fname))
     
     assert len(os.listdir(subject_folder)) == 26 + 1
+

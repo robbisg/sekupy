@@ -314,7 +314,8 @@ class Decoding(Analyzer):
         trailing += "_perm-%s" % (kwargs.pop('perm'))
         # TODO: Solve empty prefix
         prefix = kwargs.pop('prefix')
-        midpart = "_".join(["%s-%s" % (k, v) for k, v in params.items()])
+        midpart = "_".join(["%s-%s" % (k, str(v).replace("_", "+")) \
+             for k, v in params.items()])
         
         filename = "%s_data.mat" % ("_".join([prefix, midpart, trailing]))
 

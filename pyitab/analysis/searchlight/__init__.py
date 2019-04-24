@@ -294,7 +294,8 @@ class SearchLight(Analyzer):
         params_keys = list(params.keys())
         params_keys += ['score', 'perm']
         logger.debug(params_keys)
-        midpart = "_".join(["%s-%s" % (k, kwargs[k]) for k in params_keys])
+        midpart = "_".join(["%s-%s" % (k, str(kwargs[k]).replace("_", "+")) \
+                            for k in params_keys])
         
         filename = "%s.nii.gz" % ("_".join([prefix, midpart, suffix]))
 
