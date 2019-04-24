@@ -85,6 +85,10 @@ class Analyzer(Node):
         kwargs.update(self._info)
         save_configuration(path, kwargs)
 
+        self._save_dataset_description(path)
+
+
+
         return path, prefix
 
 
@@ -96,13 +100,18 @@ class Analyzer(Node):
         pipeline_directory = []
         for k in keys:
             if k in info.keys():
-                pipeline_directory += ["%s-%s" % (k, info.pop(k))]
+                value = info.pop(k)
+                value = value.replace("_", "+")
+                pipeline_directory += ["%s-%s" % (k, value)]
         
         path = info.pop('path')
         id_ = info.pop('id')
 
         for k, v in info.items():
-            pipeline_directory += ["%s-%s" % (k, v)]
+            v = str(v).replace("_", "+")
+            pipeline_directory += ["%s-%s" % (k, str(v))]
+
+        logger.info(pipeline_directory)
 
         pipeline_directory += ["%s-%s" % ('id', id_)]
 
@@ -110,8 +119,9 @@ class Analyzer(Node):
         if len(subjects) != 1:
             subdir = 'group'
         else:
-            subdir = subjects[0]
+            subdir = str(subjects[0])
 
+        
         result_path = os.path.join(path, 
                                    'derivatives', 
                                    "_".join(pipeline_directory), 
@@ -191,7 +201,8 @@ class Analyzer(Node):
         info = dict()
         info['analysis'] = self.name
         info['path'] = self._info['a'].data_path
-        info['id'] = ".".join([get_time(), "%04d" % self.num, self.id])
+        #info['id'] = ".".join([get_time(elements=3), "%04d" % self.num, self.id])
+        info['id'] = "%s+%04d" % (self.id, self.num)
         info['experiment'] = self._info['a'].experiment
 
         # Only for testing purposes
@@ -203,10 +214,8 @@ class Analyzer(Node):
 
     
     
-    def _get_info(self, attributes=['estimator', 
-                                             'scoring', 
-                                             'cv', 
-                                             'permutation']):
+    def _get_info(self, attributes=['estimator', 'scoring', 
+                                    'cv','permutation']):
 
         # TODO: It may crash whether used with connectivity
         # TODO: maybe it should be performed on subclasses
@@ -247,3 +256,32 @@ class Analyzer(Node):
     def _get_test_id(self):
         if '_test_id' in self.__dict__.keys():
             return getattr(self, '_test_id')
+
+
+    
+    def _save_dataset_description(self, path):
+
+        info = self._get_analysis_info()
+
+        keys = ['pipeline', 'analysis', 'id']
+
+        description =  {
+                        "Name": "PyITAB - Pipelines for neuroimaging",
+                        "BIDSVersion": "1.1.1",
+                        "PipelineDescription": {
+                            "Name": "_".join([info[k] for k in keys if k in info.keys()]),
+                        },
+                        "CodeURL": "https://github.com/robbisg/pyitab"
+                    }
+
+        dataset_desc = os.path.join(os.path.dirname(path), 
+                                    "dataset_description.json")
+        print(dataset_desc)
+        if not os.path.exists(dataset_desc):
+        
+            save_configuration(os.path.dirname(path), 
+                               description, 
+                               filename="dataset_description.json")
+
+
+
