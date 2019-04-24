@@ -110,7 +110,8 @@ class TemporalDecoding(RoiDecoding):
 
         X, y = temporal_transformation(X, y, t_values)
 
-        _, _, indices = balancer.fit_sample(X[:,:,0], y)
+        _ = balancer.fit_sample(X[:,:,0], y)
+        indices = balancer.sample_indices_
         indices = np.sort(indices)
 
         groups = None

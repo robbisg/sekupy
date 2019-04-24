@@ -75,7 +75,7 @@ def test_save_multisubject_decoding(fetch_ds, tmpdir):
     expected_folder = os.path.join(path, 'derivatives', pipeline_folder)
     print(os.listdir(expected_folder))
     assert os.path.exists(expected_folder)
-    assert len(os.listdir(expected_folder)) == 2
+    assert len(os.listdir(expected_folder)) == 2 + 1
     
     subject_folder = os.path.join(expected_folder, 'subj02')
     assert os.path.exists(subject_folder)
