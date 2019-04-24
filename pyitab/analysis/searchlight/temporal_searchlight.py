@@ -101,7 +101,7 @@ class TemporalSearchLight(SearchLight):
 
     def fit(self, ds, 
             time_attr='frame', cv_attr='chunks',
-            balancer=RandomUnderSampler(return_indices=True)):
+            balancer=RandomUnderSampler()):
         """
         Fit the searchlight
         """

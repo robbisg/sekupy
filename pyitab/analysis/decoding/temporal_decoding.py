@@ -101,7 +101,7 @@ class TemporalDecoding(RoiDecoding):
 
     def _get_data(self, ds, cv_attr, 
                     time_attr='frame',
-                    balancer=RandomUnderSampler(return_indices=True),
+                    balancer=RandomUnderSampler(),
                     **kwargs):
         
 
@@ -135,7 +135,7 @@ class TemporalDecoding(RoiDecoding):
              roi_values=None,
              cv_attr=None,
              prepro=Transformer(),
-             balancer=RandomUnderSampler(return_indices=True),
+             balancer=RandomUnderSampler(),
              return_splits=True,
              return_predictions=False,
              **kwargs):

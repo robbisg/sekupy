@@ -22,7 +22,7 @@ class Balancer(Transformer):
     Parameters
     ----------
     balancer : [type], optional
-        [description] (the default is RandomUnderSampler(return_indices=True), which [default_description])
+        [description] (the default is RandomUnderSampler(), which [default_description])
     attr : str, optional
         [description] (the default is 'chunks', which [default_description])
     force_balance : boolean
@@ -125,13 +125,7 @@ class SamplingBalancer(Transformer):
 class UnderSamplingBalancer(SamplingBalancer):
     
     
-    def __init__(self, balancer, attr='chunks', **kwargs):
-        
-        if not balancer.return_indices:
-            logger.info("Balancer must return indices, set return_indices to True")
-            logger.info("Balancer set to default RandomUnderSampler.")
-            balancer = RandomUnderSampler()
-        
+    def __init__(self, balancer, attr='chunks', **kwargs):      
         SamplingBalancer.__init__(self, balancer, attr, name='under_balancer', **kwargs)
         
 
