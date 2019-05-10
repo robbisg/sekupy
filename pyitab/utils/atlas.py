@@ -75,7 +75,7 @@ def get_findlab_coords():
     atlas_dir = os.path.join(atlasdir, 'findlab')
     roi_list = os.listdir(atlas_dir)
     roi_list.sort()
-    findlab = [ni.load(atlas_dir+roi) for roi in roi_list]
+    findlab = [ni.load(os.path.join(atlas_dir, roi)) for roi in roi_list if roi.find("nii") != -1]
     f_coords = []
     for img_ in findlab:
 
