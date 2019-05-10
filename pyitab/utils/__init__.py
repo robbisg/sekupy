@@ -41,4 +41,10 @@ def enable_logging():
 
 def get_id():
     import tempfile
-    return tempfile.mkdtemp()[-8:]
+    id_ = tempfile.mkdtemp()[-8:]
+    
+    # This avoids important characters to be included
+    for r in ["/", "_", "-", "."]:
+        id_ = id_.replace(r, "0")
+    
+    return id_
