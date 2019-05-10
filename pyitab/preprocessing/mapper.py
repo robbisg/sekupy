@@ -1,9 +1,9 @@
+from pyitab.preprocessing.base import Transformer
 from pyitab.preprocessing.functions import Detrender, TargetTransformer, \
     FeatureSlicer, FeatureSlicer, SampleSlicer, FeatureStacker, DatasetMasker
 from pyitab.preprocessing.normalizers import FeatureZNormalizer, \
     SampleZNormalizer, SampleSigmaNormalizer, FeatureSigmaNormalizer, \
     DatasetFxNormalizer
-from pyitab.base import Transformer
 from pyitab.preprocessing.balancing.base import Balancer
 from pyitab.preprocessing.balancing.imbalancer import Imbalancer
 from pyitab.preprocessing.math import ZFisherTransformer, \
@@ -16,7 +16,7 @@ def function_mapper(name):
 
     mapper = {
               'detrender': Detrender,
-              'dataset_masker':DatasetMasker,
+              'dataset_masker': DatasetMasker,
               'target_transformer': TargetTransformer,
               'feature_normalizer': FeatureZNormalizer,
               'feature_slicer': FeatureSlicer,

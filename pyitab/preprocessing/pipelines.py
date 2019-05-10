@@ -1,13 +1,13 @@
 from pyitab.preprocessing.functions import Detrender, SampleSlicer
 from pyitab.preprocessing.normalizers import SampleZNormalizer, FeatureZNormalizer
-from pyitab.base import Node
+from pyitab.preprocessing.base import Transformer
 from pyitab.preprocessing.mapper import function_mapper
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class PreprocessingPipeline(Node):
+class PreprocessingPipeline(Transformer):
     
     
     def __init__(self, name='pipeline', nodes=None):
@@ -21,7 +21,7 @@ class PreprocessingPipeline(Node):
             if isinstance(nodes[0], str):
                 self.nodes = [function_mapper(node)() for node in nodes]
                     
-        Node.__init__(self, name)
+        Transformer.__init__(self, name)
     
     
     def add(self, node):

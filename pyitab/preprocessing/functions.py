@@ -9,7 +9,7 @@ from mvpa2.base.dataset import vstack
 import logging
 from itertools import product
 from mvpa2.base.dataset import hstack, vstack
-from pyitab.base import Transformer
+from pyitab.preprocessing.base import Transformer
 logger = logging.getLogger(__name__)
 
 

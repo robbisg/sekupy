@@ -1,5 +1,5 @@
 import numpy as np
-from pyitab.base import Transformer
+from pyitab.preprocessing.base import Transformer
 from pyitab.utils.math import z_fisher
 
 import logging
