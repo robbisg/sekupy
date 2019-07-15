@@ -88,7 +88,7 @@ class AnalysisPipeline(Analyzer):
         # params.update(self._estimator._get_fname_info())
         params = self._configurator._default_options
         
-        logger.info(params)
+        logger.debug(params)
         
         if 'path' in kwargs.keys():
             path = kwargs.pop("path")
