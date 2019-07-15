@@ -122,7 +122,7 @@ class Decoding(Analyzer):
         indices = self._get_permutation_indices(len(y))
                 
         self.scores = []
-        for idx in tqdm(indices):
+        for idx in indices:
             
             y_ = y[idx]
 
@@ -214,7 +214,7 @@ class Decoding(Analyzer):
                     
                 # TODO: Better use of cv and attributes for leave-one-subject-out
                 kwargs.update({'mask': roi, 'perm': "%04d" % p})
-
+                logger.debug(kwargs)
                 filename = self._get_filename(**kwargs)
                 logger.info("Saving %s" % (filename))
                 
