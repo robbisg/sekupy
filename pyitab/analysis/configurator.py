@@ -24,7 +24,7 @@ class AnalysisConfigurator(object):
                  estimator=[('clf', SVC(C=1, kernel='linear'))],
                  analysis=SearchLight,
                  cv=GroupShuffleSplit,
-                 scores=['accuracy'],
+                 #scores=['accuracy'],
                  **kwargs):
 
         """The configurator is used to store all the information on 
@@ -83,7 +83,7 @@ class AnalysisConfigurator(object):
         self._default_options['estimator'] = estimator
         self._default_options['analysis'] = analysis
         self._default_options['cv'] = cv
-        self._default_options['scores'] = scores
+        #self._default_options['scores'] = scores
         self._default_options['num'] = 1
 
         self._default_options.update(kwargs)
@@ -127,6 +127,10 @@ class AnalysisConfigurator(object):
             class_ = function_mapper(key)
             
             arg_dict = self._get_params(key)
+            if key == 'sample_slicer' and 'attr' in arg_dict.keys():
+                arg_dict = arg_dict['attr']
+
+
                 
             object_ = class_(**arg_dict)
             transformer.append(object_)
@@ -167,9 +171,6 @@ class AnalysisConfigurator(object):
         
         if 'cv' in keys:
             params['cv'] = self._get_cross_validation()
-
-        if 'scores' in keys:
-            params['scoring'] = self._default_options['scores']
         
         analysis = self._default_options['analysis']
         logger.debug(params)
