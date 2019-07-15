@@ -45,10 +45,11 @@ def load_mat_data(path, subj, folder, **kwargs):
     # load data from mat
     filelist = load_filelist(path, subj, folder, **kwargs)
 
-    if len(filelist) == 0:
-        return None
+    if filelist is None or len(filelist) == 0:
+        return None, None
     
     data = []
+    info = {'file':[]}
     for f in filelist:
         
         logger.info("Loading %s..." %(f))
@@ -56,13 +57,16 @@ def load_mat_data(path, subj, folder, **kwargs):
         datum = mat[key]
         logger.debug(datum.shape)
         data.append(mat[key])
-    
-    return transformer(data)
+        info['file'] += [f for _ in range(datum.shape[0])]
+
+    data, info['parcels'] = transformer(data)
+
+    return data, info
 
 
 def load_mat_ds(path, subj, folder, **kwargs):   
         
-    data, parcels = load_mat_data(path, subj, folder, **kwargs)
+    data, info = load_mat_data(path, subj, folder, **kwargs)
     
     # load attributes
     attr = load_attributes(path, subj, folder, **kwargs)
@@ -76,12 +80,13 @@ def load_mat_ds(path, subj, folder, **kwargs):
     ds = add_subjectname(ds, subj)
     ds = add_attributes(ds, attr)
 
-    ds = add_labels(ds, parcels, **kwargs)
+    ds = add_labels(ds, info['parcels'], **kwargs)
 
     #ds.fa['roi_labels'] = labels
     ds.fa['matrix_values'] = np.ones_like(data[0])
     
     ds.sa['chunks'] = LabelEncoder().fit_transform(ds.sa['name'])
+    ds.sa['file'] = info['file']
     
     return ds
 
