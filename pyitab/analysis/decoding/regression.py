@@ -14,7 +14,8 @@ class RoiRegression(RoiDecoding):
                  **kwargs
                  ):
 
-        return RoiDecoding.__init__(estimator=estimator,
+        return RoiDecoding.__init__(self,
+                                    estimator=estimator,
                                     n_jobs=n_jobs, 
                                     scoring=scoring, 
                                     permutation=permutation, 
@@ -35,7 +36,8 @@ class TemporalRegression(TemporalDecoding):
                  **kwargs
                  ):
 
-        return TemporalDecoding.__init__(estimator=estimator, 
+        return TemporalDecoding.__init__(self,
+                                         estimator=estimator, 
                                          n_jobs=n_jobs, 
                                          scoring=scoring,
                                          permutation=permutation, 

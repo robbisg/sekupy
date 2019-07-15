@@ -15,7 +15,7 @@ from pyitab.ext.sklearn._validation import cross_validate
 
 from pyitab.preprocessing.functions import FeatureSlicer
 from pyitab.analysis.decoding import Decoding
-from pyitab.base import Transformer
+from pyitab.preprocessing.base import Transformer
 
 from scipy.io.matlab.mio import savemat
 
@@ -173,7 +173,7 @@ class RoiDecoding(Decoding):
             string_value = "+".join([str(v) for v in value])
             scores["mask-%s_value-%s" % (r, string_value)] = self.scores
         
-        
+
         self._info = self._store_info(ds, 
                                       cv_attr=cv_attr,
                                       roi=roi,

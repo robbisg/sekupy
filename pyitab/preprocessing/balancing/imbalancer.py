@@ -1,4 +1,4 @@
-from pyitab.base import Transformer
+from pyitab.preprocessing.base import Transformer
 from pyitab.preprocessing.functions import SampleSlicer
 from pyitab.utils.dataset import get_ds_data
 from collections import Counter
