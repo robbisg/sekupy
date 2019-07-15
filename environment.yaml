@@ -6,7 +6,7 @@ dependencies:
   - nomkl
   - python-blosc
   - cytoolz
-  - scipy
+  - scipy=1.2
   - matplotlib
   - cython
   - tk
