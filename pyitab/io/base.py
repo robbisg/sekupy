@@ -189,9 +189,10 @@ def load_filelist(path, name, folder, **kwargs):
 
     logger.debug(' Matching files ')
     logger.debug(file_list)
-    
-    file_list.sort()
-    
+
+    if file_list is not None:
+        file_list.sort()
+        
     return file_list
   
 

@@ -101,6 +101,8 @@ class Analyzer(Node):
         for k in keys:
             if k in info.keys():
                 value = info.pop(k)
+                if isinstance(value, list):
+                    value = "+".join([str(item) for item in value])
                 value = value.replace("_", "+")
                 pipeline_directory += ["%s-%s" % (k, value)]
         
@@ -136,11 +138,13 @@ class Analyzer(Node):
         import numpy as np
 
         fname_list = np.unique(self._info['sa']['file'])
+
         prefix_list = os.path.basename(fname_list[0]).split("_")
 
-        if len(fname_list) > 1:
+        subjects = self._info['subjects']
+        if len(subjects) != 1:
             prefix_list[0] = "group"
-
+        
         if len(prefix_list) == 1:
             prefix_list = ["bids", ""]
 
@@ -179,18 +183,17 @@ class Analyzer(Node):
         info['summary'] = ds.summary()
 
         for k, v in kwargs.items():
+
+            if isinstance(v, list):
+                v = "+".join([str(it) for it in v])
+
             info[k] = str(v)
             if k == 'prepro':
                 info[k] = [v.name]
 
-        # TODO: Use unique field
         if 'subject' in ds.sa.keys():
             info['subjects'] = list(np.unique(ds.sa.subject))
 
-        elif 'name' in ds.sa.keys():
-            info['subjects'] = list(np.unique(ds.sa.name))
-
-        
         logger.debug(info)
         return info
     
@@ -207,8 +210,6 @@ class Analyzer(Node):
 
         # Only for testing purposes
         self._test_id = info['id']
-        print(self._test_id)
-        print(self.__class__)
 
         return info
 
@@ -276,12 +277,13 @@ class Analyzer(Node):
 
         dataset_desc = os.path.join(os.path.dirname(path), 
                                     "dataset_description.json")
-        print(dataset_desc)
-        if not os.path.exists(dataset_desc):
         
-            save_configuration(os.path.dirname(path), 
-                               description, 
-                               filename="dataset_description.json")
+        if not os.path.exists(dataset_desc):
+            import json
+            
+            with open(dataset_desc, 'w') as fp:
+                json.dump(description, fp)
+        
 
 
 

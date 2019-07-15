@@ -41,7 +41,7 @@ def test_fit(fetch_ds):
     assert len(scores.keys()) == 26 # No. of ROI
     
     roi_result = scores['mask-brain_value-2.0']
-    assert roi_result[0]['test_accuracy'].shape == (2,)
+    assert roi_result[0]['test_score'].shape == (2,)
 
 
 def test_fit_without_ds():
@@ -83,7 +83,7 @@ def test_fit_with_ds(fetch_ds, get_datadir):
 
     scores = a._estimator.scores    
     roi_result = scores['mask-brain_value-2.0']
-    assert roi_result[0]['test_accuracy'].shape == (4,)
+    assert roi_result[0]['test_score'].shape == (4,)
 
 
 def test_save_pipeline_decoding(fetch_ds, tmpdir):
