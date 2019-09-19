@@ -91,19 +91,22 @@ class RoiDecoding(Decoding):
 
     def _get_rois(self, ds, roi):
         """Gets the roi list if the attribute is all"""
-        
-        rois = [r for r in ds.fa.keys() if r != 'voxel_indices']
+           
         
         if roi != 'all':
             rois = roi
+        else:
+            rois = [r for r in ds.fa.keys() if r != 'voxel_indices']
         
         rois_values = []
         
         for r in rois:
-            value = [(r, [v]) for v in np.unique(ds.fa[r].value) if v != 0]
-            rois_values.append(value)
+            for v in np.unique(ds.fa[r].value):
+                if v != 0:
+                    value = (r, [v])
+                    rois_values.append(value)
             
-        return list(*rois_values)    
+        return rois_values    
     
 
     def fit(self, ds, 
