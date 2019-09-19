@@ -105,11 +105,20 @@ class SamplingBalancer(Transformer):
     
     def _balance_attr(self, ds):
         
-        balanced_ds = []
-        logger.debug(np.unique(ds.sa[self._attr].value))
-        for attribute in np.unique(ds.sa[self._attr].value):
+        from itertools import product
 
-            selection_dict = {self._attr : [attribute]}
+        if not isinstance(self._attr, list):
+            self._attr = [self._attr]
+
+        n_attributes = len(self._attr)
+        unique_attributes = product(*[np.unique(ds.sa[v].value) for v in self._attr])
+
+        logger.debug(unique_attributes)
+
+        balanced_ds = []
+        for attributes in unique_attributes:
+            selection_dict = {self._attr[i]:[attributes[i]] for i in range(n_attributes)}
+            logger.debug(selection_dict)
             ds_ = SampleSlicer(**selection_dict).transform(ds)
             
             ds_b = self._balance(ds_)  
@@ -129,7 +138,6 @@ class UnderSamplingBalancer(SamplingBalancer):
         SamplingBalancer.__init__(self, balancer, attr, name='under_balancer', **kwargs)
         
 
-    # TODO: Multiple attributes
     def _balance(self, ds):
         
         X, y = get_ds_data(ds)
