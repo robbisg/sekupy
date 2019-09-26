@@ -42,10 +42,13 @@ def load_dataset(path, subj, folder, **kwargs):
     '''
 
     roi_labels = dict()
-      
+    extract_events = False
+
     for arg in kwargs:
         if arg == 'roi_labels':             # dictionary of mask {'mask_label': string}
             roi_labels = kwargs[arg]
+        elif arg == 'extract_events':
+            extract_events = bool(kwargs[arg])
     
     
     # Load the filename list        
@@ -95,7 +98,8 @@ def load_dataset(path, subj, folder, **kwargs):
     del fmri_list
     
     # Update Dataset attributes
-    ds = add_events(ds)
+    if extract_events:
+        ds = add_events(ds)
     
     # Name added to do leave one subject out analysis
     ds = add_subjectname(ds, subj)
@@ -178,8 +182,6 @@ def load_filelist(path, name, folder, **kwargs):
             img_pattern = kwargs[arg] 
         if (arg == 'sub_dir'):
             sub_dirs = kwargs[arg].split(',')
-
-
 
     file_list = build_pathnames(path, name, sub_dirs)
   
@@ -322,7 +324,7 @@ def load_attributes (path, subj, task,  **kwargs):
         attribute_list += [os.path.join(d,f) for f in temp_list if f.find(event_file) != -1]
         
         
-    logger.debug(attribute_list)
+    logger.info(attribute_list)
     
     # Small check
     if len(attribute_list) > 2:

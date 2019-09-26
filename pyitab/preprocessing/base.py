@@ -25,7 +25,9 @@ class Transformer(Node):
 
         
     def transform(self, ds):
+        
         self.map_transformer(ds)
+
         return ds
     
 
@@ -42,3 +44,34 @@ class Transformer(Node):
     
     def save(self, path=None):
         return Node.save(self, path=path)
+
+
+class PreprocessingPipeline(Transformer):
+    
+    
+    def __init__(self, name='pipeline', nodes=None):
+        from pyitab.preprocessing.mapper import function_mapper
+        
+        self.nodes = []
+        
+        if nodes is not None:
+            self.nodes = nodes
+        
+            if isinstance(nodes[0], str):
+                self.nodes = [function_mapper(node)() for node in nodes]
+                    
+        Transformer.__init__(self, name)
+    
+    
+    def add(self, node):
+        
+        self.nodes.append(node)
+        return self
+    
+    
+    def transform(self, ds):
+        logger.info("%s is performing..." %(self.name))
+        for node in self.nodes:
+            ds = node.transform(ds)
+
+        return ds

@@ -10,6 +10,7 @@ import logging
 from itertools import product
 from mvpa2.base.dataset import hstack, vstack
 from pyitab.preprocessing.base import Transformer
+from pyitab.preprocessing.base import PreprocessingPipeline
 logger = logging.getLogger(__name__)
 
 
@@ -113,6 +114,7 @@ class TargetTransformer(Transformer):
         return Transformer.transform(self, ds)
 
 
+
 class FeatureSlicer(Transformer):
     """ This transformer filters the dataset using features as specified on a dictionary
     The dictionary indicates the feature attributes to be used as key and a list
@@ -130,7 +132,6 @@ class FeatureSlicer(Transformer):
     """
     
     def __init__(self, **kwargs):
-        print(kwargs)
         
         self._selection = dict()
         for arg in kwargs:
@@ -271,7 +272,6 @@ class FeatureStacker(Transformer):
 
 
     def transform(self, ds):
-        print(self._selection)
         
         ds_ = SampleSlicer(**self._selection).transform(ds)
   
@@ -331,4 +331,32 @@ class DatasetMasker(Transformer):
 
         ds = ds[self._mask]
         
+        return Transformer.transform(self, ds)
+
+
+
+class SampleTransformer(Transformer):
+    """This function is used when we need to lock SampleSlicer with
+    TargetTransformer in order to be used with AnalysisIterator.
+    
+    Parameters
+    ----------
+    attr : dictionary
+        [description]
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
+    
+    def __init__(self, attr={}):
+
+        self.key, self.value = list(attr.items())[0]
+        self._pipeline = PreprocessingPipeline(nodes=[TargetTransformer(self.key),
+                                                     SampleSlicer(**{self.key: self.value})])
+        Transformer.__init__(self, name='sample_transformer', attr=attr)
+    
+    def transform(self, ds):
+        ds = self._pipeline.transform(ds)
         return Transformer.transform(self, ds)

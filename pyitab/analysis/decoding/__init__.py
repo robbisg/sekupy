@@ -297,12 +297,17 @@ class Decoding(Analyzer):
         params = dict()
         if 'prepro' in kwargs.keys():
 
-            for keyword in ["sample_slicer", "target_trans"]:
+            for keyword in ["sample_slicer", "target_transformer", "sample_transformer"]:
                 if keyword in kwargs['prepro']:
                     params_ = get_params(kwargs, keyword)
 
                     if keyword == "sample_slicer":
                         params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
+                    
+                    if keyword == "sample_transformer":
+                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_['attr'].items()}
+                    
+                    
 
                     params.update(params_)
         else:

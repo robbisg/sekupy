@@ -1,7 +1,6 @@
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import GroupShuffleSplit
 from sklearn.svm.classes import SVC
-
 from pyitab.preprocessing.mapper import function_mapper
 from pyitab.preprocessing.pipelines import PreprocessingPipeline
 from pyitab.analysis.searchlight import SearchLight
@@ -127,6 +126,7 @@ class AnalysisConfigurator(object):
             class_ = function_mapper(key)
             
             arg_dict = self._get_params(key)
+
             if key == 'sample_slicer' and 'attr' in arg_dict.keys():
                 arg_dict = arg_dict['attr']
 
@@ -183,14 +183,17 @@ class AnalysisConfigurator(object):
         
         params = dict()
         
-        for keyword in ["sample_slicer", "target_trans"]:
+        for keyword in ["sample_slicer", "target_transformer", "sample_transformer"]:
 
             if keyword in self._default_options['prepro']:
                 
                 params_ = self._get_params(keyword)
                 if keyword == "sample_slicer":
-                    params_ = {k: "_".join([str(v) for v in value]) for k, value in params_.items()}
-                                 
+                    params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
+
+                if keyword == "sample_transformer":
+                    params_ = {k: "+".join([str(v) for v in value]) for k, value in params_['attr'].items()}
+
                 params.update(params_)
 
         params.update({'id': self._default_options['id']})
