@@ -19,6 +19,7 @@ dask-jobqueue
 dask-kubernetes
 distributed
 xlrd
+nistats
 coverage
 codecov
 pytest>=3.6.0
