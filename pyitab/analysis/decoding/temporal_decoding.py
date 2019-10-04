@@ -9,7 +9,8 @@ from sklearn.model_selection._split import LeaveOneGroupOut
 from tqdm import tqdm
 
 from pyitab.utils.dataset import get_ds_data
-from pyitab.utils.dataset import temporal_attribute_reshaping, temporal_transformation
+from pyitab.utils.dataset import temporal_attribute_reshaping, \
+    temporal_transformation
 
 from pyitab.preprocessing.functions import FeatureSlicer
 from pyitab.analysis.decoding.roi_decoding import RoiDecoding
@@ -100,13 +101,19 @@ class TemporalDecoding(RoiDecoding):
     
 
     def _get_data(self, ds, cv_attr, 
-                    time_attr='frame',
-                    balancer=RandomUnderSampler(),
-                    **kwargs):
+                  time_attr='frame',
+                  balancer=RandomUnderSampler(),
+                  **kwargs):
         
+        import warnings
+        warnings.warn("This function must be replaced by super function _get_data", 
+                        DeprecationWarning)
 
         X, y = get_ds_data(ds)
         t_values = ds.sa[time_attr].value
+
+        if len(X.shape) == 3:
+            return RoiDecoding._get_data(self, ds, cv_attr, **kwargs)
 
         X, y = temporal_transformation(X, y, t_values)
 

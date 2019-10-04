@@ -1,7 +1,7 @@
 from pyitab.preprocessing.base import Transformer
 from pyitab.preprocessing.functions import Detrender, TargetTransformer, \
     FeatureSlicer, FeatureSlicer, SampleSlicer, FeatureStacker, DatasetMasker, \
-        SampleTransformer
+    SampleTransformer, TemporalTransformer
 from pyitab.preprocessing.normalizers import FeatureZNormalizer, \
     SampleZNormalizer, SampleSigmaNormalizer, FeatureSigmaNormalizer, \
     DatasetFxNormalizer
@@ -10,7 +10,8 @@ from pyitab.preprocessing.balancing.imbalancer import Imbalancer
 from pyitab.preprocessing.math import ZFisherTransformer, \
     AbsoluteValueTransformer, SignTransformer
 from pyitab.preprocessing.memory import MemoryReducer
-from pyitab.preprocessing.regression import FeatureResidualTransformer, SampleResidualTransformer
+from pyitab.preprocessing.regression import FeatureResidualTransformer, \
+    SampleResidualTransformer
 
 
 
@@ -37,7 +38,8 @@ def function_mapper(name):
               'none': Transformer,
               'memory_reducer': MemoryReducer,
               'feature_residual': FeatureResidualTransformer,
-              'sample_residual': SampleResidualTransformer
+              'sample_residual': SampleResidualTransformer,
+              'temporal_transformer': TemporalTransformer,
               }
     
     return mapper[name]

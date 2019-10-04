@@ -21,6 +21,8 @@ class Imbalancer(Transformer):
     def _balance(self, ds):
             
         X, y = get_ds_data(ds)
+        if len(X.shape) > 2:
+            X = X[...,0]
 
         mask = np.zeros_like(y, dtype=np.bool)
         logger.debug('Attribute balanced dataset: %s', Counter(ds.targets))

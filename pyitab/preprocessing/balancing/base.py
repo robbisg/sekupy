@@ -141,6 +141,10 @@ class UnderSamplingBalancer(SamplingBalancer):
     def _balance(self, ds):
         
         X, y = get_ds_data(ds)
+        if len(X.shape) > 2:
+            X = X[..., 0]
+
+
         self._mask = np.arange(len(y))
         _, count = np.unique(y, return_counts=True)
         
@@ -165,6 +169,8 @@ class OverSamplingBalancer(SamplingBalancer):
     def _balance(self, ds):
         
         X, y = get_ds_data(ds)
+        if len(X.shape) > 2:
+            raise NotImplementedError('Over-sampling not implemented for this dataset.')
         
         X_, y_ = self._balancer.fit_sample(X, y)
         

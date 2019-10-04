@@ -11,6 +11,9 @@ from itertools import product
 from mvpa2.base.dataset import hstack, vstack
 from pyitab.preprocessing.base import Transformer
 from pyitab.preprocessing.base import PreprocessingPipeline
+
+from pyitab.utils.dataset import temporal_attribute_reshaping, \
+    temporal_transformation
 logger = logging.getLogger(__name__)
 
 
@@ -359,4 +362,47 @@ class SampleTransformer(Transformer):
     
     def transform(self, ds):
         ds = self._pipeline.transform(ds)
+        return Transformer.transform(self, ds)
+
+
+class TemporalTransformer(Transformer):
+    """This function is used when we need to lock SampleSlicer with
+    TargetTransformer in order to be used with AnalysisIterator.
+    
+    Parameters
+    ----------
+    attr : dictionary
+        [description]
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
+    
+    def __init__(self, attr='frame'):
+
+        self.attr = attr
+        Transformer.__init__(self, name='temporal_transformer', attr=attr)
+    
+    def transform(self, ds):
+
+
+        temporal_attributes = ds.sa[self.attr].value
+
+        X, y = temporal_transformation(ds.samples, 
+                                       ds.targets, 
+                                       temporal_attributes)
+
+        logger.info(X.shape)
+        ds.sa.set_length_check(len(y))
+
+        for k in ds.sa.keys():
+            ds.sa[k] = temporal_attribute_reshaping(ds.sa[k].value, temporal_attributes)
+
+        logger.info(X.shape)
+        ds.samples = X
+
+        logger.info(ds.samples.shape)
+
         return Transformer.transform(self, ds)
