@@ -26,3 +26,4 @@ dependencies:
      - joblib
      - nilearn
      - scikit-learn
+     - nistats
