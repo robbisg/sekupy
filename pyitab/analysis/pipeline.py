@@ -51,6 +51,7 @@ class AnalysisPipeline(Analyzer):
 
         if (ds is None) and (self._loader is not None):
             fetch_kw = self._configurator._get_function_kwargs(function="fetch")
+            logger.info(fetch_kw)
             ds = self._loader.fetch(**fetch_kw)
         elif (ds is None) and (self._loader is None):
             raise Exception("You must specify a dataset or a loader in the Configurator!")

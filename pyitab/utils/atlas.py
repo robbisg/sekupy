@@ -5,6 +5,10 @@ import seaborn as sns
 
 from mne.viz import circular_layout
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 currdir = os.path.dirname(os.path.abspath(__file__))
 currdir = os.path.abspath(os.path.join(currdir, os.pardir))
 atlasdir = os.path.join(currdir, 'io', 'data', 'atlas')
@@ -56,7 +60,7 @@ def get_aal_coords(fname):
     """
 
     atlas90 = ni.load(fname)
-    coords = [find_roi_center(atlas90, roi_value=i) for i in np.unique(atlas90.get_data())[1:]]
+    coords = [find_roi_center(atlas90, roi_value=i) for i in np.unique(atlas90.get_data())[:]]
     
     return np.array(coords)
 
@@ -192,25 +196,53 @@ def get_findlab_info(background='black'):
     return names, colors_lr, index_, coords, networks, node_angles
 
 
-def get_aalmeg_info(background='black'):
+def get_aalmeg_info(background='black', grouping='LR'):
+    """[summary]
+    
+    Parameters
+    ----------
+    background : str, optional
+        [description], by default 'black'
+    grouping : str, optional
+        [description], by default 'LR' or 'lobes'
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
     atlas_fname = os.path.join(atlasdir, 'aal', 'ROI_MNI_V4.nii')
-    labels_fname = os.path.join(atlasdir, 'aal', 'ROI_MNI_V4.txt')
+    labels_fname = os.path.join(atlasdir, 'aal', 'ROI_MNI_V4.csv')
     coords = get_aal_coords(atlas_fname)
 
-    labels = np.loadtxt(labels_fname, dtype=np.str)
+    labels = np.loadtxt(labels_fname, dtype=np.str, delimiter=',')
     node_names = labels.T[1][:99]
-    node_idx = np.argsort(np.array([node[-1] for node in node_names]))
 
+    
+
+    if grouping == 'LR':
+        node_idx = np.argsort(np.array([node[-1] for node in node_names]))
+        group_boundaries = [0, len(node_names) / 2.+1]
+        colors = sns.husl_palette(2)
+        networks = node_names.copy()
+    else:
+        node_network = labels.T[3][:99]
+        node_idx = np.argsort(node_network)
+        networks, count = np.unique(node_network, return_counts=True)
+        group_boundaries = np.cumsum(np.hstack(([0], count)))[:-1]
+        color_network = sns.color_palette("Paired", len(networks)+1)
+        colors_ = dict(zip(networks, color_network[1:]))
+        colors = [colors_[n] for n in node_network]
+
+    order = node_names[node_idx].tolist()
     node_angles = circular_layout(node_names.tolist(), 
-                                  node_names[node_idx].tolist(), 
+                                  order,
                                   start_pos=90, 
-                                  group_boundaries=[0, len(node_names) / 2.+1],
+                                  group_boundaries=group_boundaries,
+                                  group_sep=3.
                                   )
 
-    colors = sns.husl_palette(2)
-
-    networks = node_names.copy()
 
     return labels, colors, node_idx, coords, networks, node_angles
 
@@ -244,3 +276,63 @@ def get_atlas_info(atlas_name='findlab'):
     }
 
     return mapper[atlas_name]()
+
+
+def where_am_i(fname):
+    """This function is used to find the ROI name in a mask file using 
+    AFNI whereami.
+    
+    Parameters
+    ----------
+    fname : string,
+        The complete filename of the mask.
+
+    Returns
+    -------
+    table : list
+        The list has a lenght equal to the number of ROIs contained in the file
+        Elements of the list:
+        (x, y, z): coordinates of ROI's center of mass.
+        label: name of the brain area closest to the center of mass
+        num: number of voxels included in the ROI
+        value: value of the ROI in the input file 
+
+    """
+
+    logger.info("Looking for ROI names in "+fname)
+    img = ni.load(fname)
+    center_711 = np.array([-70.5, -105, -60.])
+    data = img.get_data().squeeze()
+    table = []
+    for f in np.unique(data)[1:]:
+        mask_roi = data == f
+
+        center_mass = np.mean(np.nonzero(mask_roi), axis=1)
+        x,y,z = np.rint([3,3,3]*center_mass+center_711)
+
+        command = "whereami %s %s %s -lpi -space TLRC -tab" %(str(x+2.), str(y+2), str(z+2))
+        var = os.popen(command).read()
+        lines = var.split("\n")
+        index = [i for i, l in enumerate(lines) if l[:5] == 'Atlas']
+        label1 = lines[index[0]+1]
+        label2 = lines[index[0]+2]
+        if label1[0] == '*':
+            area1 = area2 = "None"
+        else:
+            area1 = label1.split("\t")[2]
+            area2 = label2.split("\t")[2]
+        table.append([x, y, z, area1, np.count_nonzero(mask_roi), f])
+
+    return table
+
+def get_rois_names(path):
+    import glob
+    big_table = {}
+    rois = glob.glob(path+"*mask.nii.gz")
+    for fname in rois:
+        print(fname)
+        table = where_am_i(fname)
+        key = fname.split('/')[-1].split('.')[0][:-5]
+        big_table[key] = table
+    
+    return big_table

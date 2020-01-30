@@ -1,5 +1,7 @@
 from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
 from pyitab.io.base import load_dataset
+from pyitab.io.configuration import read_configuration
+from pyitab.io.subjects import load_subjects
 from pyitab.io import load_ds
 from pyitab.io.mapper import get_loader
 
@@ -110,5 +112,14 @@ class DataLoader(object):
         
         return ds
     
+
+    def get_subjects(self):
+
+        conf = read_configuration(self._configuration_file, 
+                                  self._task)
+        
+        subjects, _ = load_subjects(conf)
+
+        return subjects
 
     

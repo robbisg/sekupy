@@ -59,6 +59,8 @@ class PreprocessingPipeline(Transformer):
         
             if isinstance(nodes[0], str):
                 self.nodes = [function_mapper(node)() for node in nodes]
+
+        self.sliced_nodes = self.nodes
                     
         Transformer.__init__(self, name)
     
@@ -70,8 +72,17 @@ class PreprocessingPipeline(Transformer):
     
     
     def transform(self, ds):
-        logger.info("%s is performing..." %(self.name))
+        logger.info("%s is performing..." % (self.name))
         for node in self.nodes:
             ds = node.transform(ds)
 
         return ds
+
+
+    def __getitem__(self, ind):
+
+        if isinstance(ind, slice):
+            return self.__class__(nodes=self.nodes[ind])
+
+        elif isinstance(ind, int):
+            return self.nodes[ind]

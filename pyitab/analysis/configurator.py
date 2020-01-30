@@ -154,6 +154,9 @@ class AnalysisConfigurator(object):
         
         cv_params = self._get_params("cv")
         cross_validation = self._default_options['cv']
+
+        logger.debug(cross_validation)
+        logger.debug(cv_params)
                 
         return cross_validation(**cv_params)
     

@@ -51,7 +51,7 @@ def load_bids_dataset(path, subj, task, **kwargs):
     # TODO: Use kwargs to get derivatives etc.
     layout = BIDSLayout(path, derivatives=derivatives)
 
-    #logger.debug(layout.get())
+    logger.debug(layout.get())
 
 
     # Load the filename list
