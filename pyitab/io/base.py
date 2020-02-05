@@ -6,13 +6,16 @@
 from __future__ import print_function
 
 import os
-from mvpa2.suite import fmri_dataset, SampleAttributes
-from mvpa2.suite import eventrelated_dataset
+from mvpa2.misc.io.base import SampleAttributes
+from mvpa2.datasets.mri import fmri_dataset
+from mvpa2.datasets.eventrelated import eventrelated_dataset, find_events
+from mvpa2.base.dataset import vstack
+
+
 import logging
 import numpy as np
 import nibabel as ni
-from mvpa2.datasets.eventrelated import find_events
-from mvpa2.base.dataset import vstack
+
 
 from pyitab.utils.files import add_subdirs, build_pathnames
 from pyitab.io.subjects import add_subjectname

@@ -1,5 +1,6 @@
 from mvpa2.base.collections import SampleAttributesCollection
-from mvpa2.suite import Dataset, vstack
+from mvpa2.datasets.base import Dataset
+from mvpa2.datasets import vstack
 
 from sklearn.preprocessing.label import LabelEncoder
 
