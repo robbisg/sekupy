@@ -3,7 +3,7 @@ from pyitab.io.configuration import read_configuration
 from pyitab.io.subjects import load_subjects
 from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
 
-from mvpa2.suite import vstack
+from mvpa2.datasets import vstack
 
 import os
 import numpy as np
