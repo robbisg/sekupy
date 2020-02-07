@@ -5,3 +5,6 @@
 
 
 Set of utilities for the analysis of neuroimaging data, using python libraries.
+
+With ```pyitab``` to perform a vast set of decoding analysis easily!
+
