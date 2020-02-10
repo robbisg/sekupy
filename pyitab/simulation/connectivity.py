@@ -6,7 +6,6 @@ class ConnectivityStateSimulator():
 
     def __init__(self, n_nodes=10, max_edges=5, fsamp=256):
     
-
         edges = [e for e in itertools.combinations(np.arange(n_nodes), 2)]
         n_edges = len(edges)
 
@@ -35,7 +34,7 @@ class ConnectivityStateSimulator():
         
         selected_states = self._states[states_idx]
 
-        length_bs = np.random.randint(self._fs * min_time, 
+        bs_length = np.random.randint(self._fs * min_time, 
                                       self._fs * max_time, 
                                       length_states
                                       )
@@ -43,42 +42,29 @@ class ConnectivityStateSimulator():
         # This is done using Hidden Markov Models but since 
         # Transition matrix is uniformly distributed we can use random sequency
         #     mc = mcmix(nBS,'Fix',ones(nBS)*(1/nBS));
-        #     seqBS= simulate(mc,nseqBS-1);
-        seqBS = np.random.randint(0, n_brain_states, length_states)
+        #     seqBS= simulate(mc,nbs_sequence-1);
+        bs_sequence = np.random.randint(0, n_brain_states, length_states)
 
-        return lenght_bs, sequence_bs
+        bs_dynamics = [] 
+        for i, time in enumerate(bs_length): 
+            for _ in range(time): 
+                bs_dynamics.append(bs_sequence[i])
+        bs_dynamics = np.array(bs_dynamics)
 
-        full_bs_matrix = np.zeros((n_brain_states, n_nodes, n_nodes, model.order))
 
+        brain_matrices = []
         for j in range(n_brain_states):
-            matrix = np.eye(n_nodes)
+            matrix = np.eye(self._n_nodes)
             selected_edges = selected_states[j]
             for edge in selected_edges:
-                matrix[edges[np.array(edge)]] = 1
-            pl.figure()
-            pl.imshow(matrix)
-            matrix = np.dstack([matrix for _ in range(model.order)])
+                matrix[self._edges[np.array(edge)]] = 1
+            brain_matrices.append(matrix)
 
-            cycles = 0
-            FA = np.zeros((n_nodes*model.order, n_nodes*model.order))
-            eye_idx = n_nodes*model.order - n_nodes
-            FA[n_nodes:, :eye_idx] = np.eye(eye_idx)
-            for k in range(10000):
-                A = 1/2.5 * np.random.rand(n_nodes, n_nodes, model.order) * matrix
-                FA[:n_nodes,:] = np.reshape(A, (n_nodes, -1), 'F')
+        brain_matrices = np.array(brain_matrices)
 
-                eig, _ = sp.linalg.eig(FA)
+        self._bs_matrices = brain_matrices
+        self._bs_length = bs_length
+        self._bs_sequence = bs_sequence
+        self._bs_dynamics = bs_dynamics
 
-                if np.all(np.abs(eig) < 1):
-                    print(k)
-                    break
-
-            
-            if k==10000:
-                raise("Solutions not found")
-
-
-
-            full_bs_matrix[j] = A.copy()
-
-        data = model.fit(full_bs_matrix, seqBS, length_bs)
+        return brain_matrices, bs_length, bs_sequence
