@@ -6,5 +6,5 @@
 
 Set of utilities for the analysis of neuroimaging data, using python libraries.
 
-With ```pyitab``` to perform a vast set of decoding analysis easily!
+With ```pyitab``` you can perform a vast set of decoding analysis easily! (Documentation hopefully soon!)
 
