@@ -4,7 +4,7 @@ import itertools
 
 class ConnectivityStateSimulator():
 
-    def __init__(self, n_nodes=10, max_edges=5, fsamp=256):
+    def __init__(self, n_nodes=10, max_edges=5, fsamp=128):
     
         edges = [e for e in itertools.combinations(np.arange(n_nodes), 2)]
         n_edges = len(edges)
@@ -51,7 +51,6 @@ class ConnectivityStateSimulator():
                 bs_dynamics.append(bs_sequence[i])
         bs_dynamics = np.array(bs_dynamics)
 
-
         brain_matrices = []
         for j in range(n_brain_states):
             matrix = np.eye(self._n_nodes)
@@ -62,9 +61,9 @@ class ConnectivityStateSimulator():
 
         brain_matrices = np.array(brain_matrices)
 
-        self._bs_matrices = brain_matrices
-        self._bs_length = bs_length
-        self._bs_sequence = bs_sequence
-        self._bs_dynamics = bs_dynamics
+        self._states = brain_matrices
+        self._state_length = bs_length
+        self._state_sequence = bs_sequence
+        self._dynamics = bs_dynamics
 
-        return brain_matrices, bs_length, bs_sequence
+        return self
