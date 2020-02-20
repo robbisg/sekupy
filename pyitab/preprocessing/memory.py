@@ -31,13 +31,13 @@ class MemoryReducer(Transformer):
     
     def _minify(self, array):
 
-        if np.issubdtype(array.dtype, np.dtype(str).type):
+        if np.issubdtype(array.dtype, str):
             return array
         
-        elif np.issubdtype(array.dtype, np.dtype(float).type):
+        elif np.issubdtype(array.dtype, float):
             return np.float16(array)
 
-        elif np.issubdtype(array.dtype, np.dtype(int).type):
+        elif np.issubdtype(array.dtype, int):
             return self._check_int(array)
 
     
