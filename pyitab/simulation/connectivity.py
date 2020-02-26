@@ -1,10 +1,16 @@
 import numpy as np
 import itertools
+from pyitab.preprocessing.base import Transformer
+
+import logging
+logger = logging.getLogger(__name__)
 
 
-class ConnectivityStateSimulator():
+class ConnectivityStateSimulator(Transformer):
 
-    def __init__(self, n_nodes=10, max_edges=5, fsamp=128):
+    def __init__(self, n_nodes=10, max_edges=5, fsamp=128,
+                 n_brain_states=6, length_states=100, 
+                 min_time=2.5, max_time=3.5,):
     
         edges = [e for e in itertools.combinations(np.arange(n_nodes), 2)]
         n_edges = len(edges)
@@ -24,26 +30,38 @@ class ConnectivityStateSimulator():
         self._max_edges = max_edges
         self._fs = fsamp
 
+        self._n_brain_states = n_brain_states
+        self._min_time = min_time
+        self._max_time = max_time
+        self._length_states = length_states
+
+        Transformer.__init__(self, name='connectivity_state_simulator')
 
 
-    def fit(self, n_brain_states=6, length_states=100, min_time=2.5, max_time=3.5):
+    def transform(self, ds):
+        logger.info(self)
+        return self.fit()
+        
+
+    def fit(self):
 
         # Randomize random stuff
 
-        states_idx = np.random.randint(0, self._n_states, n_brain_states)        
+        states_idx = np.random.randint(0, self._n_states, self._n_brain_states)        
         
         selected_states = self._states[states_idx]
 
-        bs_length = np.random.randint(self._fs * min_time, 
-                                      self._fs * max_time, 
-                                      length_states
+        bs_length = np.random.randint(self._fs * self._min_time, 
+                                      self._fs * self._max_time, 
+                                      self._length_states
                                       )
 
         # This is done using Hidden Markov Models but since 
         # Transition matrix is uniformly distributed we can use random sequency
         #     mc = mcmix(nBS,'Fix',ones(nBS)*(1/nBS));
         #     seqBS= simulate(mc,nbs_sequence-1);
-        bs_sequence = np.random.randint(0, n_brain_states, length_states)
+        bs_sequence = np.random.randint(0, self._n_brain_states, 
+                                        self._length_states)
 
         bs_dynamics = [] 
         for i, time in enumerate(bs_length): 
@@ -52,7 +70,7 @@ class ConnectivityStateSimulator():
         bs_dynamics = np.array(bs_dynamics)
 
         brain_matrices = []
-        for j in range(n_brain_states):
+        for j in range(self._n_brain_states):
             matrix = np.eye(self._n_nodes)
             selected_edges = selected_states[j]
             for edge in selected_edges:
@@ -65,5 +83,6 @@ class ConnectivityStateSimulator():
         self._state_length = bs_length
         self._state_sequence = bs_sequence
         self._dynamics = bs_dynamics
+        self._time = [self._min_time, self._max_time]
 
         return self

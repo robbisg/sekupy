@@ -4,25 +4,32 @@ from scipy import signal
 from mvpa2.datasets.base import Dataset
 from mvpa2.base.collections import SampleAttributesCollection, \
     FeatureAttributesCollection, DatasetAttributesCollection
+from pyitab.preprocessing.base import Transformer
 
 # This must be moved to __init__
-class SimulationModel(object):
-    def __init__(self, order=None, noise=None, delay=None, snr=1e6, **kwargs):
+class SimulationModel(Transformer):
+    def __init__(self, name='simulation_model', order=None, noise=None, delay=None, snr=1e6, **kwargs):
 
         self.order = order
         self.noise = noise
         self.delay = delay
         self.snr = snr
         # Missing sampling_frequency for dataset
+        Transformer.__init__(self, name=name)
     
+    def transform(self, ds):
+        # Check if ds is a simulation model bla bla
+        return self.fit(ds)
+
 
     def fit(self, dynamics_model):
 
         a_dict = {'states': dynamics_model._states, 
                   'sample_frequency': dynamics_model._fs,
+                  'time': dynamics_model._time,
+                  'snr': self.snr
                   }
         sa_dict = {'targets': dynamics_model._dynamics}
-
         
         a = DatasetAttributesCollection(a_dict)
         sa = SampleAttributesCollection(sa_dict)
@@ -87,8 +94,8 @@ class SimulationModel(object):
 
 class AutoRegressiveModel(SimulationModel):
     
-    def __init__(self, order=10, noise=0.01, **kwargs):        
-        SimulationModel.__init__(self, order, noise, **kwargs)
+    def __init__(self, name='ar_model', order=10, noise=0.01, **kwargs):        
+        SimulationModel.__init__(self, name, order, noise, **kwargs)
 
     
     
@@ -131,8 +138,9 @@ class AutoRegressiveModel(SimulationModel):
 
 class DelayedModel(SimulationModel):
 
-    def __init__(self, order=5, noise=1, delay=0.0195, **kwargs):
-        SimulationModel.__init__(self, order, noise, delay, **kwargs)
+    def __init__(self, name='delayed_model', order=5, noise=1, delay=0.0195, **kwargs):
+        self.noise = noise
+        SimulationModel.__init__(self, name, order, noise, delay, **kwargs)
 
     
     def fit(self, dynamics_model):
@@ -180,10 +188,11 @@ class DelayedModel(SimulationModel):
 
 class TimeDelayedModel(DelayedModel):
 
-    def __init__(self, order=5, noise=1, delay=0.0195, fsample=256, **kwargs):
+    def __init__(self, name='time_delayed_model', order=5, noise=1, 
+                 delay=0.0195, fsample=256, **kwargs):
         self.delay = np.int(delay * fsample)
 
-        DelayedModel.__init__(self, order, noise, delay, **kwargs)
+        DelayedModel.__init__(self, name, order, noise, delay, **kwargs)
 
 
     def _get_delayed_signal(self, leading_signal):
@@ -193,6 +202,9 @@ class TimeDelayedModel(DelayedModel):
         
 
 class PhaseDelayedModel(DelayedModel):
+
+    def __init__(self, name='phase_delayed_model', **kwargs):
+        DelayedModel.__init__(self, name, **kwargs)        
 
     def _get_delayed_signal(self, leading_signal):
 
