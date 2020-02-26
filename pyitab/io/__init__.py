@@ -6,7 +6,6 @@ from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
 from mvpa2.datasets import vstack
 
 import os
-import numpy as np
 
 import logging
 logger = logging.getLogger(__name__)
@@ -41,6 +40,8 @@ def load_ds(conf_file, task, extra_sa=None,
 
     logger.info('Merging %s subjects from %s' % (str(len(subjects)), data_path))
     
+    ds_merged = []
+
     for i, subj in enumerate(subjects):
         
         # TODO: Keep in mind BIDS
@@ -56,16 +57,15 @@ def load_ds(conf_file, task, extra_sa=None,
             for k, v in extra_sa.items():
                 if len(v) == len(subjects):
                     ds.sa[k] = [v[i] for _ in range(ds.samples.shape[0])]
-        
-        
-        # First subject
-        if i == 0:
-            ds_merged = ds.copy()
-        else:
-            ds_merged = vstack((ds_merged, ds))
-            ds_merged.a.update(ds.a)
-            
+               
+        ds_merged.append(ds)
         del ds
+    
+    ds_merged = vstack(ds_merged, a='all')
+
+    for k in ds_merged.a.keys():
+        if k not in ['snr', 'states', 'time']:
+            ds_merged.a[k] = ds_merged.a[k].value[0]
     
     ds_merged.a.update(conf)
     ds_merged.a['task'] = task
