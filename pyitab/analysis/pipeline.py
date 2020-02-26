@@ -55,9 +55,11 @@ class AnalysisPipeline(Analyzer):
             ds = self._loader.fetch(**fetch_kw)
         elif (ds is None) and (self._loader is None):
             raise Exception("You must specify a dataset or a loader in the Configurator!")
-
+        
+        self._ds = ds
         ds_ = self._transform(ds)
         self._estimator.fit(ds_, **kwargs)
+        
 
         return self
 
@@ -82,7 +84,7 @@ class AnalysisPipeline(Analyzer):
 
 
 
-    def save(self, path=None, subdir="0_results", **kwargs):
+    def save(self, path=None, subdir="0_results", save_ds=False, **kwargs):
         # TODO: Mantain subdir for compatibility purposes?
         
         # params = self._configurator._get_fname_info()
@@ -101,9 +103,17 @@ class AnalysisPipeline(Analyzer):
         params.update(kwargs)
         
         # Save results
-        self._estimator.save(path=path, **params)
+        path = self._estimator.save(path=path, **params)
+
+        if save_ds:
+            self._save_ds(path=path)
         
         return
     
+    def _save_ds(self, path):
+        id_ = self._configurator._default_options['id']
+        num_ = self._configurator._default_options['num']
+        name_ = self.name
+        fname = "ds_pipeline-%s_id-%s_num-%s.gzip" % (name_, id_, num_)
+        self._ds.save(os.path.join(path, fname), compression='gzip')
     
-
