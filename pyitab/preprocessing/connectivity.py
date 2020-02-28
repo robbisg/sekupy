@@ -115,6 +115,7 @@ class SlidingWindowConnectivity(Transformer):
     def transform(self, ds):
         """Connectivity"""
         
+        # TODO: Replace with get_data_ds
         data = ds.samples
         n_edges = int(ds.shape[1] * (ds.shape[1] - 1) * 0.5)
         edges = [e for e in itertools.combinations(np.arange(ds.shape[1]), 2)]
@@ -130,7 +131,7 @@ class SlidingWindowConnectivity(Transformer):
             data_window = data[w:w+window_length, :]
             
             # From here must be included in a function.
-            phi = np.angle(signal.hilbert(data_window))
+            phi = np.angle(signal.hilbert(data_window, axis=0))
             
             for e, (x, y) in enumerate(edges):
                 coh = np.imag(np.exp(1j*(phi[:, x] - phi[:, y])))
