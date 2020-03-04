@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class AnalysisIterator(object):
 
 
-    def __init__(self, options, configurator, kind='combination'):
+    def __init__(self, options, configurator, kind='combination', config_kwargs={}):
         """This class allows to configure different analysis to be
         iterated using a set of options.
 
@@ -87,7 +87,9 @@ class AnalysisIterator(object):
 
         self.configurations, self.i, self.n = fx(**options)
         self._configurator = configurator
+        self._config_params = config_kwargs
         self._id = get_id()
+        logger.info("No. of iterations: %s" % (str(self.n)))
         
 
 
@@ -126,7 +128,7 @@ class AnalysisIterator(object):
     def _combined_setup(self, **kwargs):
         # This may be replaced by _build_combinations
         kwargs = self._check_subject_keywords(**kwargs)
-        logger.info(kwargs)
+        logger.debug(kwargs)
         return self._build_combinations(key='estimator', **kwargs)
         
 
@@ -137,11 +139,14 @@ class AnalysisIterator(object):
         objects = keyword_list.pop(key)
         
         params = get_params(keyword_list, key)
+        print(params)
         
         combination_list = []
         for obj in objects:
-            name = obj[0][0][0]
+            name = obj[0][0]
+            print(obj)
             est_params = get_params(params, name)
+            print(est_params)
 
             if len(est_params) == 0:
                 combination_list += [{'estimator': obj}]
@@ -189,7 +194,7 @@ class AnalysisIterator(object):
         kwargs = self._check_subject_keywords(**kwargs)
 
         args = [arg for arg in kwargs]
-        logger.info(kwargs)
+        logger.debug(kwargs)
         combinations_ = list(itertools.product(*[kwargs[arg] for arg in kwargs]))
         configurations = [dict(zip(args, elem)) for elem in combinations_]
         i = 0
@@ -212,20 +217,23 @@ class AnalysisIterator(object):
             value = self.configurations[self.i]
             self.i += 1
             logger.info("Iteration %d/%d" % (self.i, self.n))
-            self._configurator.set_params(**value)
+
+            configurator = self._configurator(**self._config_params)
+
+            configurator.set_params(**value)
             
-            self._configurator.set_params(id=self._id)
+            configurator.set_params(id=self._id)
 
             num = self.i
             if self.n_subjects > 1:
                 num = np.floor((self.i-1) / self.n_subjects) + 1
                 logger.debug(num)
-            self._configurator.set_params(num=int(num))
+            configurator.set_params(num=int(num))
         
         else:
             raise StopIteration()
         
-        return self._configurator
+        return configurator
     
     
     
