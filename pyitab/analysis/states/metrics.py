@@ -2,7 +2,9 @@ from sklearn.cluster import KMeans
 from sklearn import metrics
 import numpy as np
 import scipy
-from scipy.spatial.distance import pdist, squareform, euclidean, correlation
+from scipy.spatial.distance import pdist, squareform, euclidean, \
+    correlation, cosine
+from sklearn.preprocessing import MinMaxScaler
 import logging
 
 logger = logging.getLogger(__name__)
@@ -91,12 +93,9 @@ def W(X, labels, precomputed=True):
         
         if precomputed == True:
             index_cluster = np.nonzero(cluster_)
-            print(cluster_)
-            print(index_cluster)
             combinations_ = itertools.combinations(index_cluster[0], 2)
             nrow = cluster_.shape[0]
             array_indices = [get_triu_array_index(n[0], n[1], nrow) for n in combinations_]
-            print(len(array_indices))
             cluster_dispersion = X[array_indices].sum()
         else:
             
@@ -191,7 +190,11 @@ def global_explained_variance(X, labels):
     for i, conn_pwr in enumerate(global_conn_power):
         
         k_map = centroids[labels[i]]
-        corr_ = 0.5*(scipy.stats.pearsonr(X[i], k_map)[0] +1)
+
+        if k_map.shape[0] == 2:
+            corr_ = 1 - cosine(X[i], k_map)
+        else:
+            corr_ = scipy.stats.pearsonr(X[i], k_map)[0]
         
         numerator_ += np.power((conn_pwr * corr_), 2)
         
@@ -253,65 +256,78 @@ def index_i(X, labels):
 
 
 
-def calculate_metrics(X, 
-                      clustering_labels, 
-                      metrics_kwargs=None):
-    
-    default_metrics = {'Silhouette': metrics.silhouette_score,
-                        'Krzanowski-Lai': kl_criterion,
-                        'Global Explained Variance':global_explained_variance,
-                        'Within Group Sum of Squares': wgss,
-                        'Explained Variance':explained_variance,
-                        'Index I': index_i,
-                        "Cross-validation":cross_validation_index
-                        }
-    
-    if metrics_kwargs != None:
-        default_metrics.update(metrics_kwargs)
-    
-    metrics_ = []
-    k_step = np.zeros(len(clustering_labels), dtype=np.int8)
-    
-    for i, label in enumerate(clustering_labels):
-        
-        k = len(np.unique(label))
-        k_step[i] = k
-        
-        logger.info('Calculating metrics for k: %s' %(str(k)))
-        
-        metric_list = []
-        
-        for metric_name, metric_function in default_metrics.items():
-            
-            logger.info(" - Calculating %s" %(metric_name))
-            
-            if metric_name == 'Krzanowski-Lai':
-                if i == len(clustering_labels) - 1:
-                    prev_labels = clustering_labels[i-1]
-                    next_labels = np.arange(0, label.shape[0])
-                elif k == 2:
-                    prev_labels = np.zeros_like(label)
-                    next_labels = clustering_labels[i+1]
-                else:   
-                    prev_labels = clustering_labels[i-1]
-                    next_labels = clustering_labels[i+1]
-                    
-                m_ = metric_function(X,
-                                     label,
-                                     previous_labels=prev_labels,
-                                     next_labels=next_labels,
-                                     precomputed=False)
-                
-            else:
-                m_ = metric_function(X, label)
-                
-            
-            metric_list.append(m_)
-            
-        
-        metrics_.append(metric_list)
-    
-    
-    return np.array(metrics_), k_step, default_metrics.keys()
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 
+
+class Rotor:
+    # https://github.com/georg-un/kneebow.git
+
+    def __init__(self):
+        """
+        Rotor. Find the elbow or knee of a 2d array.
+        The algorithm rotates the curve so that the slope from min to max is zero. Subsequently, it takes the min value
+        for the elbow or the max value for the knee.
+        """
+        self._data = None
+        self._scale = None
+        self._scaler = None
+        self._theta = None
+
+    def fit_rotate(self, data, scale=True, theta=None):
+        """
+        Take a 2d array, scale it and rotate it so that the slope from min to max is zero.
+        :param data:    2d numpy array. The data to rotate.
+        :param scale:   boolean. True if data should be scaled before rotation (highly recommended)
+        :param theta:   float or None. Angle of rotation in radians. If None the angle is calculated from min & max
+        """
+        self._data = data
+        self._scale = scale
+        self._theta = theta
+        if scale:
+            self._scaler = MinMaxScaler()
+            self._data = self._scaler.fit_transform(self._data)
+        if theta is not None:
+            self._theta = theta
+        else:
+            self._set_theta_auto()
+        self._data = self.rotate_vector(self._data, self._theta)
+
+    def get_elbow_index(self):
+        """
+        Return the index of the elbow of the curve.
+        :return:  integer. Index of the elbow.
+        """
+        return np.where(self._data == self._data.min())[0][0]
+
+    def get_knee_index(self):
+        """
+        Return the index of the knee of the curve.
+        :return:  integer. Index of the knee.
+        """
+        return np.where(self._data == self._data.max())[0][0]
+
+
+    def _set_theta_auto(self):
+        """
+        Set theta to the radiant of the slope from the first to last value of the data.
+        """
+        self._theta = np.arctan2(self._data[-1, 1] - self._data[0, 1],
+                                 self._data[-1, 0] - self._data[0, 0])
+
+    @staticmethod
+    def rotate_vector(data, theta):
+        """
+        Rotate a 2d vector.
+        :param data:    2d numpy array. The data that should be rotated.
+        :param theta:   float. The angle of rotation in radians.
+        :return:        2d numpy array. The rotated data.
+        """
+        # make rotation matrix
+        co = np.cos(theta)
+        si = np.sin(theta)
+        rotation_matrix = np.array(((co, -si), (si, co)))
+        # rotate data vector
+        return data.dot(rotation_matrix)

@@ -10,14 +10,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def load_simulations(path, subj, folder, **kwargs):
-
-    ds = h5load(os.path.join(path, subj+'.gzip'))
-    ds.sa['file'] = [subj for _ in range(ds.shape[0])]
-
-    return ds
-
-
 class SimulationLoader(object):
 
     def __init__(self, conf_file, task, name='simulator', **kwargs):
@@ -35,7 +27,6 @@ class SimulationLoader(object):
         conf['task'] = task
 
         self.conf = conf
-
         self.name = name
 
 
@@ -43,14 +34,18 @@ class SimulationLoader(object):
         
         ds_merged = []
         for i in range(n_subjects):
+            logger.info("Creating %d/%d dataset" %(i+1, n_subjects))
             pipeline = self._get_transformer(**kwargs)
             ds = pipeline.transform(ds=None)
             ds.sa['subject'] = [i+1 for _ in range(ds.shape[0])]
-            ds.sa['file'] = ['subj_simulated-%s' %(str(i+1)) for _ in range(ds.shape[0])]
+            name = 'subj_simulated-%s'
+            ds.sa['file'] = [name % (str(i+1)) for _ in range(ds.shape[0])]
             ds_merged.append(ds)
 
-        ds_merged = vstack(ds_merged)
+        ds_merged = vstack(ds_merged, a='all')
         ds_merged.a.update(self.conf)
+
+        self._ds = ds_merged
 
         return ds_merged
 
@@ -74,3 +69,20 @@ class SimulationLoader(object):
         
         logger.debug(transformer)
         return PreprocessingPipeline(nodes=transformer)
+
+    def save(self, fname):
+
+        if hasattr(self, '_ds'):
+            ds = self._ds
+            fname = os.path.join(ds.a.data_path, fname)
+            _ = ds.save(fname+".gzip", compression='gzip')
+
+        return
+
+
+def load_simulations(path, subj, folder, **kwargs):
+    
+    ds = h5load(os.path.join(path, subj+'.gzip'))
+    ds.sa['file'] = [subj for _ in range(ds.shape[0])]
+
+    return ds

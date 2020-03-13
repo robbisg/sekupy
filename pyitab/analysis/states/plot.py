@@ -1,7 +1,7 @@
 import matplotlib.pyplot as pl
 import numpy as np
 import os
-from mvpa_itab.conn.operations import copy_matrix, array_to_matrix
+from pyitab.utils.matrix import copy_matrix, array_to_matrix
 from sklearn.manifold.mds import MDS
 from mvpa_itab.conn.states.utils import get_centroids
 
@@ -109,7 +109,6 @@ def plot_center_matrix(X, clustering, n_cluster=5, **kwargs):
     return fig
 
 
-
 def plot_condition_centers(X, labels, **kwargs):
     
     
@@ -149,7 +148,6 @@ def plot_condition_centers(X, labels, **kwargs):
         ax.set_yticklabels(node_networks)
         
     return fig
-
 
 
     
@@ -227,7 +225,6 @@ def plot_frequencies(state_frequency, condition, path):
        
     
 
-  
 def plot_positions(dict_centroids, **kwargs):
     
     configuration = {
@@ -263,4 +260,21 @@ def plot_positions(dict_centroids, **kwargs):
     return fig
 
 
+def plot_predicted_matrices(df):
+    rows = len(df) + 1
+    df = df.sort_values('n_states')
+    cols = np.max(np.unique(df['n_states']))
 
+    fig, axes = pl.subplots(rows, cols)
+
+    for i, (r, row) in enumerate(df.iterrows()):
+        for j, c in enumerate(row['centroids']):
+            matrix = array_to_matrix(c, diagonal_filler=1, copy=False)
+            axes[i+1, j].imshow(matrix, cmap=pl.cm.magma)
+
+
+    states = df['states'].values[0]
+
+    for j, s in enumerate(states):
+        axes[0, j].imshow(s, cmap=pl.cm.magma)
+    

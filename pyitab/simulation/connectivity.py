@@ -10,7 +10,7 @@ class ConnectivityStateSimulator(Transformer):
 
     def __init__(self, n_nodes=10, max_edges=5, fsamp=128,
                  n_brain_states=6, length_states=100, 
-                 min_time=2.5, max_time=3.5,):
+                 min_time=2.5, max_time=3.5, method='random'):
     
         edges = [e for e in itertools.combinations(np.arange(n_nodes), 2)]
         n_edges = len(edges)
@@ -23,8 +23,9 @@ class ConnectivityStateSimulator(Transformer):
 
         self._edges = edges
         self._n_edges = len(edges)
-        self._states = states
+        self._edges_states = states
         self._n_states = len(states)
+        self._method = method
 
         self._n_nodes = n_nodes
         self._max_edges = max_edges
@@ -39,7 +40,6 @@ class ConnectivityStateSimulator(Transformer):
 
 
     def transform(self, ds):
-        logger.info(self)
         return self.fit()
         
 
@@ -49,7 +49,7 @@ class ConnectivityStateSimulator(Transformer):
 
         states_idx = np.random.randint(0, self._n_states, self._n_brain_states)        
         
-        selected_states = self._states[states_idx]
+        selected_states = self._edges_states[states_idx]
 
         bs_length = np.random.randint(self._fs * self._min_time, 
                                       self._fs * self._max_time, 
@@ -60,8 +60,8 @@ class ConnectivityStateSimulator(Transformer):
         # Transition matrix is uniformly distributed we can use random sequency
         #     mc = mcmix(nBS,'Fix',ones(nBS)*(1/nBS));
         #     seqBS= simulate(mc,nbs_sequence-1);
-        bs_sequence = np.random.randint(0, self._n_brain_states, 
-                                        self._length_states)
+        bs_sequence = np.random.randint(0, self._n_brain_states, self._length_states)
+        bs_sequence = self.simulate_sequence(self._method)
 
         bs_dynamics = [] 
         for i, time in enumerate(bs_length): 
@@ -86,3 +86,13 @@ class ConnectivityStateSimulator(Transformer):
         self._time = [self._min_time, self._max_time]
 
         return self
+
+
+    def simulate_dynamics(self, method='random'):
+        if method == 'random':
+            return np.random.randint(0, 
+                            self._n_brain_states, 
+                            self._length_states)
+
+
+

@@ -4,6 +4,20 @@ from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 
 
 def gaussian_kernel(dist, dc):
+    """[summary]
+    
+    Parameters
+    ----------
+    dist : [type]
+        [description]
+    dc : [type]
+        [description]
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
     n_samples = dist.shape[0]
     
     rho = np.zeros(n_samples)
@@ -16,12 +30,25 @@ def gaussian_kernel(dist, dc):
         rho[i] = rho[i] + gaussian_k
         rho[j] = rho[j] + gaussian_k
     
-    
     return rho
 
 
 
 def cutoff(dist, dc):
+    """[summary]
+    
+    Parameters
+    ----------
+    dist : [type]
+        [description]
+    dc : [type]
+        [description]
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
     n_samples = dist.shape[0]
     
     rho = np.zeros(n_samples)
@@ -30,17 +57,35 @@ def cutoff(dist, dc):
     
     # Gaussian kernel
     for i, j in np.vstack(m_indices).T:
-        if dist[i,j] < dc:
+        if dist[i, j] < dc:
             rho[i] += 1
             rho[j] += 1
-    
-    
+
     return rho    
 
 
 class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
     
-    def __init__(self, dc='percentage', percentage=2., cluster_threshold=12., rhofx=gaussian_kernel):
+    def __init__(self, dc='percentage', percentage=2., 
+                 cluster_threshold=12., rhofx=gaussian_kernel):
+    """[summary]
+    
+    Parameters
+    ----------
+    dc : str, optional
+        [description], by default 'percentage'
+    percentage : [type], optional
+        [description], by default 2.
+    cluster_threshold : [type], optional
+        [description], by default 12.
+    rhofx : [type], optional
+        [description], by default gaussian_kernel
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
         
         if dc != 'percentage':
             self.dc = dc
@@ -51,27 +96,36 @@ class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
         self.cluster_threshold = cluster_threshold
         self.labels_ = None
         self.rhofx = rhofx
-        
-        
-        
+
+
     def _get_threshold(self):
-        
-        if self.cluster_threshold < 1.:
-            return np.max(self.rho_) * np.max(self.delta_) * self.cluster_threshold
-        
-        if self.cluster_threshold < 4.:
-            
+
+        if 1 <= self.cluster_threshold < 4.:
             metric = self.rho_ * self.delta_
-            return np.mean(metric) + self.cluster_threshold * np.std(metric)
-        
+            threshold = np.mean(metric) + \
+                self.cluster_threshold * np.std(metric) 
+        elif self.cluster_threshold < 1.:
+            threshold = np.max(self.rho_) * np.max(self.delta_) * \
+                 self.cluster_threshold
         else:
-            
-            return self.cluster_threshold
+            threshold = self.cluster_threshold
+
+        return threshold
              
     
-    
-    
     def _compute_distance(self, X):
+        """[summary]
+        
+        Parameters
+        ----------
+        X : [type]
+            [description]
+        
+        Returns
+        -------
+        [type]
+            [description]
+        """
         
         n_samples = X.shape[0]
         
@@ -82,19 +136,15 @@ class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
             position = int(round(n_samples * self.perc/100.))
             self.dc = np.sort(xdist)[position]
             
-        
         return dist
     
     
     def _compute_rho(self, dist, dc):
-                
         return self.rhofx(dist, dc)
     
     
-    
     def _compute_delta(self, n_samples):
-        
-        
+
         rho = self.rho_
         dist = self.dist_
         
@@ -123,7 +173,6 @@ class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
         return delta, nneigh
     
     
-    
     def _assign_cluster(self, n_samples, cluster_idx):
         
         rho = self.rho_
@@ -131,7 +180,6 @@ class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
         
         clustering = np.zeros_like(rho)
         
-          
         clustering = np.zeros_like(rho)
         clustering[cluster_idx] = cluster_idx
     
@@ -141,7 +189,6 @@ class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
                 clustering[idx] = cluster_idx[argmin]
     
         clustering = np.int_(clustering)
-        
         
         return clustering
         
@@ -165,7 +212,7 @@ class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
         # Gaussian kernel
         for i, j in m_indices:
             
-            if clustering[i] != clustering[j] and dist[i,j] <= dc:
+            if clustering[i] != clustering[j] and dist[i, j] <= dc:
                 rho_aver = 0.5*(rho[i]+rho[j])
     
                 idc = np.argwhere(cluster_idx == clustering[i])
@@ -180,18 +227,30 @@ class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
             idc = np.argwhere(cluster_idx == clustering[i])
             if rho[i] < bord_rho[idc]:
                 halo[i] = 0
-        return
-    
-    
         
+        return halo
+    
+    
     def fit(self, X, y=None):
+        """[summary]
+        
+        Parameters
+        ----------
+        X : [type]
+            [description]
+        y : [type], optional
+            [description], by default None
+        
+        Returns
+        -------
+        [type]
+            [description]
+        """
         
         n_samples = X.shape[0]
     
         self.dist_ = self._compute_distance(X)
-        
         self.rho_ = self._compute_rho(self.dist_, self.dc)
-
         self.delta_, self.nn_ = self._compute_delta(n_samples)
         
         # Get centers
@@ -199,10 +258,7 @@ class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
         cluster_idx = np.nonzero(self.delta_ * self.rho_ > self.threshold)[0]
         self.cluster_centers_ = X[cluster_idx]
         
-       
         self.labels_ = self._assign_cluster(n_samples, cluster_idx)
-        
         self.halo_ = self._compute_halo(n_samples, cluster_idx)
 
-        
         return self

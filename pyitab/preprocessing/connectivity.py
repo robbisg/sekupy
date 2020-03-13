@@ -2,10 +2,10 @@
 
 import numpy as np
 from pyitab.utils.matrix import array_to_matrix, copy_matrix
-from mvpa2.base.collections import SampleAttributesCollection
-from mvpa2.datasets.base import Dataset
 from pyitab.io.base import add_attributes
 from pyitab.preprocessing.base import Transformer
+from mvpa2.base.collections import SampleAttributesCollection
+from mvpa2.datasets.base import Dataset
 from scipy.spatial.distance import euclidean
 from scipy import signal
 import itertools

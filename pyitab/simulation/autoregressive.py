@@ -24,11 +24,12 @@ class SimulationModel(Transformer):
 
     def fit(self, dynamics_model):
 
-        a_dict = {'states': dynamics_model._states, 
-                  'sample_frequency': dynamics_model._fs,
-                  'time': dynamics_model._time,
-                  'snr': self.snr
-                  }
+        a_dict = {
+            'states': dynamics_model._states, 
+            'sample_frequency': dynamics_model._fs,
+            'time': dynamics_model._time,
+            'snr': self.snr
+        }
         sa_dict = {'targets': dynamics_model._dynamics}
         
         a = DatasetAttributesCollection(a_dict)
@@ -40,7 +41,7 @@ class SimulationModel(Transformer):
 
 
     # TODO: Not proper here!
-    def _create_ar_matrices(self, matrices, c=2.5, n=8000):
+    def _create_ar_matrices(self, matrices, c=2.5, n=10000):
         """This function randomly creates autoregressive matrices
         
         Parameters
@@ -120,7 +121,7 @@ class AutoRegressiveModel(SimulationModel):
 
             for t in np.arange(self.order, length):
                 for d in range(self.order):
-                    data_bs[t, :] = data_bs[t, :] + data_bs[t-d, :] @ matrices[state, :, :, d]
+                    data_bs[t, :] = data_bs[t, :] + np.dot(data_bs[t-d, :], matrices[state, :, :, d])
             
             data.append(data_bs)
 
@@ -144,9 +145,10 @@ class DelayedModel(SimulationModel):
 
     
     def fit(self, dynamics_model):
-    
+        import matplotlib.pyplot as pl
         data = []
         matrices = dynamics_model._states
+
         bs_sequence = dynamics_model._state_sequence
         bs_length = dynamics_model._state_length
         matrices = self._create_ar_matrices(matrices)
@@ -154,6 +156,7 @@ class DelayedModel(SimulationModel):
         for i, state in enumerate(bs_sequence):
 
             m = matrices[state]
+            
             adjacency_matrix = np.int_(np.mean(np.abs(m), axis=2) != 0) - np.eye(m.shape[1])
             diagonal = np.dstack([np.diag(np.diag(m[...,i])) for i in range(m.shape[-1])])
 
@@ -166,7 +169,8 @@ class DelayedModel(SimulationModel):
             # TODO: move in superclass, remember diagonal!
             for t in np.arange(self.order, length):
                 for d in range(self.order):
-                    data_bs[t, :] = data_bs[t, :] + data_bs[t-d, :] @ diagonal[:, :, d]
+                    data_bs[t, :] = data_bs[t, :] + np.dot(data_bs[t-d,:], diagonal[:,:,d])
+                    #                               data_bs[t-d, :] @ diagonal[:, :, d]
 
             leading, following = np.nonzero(adjacency_matrix)
             for l, f in zip(leading, following):

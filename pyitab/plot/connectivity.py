@@ -674,7 +674,8 @@ def plot_connectivity_lines(matrix,
                             font="Manjari",
                             fontsize=14,
                             colorbar=None,
-                            title=None):
+                            title=None,
+                            fig=None):
     
     
     import matplotlib.pyplot as plt
@@ -807,8 +808,10 @@ def plot_connectivity_lines(matrix,
         figy = n_nodes / 10 + 5
         figx = figy + 3
 
-    fig = plt.figure(figsize=(figx, figy), 
-                     facecolor=facecolor)
+
+    if fig is None:
+        fig = plt.figure(figsize=(figx, figy), 
+                        facecolor=facecolor)
     
     polar = False
     if kind == 'circle':
