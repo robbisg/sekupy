@@ -39,7 +39,7 @@ def query_rows(dataframe, keys, attr, fx=np.max):
 
 
 
-def df_fx_over_keys(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).sum(0), **fx_kwargs):
+def apply_function(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).sum(0), **fx_kwargs):
     """This function perform a function on the dataframe, it groups the dataframe
     by using the key parameter and applies a function to values indicated.
     
