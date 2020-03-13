@@ -129,51 +129,6 @@ def get_results_bids(path, field_list=['sample_slicer'],
     return dataframe
     
 
-def get_results(path, pipeline_name, field_list=['sample_slicer'], 
-                result_keys=None, filter=None, n_jobs=-1, verbose=1):
-    """This function is used to collect the results from analysis folders.
-    
-    Parameters
-    ----------
-    path : str
-        The pathname of the folder in which results are stored
-    pipeline_name : str
-        The id / pattern to be used to filter folders. It is often the id of 
-        the Analysis Pipeline used.
-    field_list : list, optional
-        List of different condition used by the AnalysisIterator  
-        (the default is ['sample_slicer'], which is a fields of the configuration)
-    result_keys : list, optional
-        List of strings indicating the other fields to get from the result (e.g. cross_validation folds)
-    filter : dictionary, optional
-        This is used to filter dataset and include only fields or conditions.
-        See ```pyitab.preprocessing.SampleSlicer``` for an example of dictionary
-         (the default is None, which [default_description])
-    
-    Returns
-    -------
-    dataframe : pandas dataframe
-        A table of the results in pandas format
-    """
-    # TODO: Optimize memory
-    dir_analysis = os.listdir(path)
-    dir_analysis = [d for d in dir_analysis if d.find(pipeline_name) != -1 and d.find(".") == -1]
-    dir_analysis.sort()
-    
-    logger.info("Loading %d files..." %(len(dir_analysis)))
-    results = Parallel(n_jobs=n_jobs, 
-                       verbose=verbose)(delayed(get_values)(path, d, field_list, result_keys) \
-                    for d in dir_analysis)
-    
-    results = [item for sublist in results for item in sublist]
-
-    dataframe = pd.DataFrame(results)
-    
-    if filter is not None:
-        dataframe = filter_dataframe(dataframe, **filter)
-           
-    return dataframe
-
 
 def ttest_values(dataframe, keys, scores=["accuracy"], popmean=0.5):
     # TODO: Documentation
@@ -198,7 +153,6 @@ def ttest_values(dataframe, keys, scores=["accuracy"], popmean=0.5):
         for score in scores:
             
             values_score = df_true[score].values
-            print(values_score)
             t, p = ttest_1samp(values_score, popmean)
 
             cond_dict[score+'_avg'] = np.mean(values_score)

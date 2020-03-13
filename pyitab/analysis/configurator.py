@@ -22,7 +22,7 @@ class AnalysisConfigurator(object):
                  estimator=[('clf', SVC(C=1, kernel='linear'))],
                  analysis=SearchLight,
                  cv=GroupShuffleSplit,
-                 #scores=['accuracy'],
+                 scores=['accuracy'],
                  **kwargs):
 
         """The configurator is used to store all the information on 
@@ -113,7 +113,9 @@ class AnalysisConfigurator(object):
                 if k.find('estimator') != -1:
                     _ = self._default_options.pop(k)
 
-        self._default_options.update(params)
+        _ = self._default_options.update(params)
+    
+        return
     
     
     def _get_params(self, keyword):

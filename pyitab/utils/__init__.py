@@ -48,3 +48,17 @@ def get_id():
         id_ = id_.replace(r, "0")
     
     return id_
+
+
+def make_dict_product(as_filter=True, **kwargs):
+    import itertools
+    args = [arg for arg in kwargs]
+    combinations_ = list(itertools.product(*[kwargs[arg] for arg in kwargs]))
+    configurations = []
+    for elem in combinations_:
+        if as_filter:
+            elem = [[e] for e in elem]
+        
+        configurations.append(dict(zip(args, elem)))
+
+    return configurations

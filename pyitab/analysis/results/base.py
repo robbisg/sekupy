@@ -133,7 +133,6 @@ def ttest_values(dataframe, keys, scores=["accuracy"], popmean=0.5):
         for score in scores:
             
             values_score = df_true[score].values
-            print(values_score)
             t, p = ttest_1samp(values_score, popmean)
 
             cond_dict[score+'_avg'] = np.mean(values_score)
@@ -289,7 +288,6 @@ def get_configuration_fields(conf, *args):
 
 
 
-
 def get_searchlight_results(path, pipeline_name, field_list=['sample_slicer'], load_cv=False):
     
     # TODO: Mind BIDS!
@@ -362,12 +360,11 @@ def get_connectivity_results(path, dir_id, field_list=['sample_slicer'], load_cv
 
 def filter_dataframe(dataframe, return_mask=False, **selection_dict):
     # TODO: Documentation
-
+ 
     _symbols = ['!', '<', '>']
 
     selection_mask = np.ones(dataframe.shape[0], dtype=np.bool)
     for key, values in selection_dict.items():
-        
                 
         ds_values = dataframe[key].values
         condition_mask = np.zeros_like(ds_values, dtype=np.bool)
@@ -381,6 +378,9 @@ def filter_dataframe(dataframe, return_mask=False, **selection_dict):
                 condition_mask = np.logical_or(condition_mask, ds_values == value)
                 
         selection_mask = np.logical_and(selection_mask, condition_mask)
+
+    if np.count_nonzero(selection_mask) == 0:
+        raise Exception("No rows in filtered dataframe. Check selection field spelling or datatype.")
 
     if return_mask:
         return dataframe.loc[selection_mask], selection_mask

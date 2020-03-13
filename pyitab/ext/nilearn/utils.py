@@ -4,15 +4,17 @@ Transformer for computing seeds signals
 
 Mask nifti images by spherical volumes for seed-region analyses
 """
+import os
 import numpy as np
 import sklearn
 from sklearn import neighbors
 from distutils.version import LooseVersion
 from nilearn.image.resampling import coord_transform
-import os
 from scipy.sparse import load_npz, save_npz
+
 import logging
 logger = logging.getLogger(__name__)
+
 
 def _get_affinity(seeds, 
                   coords, 
@@ -71,13 +73,13 @@ def _get_affinity(seeds,
     return A
 
 
-
 def check_proximity(ds, radius):
     
     logger.info("Checking proximity matrix...")
     radius = np.float(radius)
-    fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
-    
+    fname = os.path.join(ds.a.data_path, 
+                         "proximity_radius_%s_%s.npz" % (str(radius), 
+                                                         ds.a.brain_mask))
     return os.path.exists(str(fname))
 
 
@@ -85,8 +87,9 @@ def load_proximity(ds, radius):
     
     logger.info("Loading proximity matrix...")
     radius = np.float(radius)
-    fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
-    
+    fname = os.path.join(ds.a.data_path, 
+                         "proximity_radius_%s_%s.npz" % (str(radius),
+                                                         ds.a.brain_mask))
     A = load_npz(str(fname))
     return A.tolil()
 
@@ -95,7 +98,9 @@ def save_proximity(ds, radius, A):
 
     logger.info("Saving proximity matrix...")
     radius = np.float(radius)
-    fname = os.path.join(ds.a.data_path, "proximity_radius_%s_%s.npz" %(str(radius), ds.a.brain_mask))
+    fname = os.path.join(ds.a.data_path, 
+                         "proximity_radius_%s_%s.npz" % (str(radius), 
+                                                         ds.a.brain_mask))
     logger.debug(fname)
     save_npz(str(fname), A.tocoo())
 

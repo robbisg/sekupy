@@ -41,7 +41,8 @@ def test_iterator_combination():
                             }
 
     iterator = AnalysisIterator(options, 
-                                AnalysisConfigurator(**example_configuration))
+                                AnalysisConfigurator,
+                                config_kwargs=example_configuration)
 
     n_options = np.prod([len(v) for k, v in options.items()])
 
@@ -76,7 +77,8 @@ def test_iterator_list():
                             }
 
     iterator = AnalysisIterator(options, 
-                                AnalysisConfigurator(**example_configuration),
+                                AnalysisConfigurator,
+                                config_kwargs=example_configuration,
                                 kind='list'
                                 )
 
@@ -92,7 +94,8 @@ def test_iterator_list():
     }
     
     iterator = AnalysisIterator(options, 
-                                AnalysisConfigurator(**example_configuration),
+                                AnalysisConfigurator,
+                                config_kwargs=example_configuration,
                                 kind='list'
                                 )
                                 
@@ -103,8 +106,6 @@ def test_iterator_list():
     good_n_options = np.prod([len(v) for k, v in options.items()])
     assert n_options == good_n_options
     
-
-
 def test_iterator_combined():
     options = {
         'estimator': [
@@ -119,7 +120,8 @@ def test_iterator_combined():
     example_configuration = {'analysis': Clustering}
 
     iterator = AnalysisIterator(options, 
-                                AnalysisConfigurator(**example_configuration),
+                                AnalysisConfigurator,
+                                config_kwargs=example_configuration,
                                 kind='combined'
                                 )
     
@@ -139,7 +141,8 @@ def test_iterator_combined():
     }
 
     iterator = AnalysisIterator(options, 
-                                AnalysisConfigurator(**example_configuration),
+                                AnalysisConfigurator, 
+                                config_kwargs=example_configuration,
                                 kind='combined'
                                 )
     n_options = len(list(iterator))
@@ -158,7 +161,8 @@ def test_iterator_combined():
             } 
 
     iterator = AnalysisIterator(options,
-                                AnalysisConfigurator(**example_configuration),
+                                AnalysisConfigurator,
+                                config_kwargs=example_configuration,
                                 kind='combined'
                                 )
 
@@ -166,9 +170,6 @@ def test_iterator_combined():
     assert n_options == (2*4) + 2
 
     
-
-
-
 def test_iterator_subjectwise():
     pass
 
@@ -199,7 +200,8 @@ def test_save_multisubject_decoding(fetch_ds, tmpdir):
     ds = fetch_ds
 
     iterator = AnalysisIterator(options, 
-                                AnalysisConfigurator(**example_configuration))
+                                AnalysisConfigurator,
+                                config_kwargs=example_configuration)
 
 
     path = tmpdir

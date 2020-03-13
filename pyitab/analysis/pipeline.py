@@ -49,6 +49,8 @@ class AnalysisPipeline(Analyzer):
         self._transformer = objects['transformer']
         self._estimator = objects['estimator']
 
+        logger.debug(self._estimator)
+
         if (ds is None) and (self._loader is not None):
             fetch_kw = self._configurator._get_function_kwargs(function="fetch")
             logger.info(fetch_kw)
@@ -58,7 +60,7 @@ class AnalysisPipeline(Analyzer):
         
         self._ds = ds
         ds_ = self._transform(ds)
-        self._estimator.fit(ds_, **kwargs)
+        _ = self._estimator.fit(ds_, **kwargs)
         
 
         return self

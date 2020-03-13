@@ -1,8 +1,6 @@
 from pyitab.io.base import load_dataset
 from pyitab.io.configuration import read_configuration
 from pyitab.io.subjects import load_subjects
-from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
-
 from mvpa2.datasets import vstack
 
 import os
@@ -14,12 +12,15 @@ logger = logging.getLogger(__name__)
 
 def load_ds(conf_file, task, extra_sa=None,
             loader=load_dataset, 
-            prepro=StandardPreprocessingPipeline(),
+            prepro=None,
             n_subjects=None, selected_subjects=None,
             **kwargs):
 
     # TODO: Documentation
-    
+    from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
+    if prepro is None:
+        prepro = StandardPreprocessingPipeline()
+
     # TODO: conf file should include the full path
     conf = read_configuration(conf_file, task)
            
@@ -64,7 +65,8 @@ def load_ds(conf_file, task, extra_sa=None,
     ds_merged = vstack(ds_merged, a='all')
 
     for k in ds_merged.a.keys():
-        if k not in ['snr', 'states', 'time']:
+        if k not in ['snr', 'states', 'time', 'mapper']:
+            logger.debug(k)
             ds_merged.a[k] = ds_merged.a[k].value[0]
     
     ds_merged.a.update(conf)
