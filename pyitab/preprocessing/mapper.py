@@ -1,7 +1,7 @@
 from pyitab.preprocessing.base import Transformer
 from pyitab.preprocessing.functions import Detrender, TargetTransformer, \
     FeatureSlicer, FeatureSlicer, SampleSlicer, FeatureStacker, DatasetMasker, \
-    SampleTransformer, TemporalTransformer
+    SampleTransformer, TemporalTransformer, Resampler
 from pyitab.preprocessing.normalizers import FeatureZNormalizer, \
     SampleZNormalizer, SampleSigmaNormalizer, FeatureSigmaNormalizer, \
     DatasetFxNormalizer
@@ -50,7 +50,8 @@ def function_mapper(name):
               'phase_delayed_model': PhaseDelayedModel,
               'time_delayed_model': TimeDelayedModel,
               'sliding_window_connectivity': SlidingWindowConnectivity,
-              'butter_filter': ButterFilter
+              'butter_filter': ButterFilter,
+              'resampler': Resampler,
               }
     
     return mapper[name]

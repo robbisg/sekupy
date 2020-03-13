@@ -158,22 +158,22 @@ def get_findlab_info(background='black'):
     names = roi_list.T[2]
     
     dict_ = {   
-                'Auditory':'lightgray', 
-                'Basal_Ganglia':'lavender',
-                #'Basal_Ganglia':'honeydew', 
-                'LECN':'tomato',
-                'Language':'darkgrey', 
-                'Precuneus':'teal',
-                'RECN':'lightsalmon', 
-                'Sensorimotor':'plum', 
-                'Visuospatial':'slateblue', 
-                'anterior_Salience':'yellowgreen',
-                #'dorsal_DMN':'lightsteelblue',
-                'dorsal_DMN':'cadetblue',
-                'high_Visual':'khaki', 
-                'post_Salience':'mediumseagreen', 
-                'prim_Visual':'gold',
-                'ventral_DMN':'lightblue'
+                'Auditory'          :'lightgray', 
+                'Basal_Ganglia'     :'lavender',
+                #'Basal_Ganglia'    :'honeydew', 
+                'LECN'              :'tomato',
+                'Language'          :'darkgrey', 
+                'Precuneus'         :'teal',
+                'RECN'              :'lightsalmon', 
+                'Sensorimotor'      :'plum', 
+                'Visuospatial'      :'slateblue', 
+                'anterior_Salience' :'yellowgreen',
+                #'dorsal_DMN'       :'lightsteelblue',
+                'dorsal_DMN'        :'cadetblue',
+                'high_Visual'       :'khaki', 
+                'post_Salience'     :'mediumseagreen', 
+                'prim_Visual'       :'gold',
+                'ventral_DMN'       :'lightblue'
             }
 
     if background == 'white':
@@ -247,6 +247,35 @@ def get_aalmeg_info(background='black', grouping='LR'):
     return labels, colors, node_idx, coords, networks, node_angles
 
 
+def get_viviana_info():
+
+    network = ['DAN','VAN','SMN','VIS','AUD','LAN','DMN']
+    number = [6, 5, 8, 10, 4, 5, 7]
+    color = ['lightgray', 'lavender', 'honeydew', 'tomato', 
+              'darkgrey', 'teal', 'lightsalmon']
+
+    labels = ["%s_%02d" % (network[x], i+1) for x in range(len(network)) for i in range(number[x])]
+    colors = [color[x] for x in range(len(network)) for i in range(number[x])]
+
+    node_idx = np.arange(len(labels))
+
+    coords = np.random.randint(-20, 20, (3, len(labels)))
+    networks = [network[x] for x in range(len(network)) for i in range(number[x])]
+
+    group_boundaries = np.cumsum(np.hstack(([0], number)))[:-1]
+    node_angles = circular_layout(labels, 
+                                  labels,
+                                  start_pos=90, 
+                                  group_boundaries=group_boundaries,
+                                  group_sep=3.
+                                  )
+    
+    return labels, colors, node_idx, coords, networks, node_angles
+
+
+
+
+
 def get_atlas_info(atlas_name='findlab'):
     """This function is used to obtain information on 
     different atlases.
@@ -272,6 +301,7 @@ def get_atlas_info(atlas_name='findlab'):
         'findlab': get_findlab_info,
         'atlas90': get_atlas90_info,
         'aal_meg': get_aalmeg_info,
+        'viviana': get_viviana_info,
 
     }
 

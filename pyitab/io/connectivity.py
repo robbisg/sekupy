@@ -28,6 +28,11 @@ def conn_transformer(data):
     return data, parcels
 
 
+def time_transformer(data):
+    data = np.vstack(data)
+    return data, data.shape[1]
+
+
 def power_transformer(data):
     data = np.vstack(data)
     return data, data.shape[1]
@@ -38,7 +43,9 @@ def load_mat_data(path, subj, folder, **kwargs):
     from scipy.io import loadmat
     
     meg_transformer = {'connectivity': conn_transformer,
-                       'power': power_transformer}
+                       'power': power_transformer,
+                       'timevarying': time_transformer
+                       }
     
     key = kwargs['mat_key']
     transformer = meg_transformer[kwargs['transformer']]
@@ -50,7 +57,7 @@ def load_mat_data(path, subj, folder, **kwargs):
         return None, None
     
     data = []
-    info = {'file':[]}
+    info = {'file': []}
     for f in filelist:
         
         logger.info("Loading %s..." %(f))
@@ -76,15 +83,18 @@ def load_mat_ds(path, subj, folder, **kwargs):
         return None
     
     attr, labels = edit_attr(attr, data.shape)
+
+    logger.debug(data.shape)
+    logger.debug(attr)
     
-    ds = Dataset.from_wizard(data, attr.targets)
+    ds = Dataset.from_wizard(data, attr.targets, flatten=False)
     ds = add_subjectname(ds, subj)
     ds = add_attributes(ds, attr)
 
     ds = add_labels(ds, info['parcels'], **kwargs)
 
     #ds.fa['roi_labels'] = labels
-    ds.fa['matrix_values'] = np.ones_like(data[0])
+    ds.fa['matrix_values'] = np.ones(data.shape[1], dtype=np.int8)
     
     ds.sa['chunks'] = LabelEncoder().fit_transform(ds.sa['name'])
     ds.sa['file'] = info['file']
@@ -94,7 +104,8 @@ def load_mat_ds(path, subj, folder, **kwargs):
 
 def add_labels(ds, parcels, **kwargs):
 
-    labels = get_atlas_info(kwargs['atlas'])[4]
+    info = get_atlas_info(kwargs['atlas'])
+    labels = info[4]
     labels = labels[:parcels]
 
     if kwargs['transformer'] == 'connectivity':
@@ -103,8 +114,18 @@ def add_labels(ds, parcels, **kwargs):
         nodes_to = [labels[i] for i in idx_to]
         ds.fa['nodes_1'] = nodes_from
         ds.fa['nodes_2'] = nodes_to
-    else:
+    elif kwargs['transformer'] == 'power':
         ds.fa['nodes'] = labels
+    elif kwargs['transformer'] == 'timevarying':
+        n_nodes = len(labels)
+        idx_from, idx_to = np.triu_indices(n_nodes, k=1)
+        nodes_from = [labels[i] for i in idx_from]
+        nodes_to = [labels[i] for i in idx_to]
+        network_from = []
+        ds.fa['nodes_1'] = nodes_from
+        ds.fa['nodes_2'] = nodes_to
+        
+        pass
 
     # TODO: Power labels
 

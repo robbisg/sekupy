@@ -366,8 +366,7 @@ class SampleTransformer(Transformer):
 
 
 class TemporalTransformer(Transformer):
-    """This function is used when we need to lock SampleSlicer with
-    TargetTransformer in order to be used with AnalysisIterator.
+    """
     
     Parameters
     ----------
@@ -406,3 +405,23 @@ class TemporalTransformer(Transformer):
         logger.info(ds.samples.shape)
 
         return Transformer.transform(self, ds)
+
+    
+
+class Resampler(Transformer):
+
+    def __init__(self, up=1, down=1):
+        self.up = up
+        self.down = down
+        Transformer.__init__(self, name='resampler')
+
+    
+    def transform(self, ds):
+
+        from mne.filter import resample
+        logger.info("Resampling...")
+        ds.samples = resample(ds.samples, down=self.down, up=self.up)
+
+        logger.info("Dataset resampled "+str(ds.shape))
+
+        return ds

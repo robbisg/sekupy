@@ -68,6 +68,7 @@ def load_dataset(path, subj, folder, **kwargs):
        
     # Loading attributes
     attr = load_attributes(path, subj, folder, **kwargs)
+    logger.debug(attr)
     
     if (attr is None) and (len(file_list) == 0):
         return None            
@@ -78,7 +79,6 @@ def load_dataset(path, subj, folder, **kwargs):
     
     # Check roi_labels
     roi_labels = load_roi_labels(roi_labels)
-          
     
     # Load the pymvpa dataset.    
     try:
@@ -129,7 +129,6 @@ def add_filename(ds, fmri_list):
 
 
 def add_attributes(ds, attr):
-    
     
     logger.debug(attr.keys())
     
