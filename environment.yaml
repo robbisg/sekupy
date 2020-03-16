@@ -27,3 +27,5 @@ dependencies:
      - nilearn
      - scikit-learn
      - nistats
+     - hmmlearn
+     - h5py

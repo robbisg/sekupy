@@ -54,9 +54,25 @@ def purge_dataframe(data, keys=['ds.a.snr',
     return data.drop(columns=keys, axis=1)
 
 
-def get_values(path, directory, field_list, result_keys):
+def may_contain(fields, filter):
+
+    for key, values in filter.items():
+        if not key in fields.keys():
+            return True
+        else:
+            for v in values:
+                if v == fields[key]:
+                    return True
+
+            return False
+
+    return True
 
 
+
+def get_values(path, directory, field_list, result_keys, filter={}):
+
+    import gc
     dir_path = os.path.join(path, directory)
 
     conf_fname = os.path.join(dir_path, "configuration.json")
@@ -65,6 +81,9 @@ def get_values(path, directory, field_list, result_keys):
         conf = json.load(f)
     
     fields, _ = get_configuration_fields(conf, *field_list)
+
+    if not may_contain(fields, filter):
+        return pd.DataFrame([])
     
     files = os.listdir(dir_path)
     files = [f for f in files if f.find(".mat") != -1]
@@ -78,17 +97,35 @@ def get_values(path, directory, field_list, result_keys):
         #logger.debug(fields)
         
         data = loadmat(os.path.join(dir_path, fname), squeeze_me=True)
-        data_dict = dict(zip(data['data'].dtype.names, data['data'].tolist()))
+        
+        datum = data['data'].tolist()
+        names = data['data'].dtype.names
 
+        data_dict = {}
+        types = [np.int8, np.float32]
+        for name, single_data in zip(names, datum):
+            if name in result_keys or result_keys == []:
+                for type_ in types:
+                    if np.can_cast(single_data.dtype, type_, 'same_kind'):
+                        data_dict[name] = type_(single_data)
+                        break
+        
         fields.update(data_dict)
-        results.append(fields.copy())
 
-    return results
+        df = pd.DataFrame([fields.copy()])
+        df = filter_dataframe(df, return_null=True, **filter)
+
+        results.append(df)
+        del data
+
+        _ = gc.collect()
+
+    return pd.concat(results)
 
 
 def get_results(path, field_list=['sample_slicer'], 
                 result_keys=[], n_jobs=-1,  
-                verbose=1, filter=None,
+                verbose=1, filter={},
                 **kwargs):
     """This function is used to collect the results from analysis folders.
     
@@ -129,6 +166,10 @@ def get_results(path, field_list=['sample_slicer'],
                     filtered_dirs.append(dictionary)
 
     logger.debug(filtered_dirs)
+
+    if filtered_dirs == []:
+        return pd.DataFrame([])
+
     
     results = []
 
@@ -145,16 +186,13 @@ def get_results(path, field_list=['sample_slicer'],
                                     for s in subject_dirs)
         """
         logger.debug("Dir = %s" % (item))
-        r = [get_values(pipeline_dir, s, field_list, result_keys) for s in subject_dirs]
+        r = pd.concat([get_values(pipeline_dir, s, field_list, result_keys, filter) \
+                            for s in subject_dirs])
         logger.debug(r)
 
         results.append(r)
-         
-    results_ = [i for sublist in results for item in sublist for i in item]
-    dataframe = pd.DataFrame(results_)
 
-    if filter is not None:
-        dataframe = filter_dataframe(dataframe, **filter)
+    dataframe = pd.concat(results)
     
     return dataframe
 
