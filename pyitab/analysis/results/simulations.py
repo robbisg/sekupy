@@ -55,9 +55,24 @@ def purge_dataframe(data, keys=['ds.a.snr',
     return data.drop(columns=keys, axis=1)
 
 
-def get_values_states(path, directory, field_list, result_keys):
+def may_contain(fields, filter):
+
+    for key, values in filter.items():
+        if not key in fields.keys():
+            return True
+        else:
+            for v in values:
+                if v == fields[key]:
+                    return True
+            return False
+
+    return True
 
 
+
+def get_values(path, directory, field_list, result_keys, filter={}):
+
+    import gc
     dir_path = os.path.join(path, directory)
 
     conf_fname = os.path.join(dir_path, "configuration.json")
@@ -66,6 +81,9 @@ def get_values_states(path, directory, field_list, result_keys):
         conf = json.load(f)
     
     fields, _ = get_configuration_fields(conf, *field_list)
+
+    if not may_contain(fields, filter):
+        return pd.DataFrame([])
     
     files = os.listdir(dir_path)
     files = [f for f in files if f.find(".mat") != -1]
@@ -79,12 +97,104 @@ def get_values_states(path, directory, field_list, result_keys):
         #logger.debug(fields)
         
         data = loadmat(os.path.join(dir_path, fname), squeeze_me=True)
-        data_dict = dict(zip(data['data'].dtype.names, data['data'].tolist()))
+        
+        datum = data['data'].tolist()
+        names = data['data'].dtype.names
 
+        data_dict = {}
+        types = [np.int8, np.float32]
+        for name, single_data in zip(names, datum):
+            if name in result_keys or result_keys == []:
+                for type_ in types:
+                    if np.can_cast(single_data.dtype, type_, 'same_kind'):
+                        data_dict[name] = type_(single_data)
+                        break
+        
         fields.update(data_dict)
-        results.append(fields.copy())
 
-    return results
+        df = pd.DataFrame([fields.copy()])
+        df = filter_dataframe(df, return_null=True, **filter)
+
+        results.append(df)
+        del data
+
+        _ = gc.collect()
+
+    return pd.concat(results)
+
+
+def get_results(path, field_list=['sample_slicer'], 
+                result_keys=[], n_jobs=-1,  
+                verbose=1, filter={},
+                **kwargs):
+    """This function is used to collect the results from analysis folders.
+    
+    Parameters
+    ----------
+    path : str
+        The pathname of the folder in which results are stored
+    field_list : list, optional
+        List of different condition used by the AnalysisIterator  
+        (the default is ['sample_slicer'], which is a fields of the configuration)
+    result_keys : list, optional
+        List of strings indicating the other fields to get from the result (e.g. cross_validation folds)
+    filter : dictionary, optional
+        This is used to filter dataset and include only fields or conditions.
+        See ```pyitab.preprocessing.SampleSlicer``` for an example of dictionary
+         (the default is None, which [default_description])
+    scores : list, optional
+        Use mse and corr for regression, score for basic decoding
+    **kwargs : dictionary, optional
+        List of parameters used to filter BIDS folder by 'pipeline' for example.
+    
+    Returns
+    -------
+    dataframe : pandas dataframe
+        A table of the results in pandas format
+    """
+    # TODO: Use function for this snippet
+    dir_analysis = os.listdir(path)
+    dir_analysis.sort()
+    dir_analysis = [get_dictionary(f) for f in dir_analysis]
+
+    filtered_dirs = []
+    for key, value in kwargs.items():
+        for dictionary in dir_analysis:
+            if key in dictionary.keys():
+                value = value.replace("_", "+")
+                if value == dictionary[key]:
+                    filtered_dirs.append(dictionary)
+
+    logger.debug(filtered_dirs)
+
+    if filtered_dirs == []:
+        return pd.DataFrame([])
+
+    
+    results = []
+
+    for item in filtered_dirs:
+        
+        # read json
+        pipeline_dir = os.path.join(path, item['filename'])
+        subject_dirs = os.listdir(pipeline_dir)
+        subject_dirs = [d for d in subject_dirs if d.find(".json") == -1]
+
+        """
+        r = Parallel(n_jobs=n_jobs, verbose=verbose)\
+            (delayed(get_values)(pipeline_dir, s, field_list, result_keys) \
+                                    for s in subject_dirs)
+        """
+        logger.debug("Dir = %s" % (item))
+        r = pd.concat([get_values(pipeline_dir, s, field_list, result_keys, filter) \
+                            for s in subject_dirs])
+        logger.debug(r)
+
+        results.append(r)
+
+    dataframe = pd.concat(results)
+    
+    return dataframe
 
 
 def calculate_metrics(dataframe, metrics_kwargs=None, fixed_variables={}):

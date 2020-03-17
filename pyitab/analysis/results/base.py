@@ -358,7 +358,7 @@ def get_connectivity_results(path, dir_id, field_list=['sample_slicer'], load_cv
 
 
 
-def filter_dataframe(dataframe, return_mask=False, **selection_dict):
+def filter_dataframe(dataframe, return_mask=False, return_null=False, **selection_dict):
     # TODO: Documentation
  
     _symbols = ['!', '<', '>']
@@ -379,7 +379,7 @@ def filter_dataframe(dataframe, return_mask=False, **selection_dict):
                 
         selection_mask = np.logical_and(selection_mask, condition_mask)
 
-    if np.count_nonzero(selection_mask) == 0:
+    if np.count_nonzero(selection_mask) == 0 and return_null == False:
         raise Exception("No rows in filtered dataframe. Check selection field spelling or datatype.")
 
     if return_mask:
