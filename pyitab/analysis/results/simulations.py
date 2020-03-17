@@ -4,7 +4,8 @@ import os
 import numpy as np
 from scipy.io import loadmat
 from joblib import Parallel, delayed
-from pyitab.analysis.results.bids import get_configuration_fields, get_dictionary
+from pyitab.analysis.results.bids import get_configuration_fields, get_dictionary, \
+    find_directory
 from pyitab.analysis.results.base import filter_dataframe
 from sklearn import metrics
 import logging
@@ -54,7 +55,7 @@ def purge_dataframe(data, keys=['ds.a.snr',
     return data.drop(columns=keys, axis=1)
 
 
-def get_values(path, directory, field_list, result_keys):
+def get_values_states(path, directory, field_list, result_keys):
 
 
     dir_path = os.path.join(path, directory)
@@ -84,79 +85,6 @@ def get_values(path, directory, field_list, result_keys):
         results.append(fields.copy())
 
     return results
-
-
-def get_results(path, field_list=['sample_slicer'], 
-                result_keys=[], n_jobs=-1,  
-                verbose=1, filter=None,
-                **kwargs):
-    """This function is used to collect the results from analysis folders.
-    
-    Parameters
-    ----------
-    path : str
-        The pathname of the folder in which results are stored
-    field_list : list, optional
-        List of different condition used by the AnalysisIterator  
-        (the default is ['sample_slicer'], which is a fields of the configuration)
-    result_keys : list, optional
-        List of strings indicating the other fields to get from the result (e.g. cross_validation folds)
-    filter : dictionary, optional
-        This is used to filter dataset and include only fields or conditions.
-        See ```pyitab.preprocessing.SampleSlicer``` for an example of dictionary
-         (the default is None, which [default_description])
-    scores : list, optional
-        Use mse and corr for regression, score for basic decoding
-    **kwargs : dictionary, optional
-        List of parameters used to filter BIDS folder by 'pipeline' for example.
-    
-    Returns
-    -------
-    dataframe : pandas dataframe
-        A table of the results in pandas format
-    """
-    # TODO: Use function for this snippet
-    dir_analysis = os.listdir(path)
-    dir_analysis.sort()
-    dir_analysis = [get_dictionary(f) for f in dir_analysis]
-
-    filtered_dirs = []
-    for key, value in kwargs.items():
-        for dictionary in dir_analysis:
-            if key in dictionary.keys():
-                value = value.replace("_", "+")
-                if value == dictionary[key]:
-                    filtered_dirs.append(dictionary)
-
-    logger.debug(filtered_dirs)
-    
-    results = []
-
-    for item in filtered_dirs:
-        
-        # read json
-        pipeline_dir = os.path.join(path, item['filename'])
-        subject_dirs = os.listdir(pipeline_dir)
-        subject_dirs = [d for d in subject_dirs if d.find(".json") == -1]
-
-        """
-        r = Parallel(n_jobs=n_jobs, verbose=verbose)\
-            (delayed(get_values)(pipeline_dir, s, field_list, result_keys) \
-                                    for s in subject_dirs)
-        """
-        logger.debug("Dir = %s" % (item))
-        r = [get_values(pipeline_dir, s, field_list, result_keys) for s in subject_dirs]
-        logger.debug(r)
-
-        results.append(r)
-         
-    results_ = [i for sublist in results for item in sublist for i in item]
-    dataframe = pd.DataFrame(results_)
-
-    if filter is not None:
-        dataframe = filter_dataframe(dataframe, **filter)
-    
-    return dataframe
 
 
 def calculate_metrics(dataframe, metrics_kwargs=None, fixed_variables={}):
