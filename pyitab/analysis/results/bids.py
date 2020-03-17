@@ -124,15 +124,16 @@ def get_results_bids(path, field_list=['sample_slicer'],
         subject_dirs = [d for d in subject_dirs if d.find(".json") == -1]
 
 
-        r = [get_function(pipeline_dir, s, field_list, result_keys, scores=scores)]
+        r = [get_function(pipeline_dir, s, field_list, result_keys, scores=scores) \
+             for s in subject_dirs]
         """
         r = Parallel(n_jobs=n_jobs, 
-            verbose=verbose)(delayed(get_values_bids)\
+            verbose=verbose)(delayed(get_values_bids) \
                             (pipeline_dir, s, field_list, result_keys, scores=scores) \
                                     for s in subject_dirs)
-        """"
+        """
         results.append(r)
-         
+
     results_ = [i for sublist in results for item in sublist for i in item]
     dataframe = pd.DataFrame(results_)
 
@@ -141,8 +142,6 @@ def get_results_bids(path, field_list=['sample_slicer'],
     
     return dataframe
     
-
-
 
 
 def get_permutation_values(dataframe, keys, scores=["accuracy"]):

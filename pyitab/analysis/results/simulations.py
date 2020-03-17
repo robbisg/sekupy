@@ -13,19 +13,63 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def convert_fields(data, key, idx, value):
+
+    if key == 'ds.a.states':
+        for s in ['array', '\n', ' ']:
+            value = value.replace(s, '')
+        n_state = np.int(data['subject'].values[idx]) - 1
+        value = np.array(np.safe_eval(value))[n_state]
+    else:
+        value = np.safe_eval(value)[0]
+        if key == 'ds.a.time':
+            value = value[0]
+
+    return value
+
+
+def purge_fields(fields):
+    keys = ['ds.a.snr', 'ds.a.time', 
+            'ds.a.states']
+
+    for k in keys:
+        if k not in fields.keys():
+            keys.remove(k)
+            continue
+        v = fields[k]
+        if k == 'ds.a.states':
+            for s in ['array', '\n', ' ']:
+                v = v.replace(s, '')
+            n_state = np.int(fields['subject']) - 1
+            v = np.array(np.safe_eval(v))[n_state]
+        else:
+            v = np.safe_eval(v)[0]
+            if k == 'ds.a.time':
+                v = v[0]
+        
+        k = k.split(".")[-1]
+        fields.update({k: v})
+
+    return fields
+
+
+
 def purge_dataframe(data, keys=['ds.a.snr', 
                                 'ds.a.time', 
                                 'ds.a.states',
                                 'n_clusters', 
                                 'n_components']):
-    """
-    keys = ['ds.a.snr', 'ds.a.time', 'ds.a.states', 
-            'n_clusters', 'n_components']
-    """
+
+    key = "n_components"
+    if "n_clusters" in data.keys():
+        key = "n_clusters"
     
-    n_clusters = np.zeros_like(data['n_clusters'], dtype=np.int8)
+    n_clusters = np.zeros_like(data[key], dtype=np.int8)
 
     for k in keys:
+        if k not in data.keys():
+            keys.remove(k)
+            continue
 
         if k == 'n_components' or k == 'n_clusters':
             data[k][data[k].values == 'None'] = np.nan
@@ -81,6 +125,7 @@ def get_values(path, directory, field_list, result_keys, filter={}):
         conf = json.load(f)
     
     fields, _ = get_configuration_fields(conf, *field_list)
+    fields = purge_fields(fields)
 
     if not may_contain(fields, filter):
         return pd.DataFrame([])
@@ -112,12 +157,13 @@ def get_values(path, directory, field_list, result_keys, filter={}):
         
         fields.update(data_dict)
 
-        df = pd.DataFrame([fields.copy()])
+        fields_cp = fields.copy()
+        df = pd.DataFrame([fields_cp])
         df = filter_dataframe(df, return_null=True, **filter)
 
         results.append(df)
-        del data
-
+        
+        del data, fields_cp
         _ = gc.collect()
 
     return pd.concat(results)
@@ -171,26 +217,21 @@ def get_results(path, field_list=['sample_slicer'],
         return pd.DataFrame([])
 
     
-    results = []
-
-    for item in filtered_dirs:
-        
-        # read json
+    def _parallel(item):
         pipeline_dir = os.path.join(path, item['filename'])
         subject_dirs = os.listdir(pipeline_dir)
         subject_dirs = [d for d in subject_dirs if d.find(".json") == -1]
-
-        """
-        r = Parallel(n_jobs=n_jobs, verbose=verbose)\
-            (delayed(get_values)(pipeline_dir, s, field_list, result_keys) \
-                                    for s in subject_dirs)
-        """
+        
         logger.debug("Dir = %s" % (item))
         r = pd.concat([get_values(pipeline_dir, s, field_list, result_keys, filter) \
                             for s in subject_dirs])
         logger.debug(r)
 
-        results.append(r)
+        return r
+
+
+    results = Parallel(n_jobs=n_jobs, verbose=verbose)\
+            (delayed(_parallel)(item) for item in filtered_dirs)
 
     dataframe = pd.concat(results)
     
