@@ -17,9 +17,7 @@ def load_ds(conf_file, task, extra_sa=None,
             **kwargs):
 
     # TODO: Documentation
-    from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
-    if prepro is None:
-        prepro = StandardPreprocessingPipeline()
+
 
     # TODO: conf file should include the full path
     conf = read_configuration(conf_file, task)

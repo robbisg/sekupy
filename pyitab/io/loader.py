@@ -1,4 +1,4 @@
-from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
+from pyitab.preprocessing.pipelines import PreprocessingPipeline
 from pyitab.io.base import load_dataset
 from pyitab.io.configuration import read_configuration
 from pyitab.io.subjects import load_subjects
@@ -96,8 +96,12 @@ class DataLoader(object):
             [description]
         """
    
+        from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline, \
+            PreprocessingPipeline
         if prepro is None:
             prepro = StandardPreprocessingPipeline()
+        else:
+            prepro = PreprocessingPipeline(nodes=prepro)
             
         logger.debug(prepro)
             
