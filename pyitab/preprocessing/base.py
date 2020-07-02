@@ -14,7 +14,6 @@ class Transformer(Node):
             Name of the transformer (the default is 'transformer')
         
         """
-        
         Node.__init__(self, name=name, **kwargs)
         self._mapper = self._set_mapper(**kwargs)
     
@@ -23,11 +22,8 @@ class Transformer(Node):
         return {self.name: kwargs}
 
 
-        
     def transform(self, ds):
-        
         self.map_transformer(ds)
-
         return ds
     
 
@@ -37,13 +33,12 @@ class Transformer(Node):
             ds.a['prepro'] = [self._mapper]
         else:
             ds.a.prepro.append(self._mapper)
-
         logger.debug(ds.a.prepro)
         
 
-    
     def save(self, path=None):
         return Node.save(self, path=path)
+
 
 
 class PreprocessingPipeline(Transformer):

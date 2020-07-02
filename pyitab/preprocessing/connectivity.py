@@ -109,7 +109,7 @@ class SlidingWindowConnectivity(Transformer):
         self.window_length = window_length
         self.shift = shift
         self.overlap = overlap
-        Transformer.__init__(self, name='average_estimator')
+        Transformer.__init__(self, name='sliding_window')
 
 
     def transform(self, ds):

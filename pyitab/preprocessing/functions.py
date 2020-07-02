@@ -233,7 +233,7 @@ class SampleSlicer(Transformer):
 
 class FeatureStacker(Transformer):
     """This function is used to stack features with different sample attribute keys, to
-    have a jointly use these features.
+    use these features, jointly.
     
     Parameters
     ----------
@@ -279,8 +279,7 @@ class FeatureStacker(Transformer):
         ds_ = SampleSlicer(**self._selection).transform(ds)
   
         iterable = [np.unique(ds_.sa[a].value) for a in self._attr]
-        
-        
+              
         ds_stack = []
         for attr in product(*iterable):
             logger.debug(attr)
@@ -292,11 +291,11 @@ class FeatureStacker(Transformer):
 
             logger.debug(ds_[mask].shape)
             
-            ds_stacked = hstack([d for d in ds_[mask]])
+            ds_stacked = hstack([d for d in ds_[mask]], a='unique')
             ds_stacked = self.update_attribute(ds_stacked, ds_[mask])
             ds_stack.append(ds_stacked)
         
-        ds = vstack(ds_stack)
+        ds = vstack(ds_stack, a='unique')
         return Transformer.transform(self, ds)
     
     
@@ -304,7 +303,7 @@ class FeatureStacker(Transformer):
 
         key = list(self._stack_attr)[0]
         uniques = np.unique(ds_orig.sa[key].value)
-        value = "-".join([str(v) for v in uniques])
+        value = "+".join([str(v) for v in uniques])
         
         logger.debug(key)
         logger.debug(value)

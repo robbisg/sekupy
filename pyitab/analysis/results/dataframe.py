@@ -20,9 +20,27 @@ def array2df(dataframe, key):
 
 
 def query_rows(dataframe, keys, attr, fx=np.max):
+    """[summary]
+    
+    Parameters
+    ----------
+    dataframe : [type]
+        [description]
+    keys : [type]
+        [description]
+    attr : [type]
+        [description]
+    fx : [type], optional
+        [description], by default np.max
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
 
-    df_values = df_fx_over_keys(dataframe, keys, attr=attr, fx=fx)
+    df_values = apply_function(dataframe, keys, attr=attr, fx=fx)
 
     queried_df = []
 

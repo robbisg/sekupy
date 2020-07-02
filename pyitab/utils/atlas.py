@@ -219,8 +219,6 @@ def get_aalmeg_info(background='black', grouping='LR'):
     labels = np.loadtxt(labels_fname, dtype=np.str, delimiter=',')
     node_names = labels.T[1][:99]
 
-    
-
     if grouping == 'LR':
         node_idx = np.argsort(np.array([node[-1] for node in node_names]))
         group_boundaries = [0, len(node_names) / 2.+1]
