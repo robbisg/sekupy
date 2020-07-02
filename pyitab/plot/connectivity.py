@@ -279,7 +279,7 @@ def plot_connectivity_circle_edited(con, node_names, indices=None, n_lines=None,
     import matplotlib.pyplot as plt
     import matplotlib.path as m_path
     import matplotlib.patches as m_patches
-    from mne.externals.six import string_types
+    #from mne.externals.six import string_types
     from functools import partial
     import seaborn as sns
     
@@ -395,7 +395,7 @@ def plot_connectivity_circle_edited(con, node_names, indices=None, n_lines=None,
     
   
     # get the colormap
-    if isinstance(colormap, string_types):
+    if isinstance(colormap, str):
         str_cmap = colormap
         colormap = plt.get_cmap(colormap)
         
@@ -463,7 +463,7 @@ def plot_connectivity_circle_edited(con, node_names, indices=None, n_lines=None,
         else:
             nodes.append([i,j])
             
-            if isinstance(colormap, string_types):
+            if isinstance(colormap, str):
                 str_cmap = colormap
                 colormap = plt.get_cmap(colormap)
 
@@ -673,6 +673,7 @@ def plot_connectivity_lines(matrix,
                             colormap='magma',
                             font="Manjari",
                             fontsize=14,
+                            colorbar=None,
                             title=None):
     
     
@@ -717,7 +718,7 @@ def plot_connectivity_lines(matrix,
         node_colors = [plt.cm.winter(i / float(n_nodes))
                        for i in range(n_nodes)]
 
-    node_size = minmax_scale(np.abs(matrix).sum(0)) * 800 + 150
+    node_size = minmax_scale(np.abs(matrix).sum(0), feature_range=(0, 30)) ** 2.1 + 150
 
     k = -1
     if kind == 'multi':
@@ -917,6 +918,8 @@ def plot_connectivity_lines(matrix,
     axes.axis('off')
 
     angles_deg = 180 * node_position / np.pi
+
+    node_ordered = np.argsort(node_size)[::-1]
     
     for i, (name, angle_rad, angle_deg, n_size) in enumerate(zip(node_names, node_position, angles_deg, node_size)):
         if angle_deg >= 270:
@@ -932,7 +935,12 @@ def plot_connectivity_lines(matrix,
         # Write only big names!
         if i not in nodes:
             txt_color = 'gray'
-            txt_size = fontsize - 3 
+            txt_size = fontsize - 3
+
+        # Highlight more the higher nodes
+        if i in node_ordered[:6]:
+            #txt_color = 'gray'
+            txt_size = fontsize + 7.5
 
         if kind == 'circle':
             axes.text(angle_rad, 1.27, name, 
@@ -985,18 +993,19 @@ def plot_connectivity_lines(matrix,
     ticks = np.linspace(vmin, vmax, 4)
     sm.set_array(np.linspace(vmin, vmax))
     
-    cb = plt.colorbar(sm, ax=axes, use_gridspec=False,
-                        orientation='vertical', pad=0.1,
-                        shrink=0.25,
-                        #ticks=ticks,
-                        #anchor=colorbar_pos
-                        # 
-                        )
-    cb_yticks = plt.getp(cb.ax.axes, 'yticklabels')
-    cb.ax.tick_params(labelsize=fontsize-2)
-    for l in cb.ax.yaxis.get_ticklabels():
-        l.set_family(font)
-    plt.setp(cb_yticks, color=textcolor)
+    if colorbar is not None:
+        cb = plt.colorbar(sm, ax=axes, use_gridspec=False,
+                            orientation='vertical', pad=0.1,
+                            shrink=0.25,
+                            #ticks=ticks,
+                            #anchor=colorbar_pos
+                            # 
+                            )
+        cb_yticks = plt.getp(cb.ax.axes, 'yticklabels')
+        cb.ax.tick_params(labelsize=fontsize-2)
+        for l in cb.ax.yaxis.get_ticklabels():
+            l.set_family(font)
+        plt.setp(cb_yticks, color=textcolor)
 
     return fig
     
