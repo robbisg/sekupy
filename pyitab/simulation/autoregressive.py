@@ -6,6 +6,9 @@ from mvpa2.base.collections import SampleAttributesCollection, \
     FeatureAttributesCollection, DatasetAttributesCollection
 from pyitab.preprocessing.base import Transformer
 
+import logging
+logger = logging.getLogger(__name__)
+
 # This must be moved to __init__
 class SimulationModel(Transformer):
     def __init__(self, name='simulation_model', order=None, noise=None, delay=None, snr=1e6, **kwargs):
@@ -108,8 +111,7 @@ class AutoRegressiveModel(SimulationModel):
         bs_sequence = dynamics_model._state_sequence
         bs_length = dynamics_model._state_length
 
-
-        matrices = self._create_ar_matrices(matrices)
+        ar_matrices = self._create_ar_matrices(matrices)
         
         data = []
 
@@ -117,11 +119,11 @@ class AutoRegressiveModel(SimulationModel):
 
             length = bs_length[i]
             # TODO: move data_bs in superclass and build create data in subclasses
-            data_bs = self.noise * np.random.randn(length, matrices.shape[1])
+            data_bs = self.noise * np.random.randn(length, ar_matrices.shape[1])
 
             for t in np.arange(self.order, length):
                 for d in range(self.order):
-                    data_bs[t, :] = data_bs[t, :] + np.dot(data_bs[t-d, :], matrices[state, :, :, d])
+                    data_bs[t, :] = data_bs[t, :] + np.dot(data_bs[t-d, :], ar_matrices[state, :, :, d])
             
             data.append(data_bs)
 
@@ -147,15 +149,15 @@ class DelayedModel(SimulationModel):
     def fit(self, dynamics_model):
         import matplotlib.pyplot as pl
         data = []
-        matrices = dynamics_model._states
+        matrices_ = dynamics_model._states
 
         bs_sequence = dynamics_model._state_sequence
         bs_length = dynamics_model._state_length
-        matrices = self._create_ar_matrices(matrices)
+        ar_matrices = self._create_ar_matrices(matrices_)
 
         for i, state in enumerate(bs_sequence):
 
-            m = matrices[state]
+            m = ar_matrices[state]
             
             adjacency_matrix = np.int_(np.mean(np.abs(m), axis=2) != 0) - np.eye(m.shape[1])
             diagonal = np.dstack([np.diag(np.diag(m[...,i])) for i in range(m.shape[-1])])
@@ -164,7 +166,7 @@ class DelayedModel(SimulationModel):
 
             # TODO: move data_bs in superclass and build create data in subclasses
             remove_idx = np.int_(np.sum(adjacency_matrix, axis=0) == 0)
-            data_bs = self.noise * np.random.randn(length, matrices.shape[1]) * remove_idx
+            data_bs = self.noise * np.random.randn(length, ar_matrices.shape[1]) * remove_idx
 
             # TODO: move in superclass, remember diagonal!
             for t in np.arange(self.order, length):

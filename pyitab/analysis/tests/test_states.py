@@ -10,6 +10,7 @@ import pytest
 from pyitab.tests import fetch_ds
 
 
+@pytest.mark.skip()
 def test_clustering(fetch_ds):
     ds = fetch_ds
     ds = SampleSlicer(subject=['subj01']).transform(ds)

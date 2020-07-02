@@ -354,7 +354,7 @@ def calculate_centroids(dataframe):
         centroid = np.array([X[labels == l].mean(0) for l in np.unique(labels)])
         centroids.append(centroid)
     
-    dataframe['centroids'] = np.array(centroids)
+    dataframe['centroids'] = centroids
         
     return dataframe
 
