@@ -4,7 +4,7 @@ import os
 from nilearn.image.resampling import coord_transform
 from nilearn import masking
 
-from sklearn.metrics.scorer import _check_multimetric_scoring
+from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
 from sklearn.preprocessing.label import LabelEncoder
 from sklearn.model_selection._split import LeaveOneGroupOut
@@ -106,7 +106,7 @@ class SearchLight(Analyzer):
 
     def __init__(self, 
                  radius=9.,
-                 estimator=None,
+                 estimator=Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))]),
                  n_jobs=1, 
                  scoring='accuracy', 
                  cv=LeaveOneGroupOut(), 
@@ -115,9 +115,6 @@ class SearchLight(Analyzer):
                  save_partial=False,
                  **kwargs,
                  ):
-
-        if estimator is None:
-            estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
 
         if not isinstance(estimator, Pipeline):
             estimator = Pipeline(steps=[('clf', estimator)])
