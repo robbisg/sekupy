@@ -27,6 +27,7 @@ class Analyzer(Node):
         
         
     def fit(self, ds, **kwargs):
+        # TODO: Must implement a store_info?
         return self
 
 
@@ -86,8 +87,6 @@ class Analyzer(Node):
         save_configuration(path, kwargs)
 
         self._save_dataset_description(path)
-
-
 
         return path, prefix
 
@@ -261,6 +260,14 @@ class Analyzer(Node):
 
     
     def _save_dataset_description(self, path):
+        """This function saves a dataset_description.json
+        for BIDS dataformat
+        
+        Parameters
+        ----------
+        path : str
+            The path that will be used to save the file
+        """
 
         info = self._get_analysis_info()
 

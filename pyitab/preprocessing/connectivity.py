@@ -1,13 +1,16 @@
 
-import logging
+
 import numpy as np
-from mvpa_itab.conn.operations import array_to_matrix, copy_matrix
-from mvpa2.base.collections import SampleAttributesCollection
-from mvpa2.datasets.base import Dataset
+from pyitab.utils.matrix import array_to_matrix, copy_matrix
 from pyitab.io.base import add_attributes
 from pyitab.preprocessing.base import Transformer
+from mvpa2.base.collections import SampleAttributesCollection
+from mvpa2.datasets.base import Dataset
 from scipy.spatial.distance import euclidean
+from scipy import signal
+import itertools
 
+import logging
 logger = logging.getLogger(__name__)
 
 # TODO: Document better!
@@ -38,7 +41,7 @@ class SingleRowMatrixTransformer(Transformer):
 
                 
         data = np.dstack([copy_matrix(array_to_matrix(a)) for a in ds.samples])
-        data = np.hstack([d for d in data[:,:]]).T
+        data = np.hstack([d for d in data[:, :]]).T
         
         attr = self._edit_attr(ds, data.shape)
         
@@ -94,9 +97,62 @@ class AverageEstimator(Transformer):
         Transformer.__init__(self, name=name, **kwargs)
 
     def transform(self, ds):
-
         ds_ = ds.copy()
 
         ds_.samples = np.mean(ds_.samples, axis=1, keepdims=True)
         
-        return Transformer.transform(self, ds_)
+        return super().transform(ds)()
+
+
+
+class SlidingWindowConnectivity(Transformer):
+
+
+    def __init__(self, window_length=1, shift=1, overlap=0):
+        # Units are in seconds ?
+        self.window_length = window_length
+        self.shift = shift
+        self.overlap = overlap
+        Transformer.__init__(self, name='sliding_window')
+
+
+    def transform(self, ds):
+        """Connectivity"""
+        
+        # TODO: Replace with get_data_ds
+        data = ds.samples
+        n_edges = int(ds.shape[1] * (ds.shape[1] - 1) * 0.5)
+        edges = [e for e in itertools.combinations(np.arange(ds.shape[1]), 2)]
+
+        window_length = self.window_length * ds.a.sample_frequency
+        window_start = np.arange(0, (data.shape[0] - window_length + 1), self.shift)
+
+        connectivity_lenght = len(window_start)
+        timewise_connectivity = np.zeros((connectivity_lenght, n_edges))
+        
+        for w in window_start:
+            
+            data_window = data[w:w+window_length, :]
+            
+            # From here must be included in a function.
+            phi = np.angle(signal.hilbert(data_window, axis=0))
+            
+            for e, (x, y) in enumerate(edges):
+                coh = np.imag(np.exp(1j*(phi[:, x] - phi[:, y])))
+                iplv = np.abs(np.mean(coh))
+                timewise_connectivity[w, e] = iplv
+
+        ds.samples = timewise_connectivity
+        ds = self.update_ds(ds, window_start)
+        return ds
+
+
+    def update_ds(self, ds, windows_start):
+        sa = {}
+        for k in ds.sa.keys():
+            sa.update({k: ds.sa[k].value[windows_start]})
+
+        ds_ = Dataset(ds.samples, sa=sa, a=ds.a)
+
+        return ds_
+

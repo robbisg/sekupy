@@ -1,12 +1,9 @@
 from pyitab.io.base import load_dataset
 from pyitab.io.configuration import read_configuration
 from pyitab.io.subjects import load_subjects
-from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline
-
-from mvpa2.suite import vstack
+from mvpa2.datasets import vstack
 
 import os
-import numpy as np
 
 import logging
 logger = logging.getLogger(__name__)
@@ -15,12 +12,13 @@ logger = logging.getLogger(__name__)
 
 def load_ds(conf_file, task, extra_sa=None,
             loader=load_dataset, 
-            prepro=StandardPreprocessingPipeline(),
+            prepro=None,
             n_subjects=None, selected_subjects=None,
             **kwargs):
 
     # TODO: Documentation
-    
+
+
     # TODO: conf file should include the full path
     conf = read_configuration(conf_file, task)
            
@@ -41,12 +39,15 @@ def load_ds(conf_file, task, extra_sa=None,
 
     logger.info('Merging %s subjects from %s' % (str(len(subjects)), data_path))
     
+    ds_merged = []
+
     for i, subj in enumerate(subjects):
         
         # TODO: Keep in mind BIDS
-        ds = loader(data_path, subj, task, **conf)
-        
-        if ds is None:
+        try:
+            ds = loader(data_path, subj, task, **conf)
+        except Exception as e:
+            logger.debug(e)
             continue
         
         ds = prepro.transform(ds)
@@ -56,16 +57,17 @@ def load_ds(conf_file, task, extra_sa=None,
             for k, v in extra_sa.items():
                 if len(v) == len(subjects):
                     ds.sa[k] = [v[i] for _ in range(ds.samples.shape[0])]
-        
-        
-        # First subject
-        if i == 0:
-            ds_merged = ds.copy()
-        else:
-            ds_merged = vstack((ds_merged, ds))
-            ds_merged.a.update(ds.a)
-            
+               
+        ds_merged.append(ds)
         del ds
+    
+    ds_merged = vstack(ds_merged, a='all')
+
+    if len(subjects) > 1:
+        for k in ds_merged.a.keys():
+            if k not in ['snr', 'states', 'time', 'mapper']:
+                ds_merged.a[k] = ds_merged.a[k].value[0]
+
     
     ds_merged.a.update(conf)
     ds_merged.a['task'] = task

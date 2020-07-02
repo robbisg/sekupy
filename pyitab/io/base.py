@@ -6,13 +6,16 @@
 from __future__ import print_function
 
 import os
-from mvpa2.suite import fmri_dataset, SampleAttributes
-from mvpa2.suite import eventrelated_dataset
+from mvpa2.misc.io.base import SampleAttributes
+from mvpa2.datasets.mri import fmri_dataset
+from mvpa2.datasets.eventrelated import eventrelated_dataset, find_events
+from mvpa2.base.dataset import vstack
+
+
 import logging
 import numpy as np
 import nibabel as ni
-from mvpa2.datasets.eventrelated import find_events
-from mvpa2.base.dataset import vstack
+
 
 from pyitab.utils.files import add_subdirs, build_pathnames
 from pyitab.io.subjects import add_subjectname
@@ -50,21 +53,19 @@ def load_dataset(path, subj, folder, **kwargs):
         elif arg == 'extract_events':
             extract_events = bool(kwargs[arg])
     
-    
     # Load the filename list        
     file_list = load_filelist(path, subj, folder, **kwargs)   
 
-    
     # Load data
     try:
         fmri_list = load_fmri(file_list)
     except IOError as err:
         logger.error(err)
         return
-    
-       
+           
     # Loading attributes
     attr = load_attributes(path, subj, folder, **kwargs)
+    logger.debug(attr)
     
     if (attr is None) and (len(file_list) == 0):
         return None            
@@ -75,7 +76,6 @@ def load_dataset(path, subj, folder, **kwargs):
     
     # Check roi_labels
     roi_labels = load_roi_labels(roi_labels)
-          
     
     # Load the pymvpa dataset.    
     try:
@@ -91,7 +91,6 @@ def load_dataset(path, subj, folder, **kwargs):
     except ValueError as e:
         logger.error("ERROR: %s (%s)", e, subj)
         del fmri_list
-    
     
     # Add filename attributes for detrending purposes   
     ds = add_filename(ds, fmri_list)
@@ -126,7 +125,6 @@ def add_filename(ds, fmri_list):
 
 
 def add_attributes(ds, attr):
-    
     
     logger.debug(attr.keys())
     
@@ -332,9 +330,7 @@ def load_attributes (path, subj, task,  **kwargs):
         
     
     if len(attribute_list) == 0:
-        logger.error('ERROR: No attribute file found!')
-        logger.error( 'Checked in '+str(directory_list))
-        return None
+        raise FileNotFoundError("No attribute file found!")
     
     
     logger.debug(header)

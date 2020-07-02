@@ -1,7 +1,3 @@
-from pyitab.analysis.configurator import AnalysisConfigurator
-from pyitab.analysis.iterator import AnalysisIterator
-from pyitab.analysis.pipeline import AnalysisPipeline
-
 
 def run_analysis(ds, default_config, default_options=dict(), 
                     name='mvpa', subdir="0_results", kind='combination'):
@@ -36,6 +32,9 @@ def run_analysis(ds, default_config, default_options=dict(),
         Returns the list of errors with the configuration that caused the error.
     
     """
+    from pyitab.analysis.configurator import AnalysisConfigurator
+    from pyitab.analysis.iterator import AnalysisIterator
+    from pyitab.analysis.pipeline import AnalysisPipeline
 
     iterator = AnalysisIterator(default_options, 
                                 AnalysisConfigurator(**default_config),

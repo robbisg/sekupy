@@ -13,6 +13,25 @@ from pyitab.analysis.results.base import get_configuration_fields, filter_datafr
 logger = logging.getLogger(__name__)
 
 
+def find_directory(path, **kwargs):
+    dir_analysis = os.listdir(path)
+    dir_analysis.sort()
+    dir_analysis = [get_dictionary(f) for f in dir_analysis]
+
+    filtered_dirs = []
+    for key, value in kwargs.items():
+        for dictionary in dir_analysis:
+            if key in dictionary.keys():
+                value = value.replace("_", "+")
+                if value == dictionary[key]:
+                    filtered_dirs.append(dictionary)
+
+    logger.info(filtered_dirs)
+
+    return filtered_dirs
+
+
+
 
 def get_values_bids(path, directory, field_list, result_keys, scores=None):
 
@@ -63,6 +82,7 @@ def get_values_bids(path, directory, field_list, result_keys, scores=None):
 def get_results_bids(path, field_list=['sample_slicer'], 
                     result_keys=[], scores=['score'], 
                     n_jobs=-1,  verbose=1, filter=None,
+                    get_function=get_values_bids,
                     **kwargs):
     """This function is used to collect the results from analysis folders.
     
@@ -90,20 +110,10 @@ def get_results_bids(path, field_list=['sample_slicer'],
         A table of the results in pandas format
     """
     # TODO: Use function for this snippet
-    dir_analysis = os.listdir(path)
-    dir_analysis.sort()
-    dir_analysis = [get_dictionary(f) for f in dir_analysis]
 
-    filtered_dirs = []
-    for key, value in kwargs.items():
-        for dictionary in dir_analysis:
-            if key in dictionary.keys():
-                value = value.replace("_", "+")
-                if value == dictionary[key]:
-                    filtered_dirs.append(dictionary)
-
-    logger.info(filtered_dirs)
     
+    filtered_dirs = find_directory(path, **kwargs)
+
     results = []
 
     for item in filtered_dirs:
@@ -113,13 +123,17 @@ def get_results_bids(path, field_list=['sample_slicer'],
         subject_dirs = os.listdir(pipeline_dir)
         subject_dirs = [d for d in subject_dirs if d.find(".json") == -1]
 
+
+        r = [get_function(pipeline_dir, s, field_list, result_keys, scores=scores) \
+             for s in subject_dirs]
+        """
         r = Parallel(n_jobs=n_jobs, 
-            verbose=verbose)(delayed(get_values_bids)\
+            verbose=verbose)(delayed(get_values_bids) \
                             (pipeline_dir, s, field_list, result_keys, scores=scores) \
                                     for s in subject_dirs)
-        
+        """
         results.append(r)
-         
+
     results_ = [i for sublist in results for item in sublist for i in item]
     dataframe = pd.DataFrame(results_)
 
@@ -128,91 +142,6 @@ def get_results_bids(path, field_list=['sample_slicer'],
     
     return dataframe
     
-
-def get_results(path, pipeline_name, field_list=['sample_slicer'], 
-                result_keys=None, filter=None, n_jobs=-1, verbose=1):
-    """This function is used to collect the results from analysis folders.
-    
-    Parameters
-    ----------
-    path : str
-        The pathname of the folder in which results are stored
-    pipeline_name : str
-        The id / pattern to be used to filter folders. It is often the id of 
-        the Analysis Pipeline used.
-    field_list : list, optional
-        List of different condition used by the AnalysisIterator  
-        (the default is ['sample_slicer'], which is a fields of the configuration)
-    result_keys : list, optional
-        List of strings indicating the other fields to get from the result (e.g. cross_validation folds)
-    filter : dictionary, optional
-        This is used to filter dataset and include only fields or conditions.
-        See ```pyitab.preprocessing.SampleSlicer``` for an example of dictionary
-         (the default is None, which [default_description])
-    
-    Returns
-    -------
-    dataframe : pandas dataframe
-        A table of the results in pandas format
-    """
-    # TODO: Optimize memory
-    dir_analysis = os.listdir(path)
-    dir_analysis = [d for d in dir_analysis if d.find(pipeline_name) != -1 and d.find(".") == -1]
-    dir_analysis.sort()
-    
-    logger.info("Loading %d files..." %(len(dir_analysis)))
-    results = Parallel(n_jobs=n_jobs, 
-                       verbose=verbose)(delayed(get_values)(path, d, field_list, result_keys) \
-                    for d in dir_analysis)
-    
-    results = [item for sublist in results for item in sublist]
-
-    dataframe = pd.DataFrame(results)
-    
-    if filter is not None:
-        dataframe = filter_dataframe(dataframe, **filter)
-           
-    return dataframe
-
-
-def ttest_values(dataframe, keys, scores=["accuracy"], popmean=0.5):
-    # TODO: Documentation
-    # TODO: Multiple scores (test)
-        
-    
-    options = {k: np.unique(dataframe[k]) for k in keys}
-    
-    keys, values = options.keys(), options.values()
-    opts = [dict(zip(keys,items)) for items in product(*values)]
-    
-    p_values = []
-
-    for item in opts:
-        
-        cond_dict = {k: v for k, v in item.items()}
-        item = {k: [v] for k, v in item.items()}
-        
-        df_true = dataframe.copy()
-        df_true = filter_dataframe(df_true, **item)
-          
-        for score in scores:
-            
-            values_score = df_true[score].values
-            print(values_score)
-            t, p = ttest_1samp(values_score, popmean)
-
-            cond_dict[score+'_avg'] = np.mean(values_score)
-            cond_dict[score+'_t'] = t            
-            cond_dict[score+'_p'] = p
-        
-        p_values.append(cond_dict)
-        
-           
-    
-    return pd.DataFrame(p_values)
-
-
-
 
 
 def get_permutation_values(dataframe, keys, scores=["accuracy"]):
@@ -274,26 +203,10 @@ def get_permutation_values(dataframe, keys, scores=["accuracy"]):
 
 def get_searchlight_results_bids(path, field_list=['sample_slicer'], **kwargs):
     
-    # TODO: Mind BIDS!
-    dir_analysis = os.listdir(path)
-    dir_analysis.sort()
-    dir_analysis = [get_dictionary(f) for f in dir_analysis]
 
-    filtered_dirs = []
-
-    if kwargs == {}:
-        filtered_dirs = dir_analysis
-
-    for key, value in kwargs.items():
-        for dictionary in dir_analysis:
-            if key in dictionary.keys():
-                value = value.replace("_", "+")
-                if value == dictionary[key]:
-                    filtered_dirs.append(dictionary)
+    filtered_dirs = find_directory(path, **kwargs)
 
     results = []
-
-    logger.debug(filtered_dirs)
     
     for item in filtered_dirs:
         
@@ -301,8 +214,11 @@ def get_searchlight_results_bids(path, field_list=['sample_slicer'], **kwargs):
         pipeline_dir = os.path.join(path, item['filename'])
         subject_dirs = os.listdir(pipeline_dir)
         subject_dirs = [d for d in subject_dirs if d.find(".json") == -1]
-         
+        
+        
+        #r = [get_values_searchlight()]
         for subject in subject_dirs:
+            
             conf_fname = os.path.join(pipeline_dir, subject, "configuration.json")
             with open(conf_fname) as f:
                 conf = json.load(f)
@@ -324,9 +240,15 @@ def get_searchlight_results_bids(path, field_list=['sample_slicer'], **kwargs):
                                                   fields['filename'])      
                 fields_ = fields.copy()
                 results.append(fields_)
-    
+        
+        #results.append(r)
+
+    #results_ = [i for sublist in results for item in sublist for i in item]
     dataframe = pd.DataFrame(results)
-       
+    
+    #if filter is not None:
+        #dataframe = filter_dataframe(dataframe, **filter)
+
     return dataframe
 
 # TODO: Generalize for dirs and files

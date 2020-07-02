@@ -2,7 +2,8 @@ from pyitab.io.base import load_fmri, add_attributes, add_events, add_filename
 from pyitab.io.base import load_mask, load_roi_labels
 from pyitab.io.subjects import add_subjectname
 
-from mvpa2.suite import SampleAttributesCollection, fmri_dataset
+from mvpa2.base.collections import SampleAttributesCollection
+from mvpa2.datasets.mri import fmri_dataset
 
 from bids import BIDSLayout
 
@@ -51,7 +52,7 @@ def load_bids_dataset(path, subj, task, **kwargs):
     # TODO: Use kwargs to get derivatives etc.
     layout = BIDSLayout(path, derivatives=derivatives)
 
-    #logger.debug(layout.get())
+    logger.debug(layout.get())
 
 
     # Load the filename list

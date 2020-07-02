@@ -6,7 +6,6 @@ from pyitab.preprocessing.pipelines import PreprocessingPipeline
 from pyitab.analysis.searchlight import SearchLight
 from pyitab.io.configuration import save_configuration
 from pyitab.io.loader import DataLoader
-from pyitab.io.mapper import get_loader
 from pyitab.analysis.utils import get_params
 from pyitab.utils import get_id
 
@@ -23,7 +22,7 @@ class AnalysisConfigurator(object):
                  estimator=[('clf', SVC(C=1, kernel='linear'))],
                  analysis=SearchLight,
                  cv=GroupShuffleSplit,
-                 #scores=['accuracy'],
+                 scores=['accuracy'],
                  **kwargs):
 
         """The configurator is used to store all the information on 
@@ -38,7 +37,11 @@ class AnalysisConfigurator(object):
         example_configuration = {
                                 'sample_slicer__band': ['alpha'], 
                                 'sample_slicer__condition' : ['vipassana'],
-                                
+
+                                'loader': DataLoader,
+                                'loader__conf_file':"/media/robbis/DATA/fmri/working_memory/working_memory.conf",
+                                'loader__loader':'simulations',
+                                'loader__task':'simulations'
                                 ,
                                 'estimator__clf__C':1,
                                 'estimator__clf__kernel':'linear',
@@ -103,7 +106,16 @@ class AnalysisConfigurator(object):
     
     def set_params(self, **params):
         logger.debug(params)
-        self._default_options.update(params)
+
+        if 'estimator' in params.keys():
+            keys = list(self._default_options.keys()).copy()
+            for k in keys:
+                if k.find('estimator') != -1:
+                    _ = self._default_options.pop(k)
+
+        _ = self._default_options.update(params)
+    
+        return
     
     
     def _get_params(self, keyword):
@@ -111,12 +123,17 @@ class AnalysisConfigurator(object):
 
 
     def _get_loader(self):
+        
+        klass = DataLoader
+        if 'loader' in self._default_options.keys():
+            klass = self._default_options['loader']
+
         params = self._get_params("loader")
 
         if params == {}:
             return None
         
-        return DataLoader(**params)
+        return klass(**params)
     
     
     def _get_transformer(self):
@@ -130,8 +147,6 @@ class AnalysisConfigurator(object):
             if key == 'sample_slicer' and 'attr' in arg_dict.keys():
                 arg_dict = arg_dict['attr']
 
-
-                
             object_ = class_(**arg_dict)
             transformer.append(object_)
         
@@ -140,11 +155,11 @@ class AnalysisConfigurator(object):
     
     
     def _get_estimator(self):
-       
-        estimator = Pipeline(steps=self._default_options["estimator"])
 
+        estimator = Pipeline(steps=self._default_options["estimator"])
+        
         params = self._get_params("estimator")
-        estimator.set_params(**params)
+        _ = estimator.set_params(**params)
         
         return estimator
     
@@ -154,6 +169,9 @@ class AnalysisConfigurator(object):
         
         cv_params = self._get_params("cv")
         cross_validation = self._default_options['cv']
+
+        logger.debug(cross_validation)
+        logger.debug(cv_params)
                 
         return cross_validation(**cv_params)
     
@@ -228,3 +246,12 @@ class AnalysisConfigurator(object):
             return
         
         save_configuration(path, self._default_options)
+
+
+    def __str__(self):
+        line = ""
+        for k, v in self._default_options.items():
+            line += "\n%s\t\t%s" %(k, str(v))
+        
+        line += "\n"
+        return line

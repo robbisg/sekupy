@@ -674,7 +674,8 @@ def plot_connectivity_lines(matrix,
                             font="Manjari",
                             fontsize=14,
                             colorbar=None,
-                            title=None):
+                            title=None,
+                            fig=None):
     
     
     import matplotlib.pyplot as plt
@@ -719,6 +720,7 @@ def plot_connectivity_lines(matrix,
                        for i in range(n_nodes)]
 
     node_size = minmax_scale(np.abs(matrix).sum(0), feature_range=(0, 30)) ** 2.1 + 150
+    size_ = np.abs(matrix).sum(1)
 
     k = -1
     if kind == 'multi':
@@ -807,8 +809,10 @@ def plot_connectivity_lines(matrix,
         figy = n_nodes / 10 + 5
         figx = figy + 3
 
-    fig = plt.figure(figsize=(figx, figy), 
-                     facecolor=facecolor)
+
+    if fig is None:
+        fig = plt.figure(figsize=(figx, figy), 
+                        facecolor=facecolor)
     
     polar = False
     if kind == 'circle':
@@ -920,6 +924,9 @@ def plot_connectivity_lines(matrix,
     angles_deg = 180 * node_position / np.pi
 
     node_ordered = np.argsort(node_size)[::-1]
+
+    node_threshold = size_.mean() + 2 * size_.std()
+    node_high = np.nonzero(size_ >= node_threshold)[0]
     
     for i, (name, angle_rad, angle_deg, n_size) in enumerate(zip(node_names, node_position, angles_deg, node_size)):
         if angle_deg >= 270:
@@ -938,8 +945,8 @@ def plot_connectivity_lines(matrix,
             txt_size = fontsize - 3
 
         # Highlight more the higher nodes
-        if i in node_ordered[:6]:
-            #txt_color = 'gray'
+        if i in node_high:
+            txt_color = 'crimson'
             txt_size = fontsize + 7.5
 
         if kind == 'circle':

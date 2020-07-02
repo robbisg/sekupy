@@ -233,7 +233,7 @@ class SampleSlicer(Transformer):
 
 class FeatureStacker(Transformer):
     """This function is used to stack features with different sample attribute keys, to
-    have a jointly use these features.
+    use these features, jointly.
     
     Parameters
     ----------
@@ -279,8 +279,7 @@ class FeatureStacker(Transformer):
         ds_ = SampleSlicer(**self._selection).transform(ds)
   
         iterable = [np.unique(ds_.sa[a].value) for a in self._attr]
-        
-        
+              
         ds_stack = []
         for attr in product(*iterable):
             logger.debug(attr)
@@ -292,11 +291,11 @@ class FeatureStacker(Transformer):
 
             logger.debug(ds_[mask].shape)
             
-            ds_stacked = hstack([d for d in ds_[mask]])
+            ds_stacked = hstack([d for d in ds_[mask]], a='unique')
             ds_stacked = self.update_attribute(ds_stacked, ds_[mask])
             ds_stack.append(ds_stacked)
         
-        ds = vstack(ds_stack)
+        ds = vstack(ds_stack, a='unique')
         return Transformer.transform(self, ds)
     
     
@@ -304,7 +303,7 @@ class FeatureStacker(Transformer):
 
         key = list(self._stack_attr)[0]
         uniques = np.unique(ds_orig.sa[key].value)
-        value = "-".join([str(v) for v in uniques])
+        value = "+".join([str(v) for v in uniques])
         
         logger.debug(key)
         logger.debug(value)
@@ -366,8 +365,7 @@ class SampleTransformer(Transformer):
 
 
 class TemporalTransformer(Transformer):
-    """This function is used when we need to lock SampleSlicer with
-    TargetTransformer in order to be used with AnalysisIterator.
+    """
     
     Parameters
     ----------
@@ -406,3 +404,23 @@ class TemporalTransformer(Transformer):
         logger.info(ds.samples.shape)
 
         return Transformer.transform(self, ds)
+
+    
+
+class Resampler(Transformer):
+
+    def __init__(self, up=1, down=1):
+        self.up = up
+        self.down = down
+        Transformer.__init__(self, name='resampler')
+
+    
+    def transform(self, ds):
+
+        from mne.filter import resample
+        logger.info("Resampling...")
+        ds.samples = resample(ds.samples, down=self.down, up=self.up)
+
+        logger.info("Dataset resampled "+str(ds.shape))
+
+        return ds

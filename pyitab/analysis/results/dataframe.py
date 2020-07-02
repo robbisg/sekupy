@@ -20,9 +20,27 @@ def array2df(dataframe, key):
 
 
 def query_rows(dataframe, keys, attr, fx=np.max):
+    """[summary]
+    
+    Parameters
+    ----------
+    dataframe : [type]
+        [description]
+    keys : [type]
+        [description]
+    attr : [type]
+        [description]
+    fx : [type], optional
+        [description], by default np.max
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
 
-    df_values = df_fx_over_keys(dataframe, keys, attr=attr, fx=fx)
+    df_values = apply_function(dataframe, keys, attr=attr, fx=fx)
 
     queried_df = []
 
@@ -39,7 +57,7 @@ def query_rows(dataframe, keys, attr, fx=np.max):
 
 
 
-def df_fx_over_keys(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).sum(0), **fx_kwargs):
+def apply_function(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).sum(0), **fx_kwargs):
     """This function perform a function on the dataframe, it groups the dataframe
     by using the key parameter and applies a function to values indicated.
     

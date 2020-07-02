@@ -16,7 +16,7 @@ def test_sampleaverager(fetch_ds):
 
     sample_ds = SampleSlicer(subject=['subj01'], memory_status=['F']).transform(ds)
 
-    np.testing.assert_array_equal(sample_ds.samples.mean(0), ds_.samples[0])
+    np.testing.assert_array_almost_equal(sample_ds.samples.mean(0), ds_.samples[0])
 
     last_item = list(ds_.a.prepro[-1].keys())[0]
     assert last_item == 'sample_averager' 

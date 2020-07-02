@@ -22,6 +22,12 @@ def test_fmri_data():
     assert len(np.unique(ds.sa.subject)) == 4
     assert ds.shape[0] == 120
 
+    ds = loader.fetch(n_subjects=1)
+    assert len(np.unique(ds.sa.subject)) == 1
+
+    ds = loader.fetch()
+    assert len(np.unique(ds.sa.subject)) == 4
+
 
 
 def test_meg_data():
@@ -33,8 +39,6 @@ def test_meg_data():
                         task='connectivity', 
                         loader='mat')
 
-    ds = loader.fetch(prepro=PreprocessingPipeline())
+    ds = loader.fetch(prepro=None)
     assert len(np.unique(ds.sa.subject)) == 4
     assert ds.shape[0] == 48
-
-

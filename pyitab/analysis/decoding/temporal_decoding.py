@@ -110,11 +110,11 @@ class TemporalDecoding(RoiDecoding):
                         DeprecationWarning)
 
         X, y = get_ds_data(ds)
-        t_values = ds.sa[time_attr].value
 
         if len(X.shape) == 3:
             return RoiDecoding._get_data(self, ds, cv_attr, **kwargs)
 
+        t_values = ds.sa[time_attr].value
         X, y = temporal_transformation(X, y, t_values)
 
         _ = balancer.fit_sample(X[:,:,0], y)
@@ -171,9 +171,9 @@ class TemporalDecoding(RoiDecoding):
             if key.find("test_") != -1:
                 mat_file[key] = value
             
-            #elif key == 'estimator':
-            #    mat_estimator = self._save_estimator(value)
-            #    mat_file.update(mat_estimator)
+            elif key == 'estimator':
+                mat_estimator = self._save_estimator(value)
+                mat_file.update(mat_estimator)
         
             elif key == "splits":
                 mat_splits = self._save_splits(value)
@@ -185,3 +185,35 @@ class TemporalDecoding(RoiDecoding):
         
         return mat_file
 
+
+
+    def _save_estimator(self, estimators):
+        
+        mat_ = dict()
+        mat_['weights'] = []
+        mat_['features'] = []
+        
+        # For each fold
+        for estimator in estimators:
+            est_weights = []
+            est_features = []
+
+            estimators_ = estimator.estimators_
+            # For each timepoint
+            for est in estimators_:
+                if hasattr(est.named_steps['clf'], 'coef_'): 
+                    w = est.named_steps['clf'].coef_
+                    est_weights.append(w)
+                
+                if 'fsel' in est.named_steps.keys():
+                    f = est.named_steps['fsel'].get_support()
+                    
+                    est_features.append(f)
+
+            mat_['features'].append(est_features)
+            mat_['weights'].append(est_weights)
+
+        mat_['features'] = np.array(mat_['features'])
+        mat_['weights'] = np.array(mat_['weights'])
+
+        return mat_

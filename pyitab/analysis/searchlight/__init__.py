@@ -4,7 +4,7 @@ import os
 from nilearn.image.resampling import coord_transform
 from nilearn import masking
 
-from sklearn.metrics.scorer import _check_multimetric_scoring
+from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
 from sklearn.preprocessing.label import LabelEncoder
 from sklearn.model_selection._split import LeaveOneGroupOut
@@ -26,6 +26,23 @@ logger = logging.getLogger(__name__)
 
 
 def get_seeds(ds, radius):
+    """This function is used to load the affinity matrix used
+    for searchlight analysis. Given the mask it loads the affinity
+    matrix, if mask and radius are the same, or builds and
+    saves the matrix on disk if not.
+    
+    Parameters
+    ----------
+    ds : [type]
+        [description]
+    radius : [type]
+        [description]
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
     
     if check_proximity(ds, radius):
         return load_proximity(ds, radius)
@@ -55,14 +72,6 @@ class SearchLight(Analyzer):
 
     Parameters
     -----------
-    mask_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        boolean image giving location of voxels containing usable signals.
-
-    process_mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        boolean image giving voxels on which searchlight should be
-        computed.
 
     radius : float, optional
         radius of the searchlight ball, in millimeters. Defaults to 2.
@@ -87,11 +96,17 @@ class SearchLight(Analyzer):
 
     verbose : int, optional
         Verbosity level. Defaut is False
+
+    save_partial : bool, default is False
+        A boolean indicating whether to save partial maps or not.
+        (Not well tested!)
+
+
     """
 
     def __init__(self, 
                  radius=9.,
-                 estimator=None,
+                 estimator=Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))]),
                  n_jobs=1, 
                  scoring='accuracy', 
                  cv=LeaveOneGroupOut(), 
@@ -100,9 +115,6 @@ class SearchLight(Analyzer):
                  save_partial=False,
                  **kwargs,
                  ):
-
-        if estimator is None:
-            estimator = Pipeline(steps=[('clf', SVC(C=1, kernel='linear'))])
 
         if not isinstance(estimator, Pipeline):
             estimator = Pipeline(steps=[('clf', estimator)])
@@ -123,8 +135,16 @@ class SearchLight(Analyzer):
 
 
     def fit(self, ds, cv_attr='chunks'):
-        """
-        Fit the searchlight
+        """This function fit the searchlight given the dataset
+        and the attribute used for cross_validation.
+        
+        Parameters
+        ----------
+        ds : pymvpa Dataset,
+            The dataset used for classification
+        cv_attr : str, optional
+            The attribute used by cross-validation to chunk data,
+            by default 'chunks'
         """
         
         A = get_seeds(ds, self.radius)
@@ -137,21 +157,19 @@ class SearchLight(Analyzer):
         X, y = get_ds_data(ds)
         y = LabelEncoder().fit_transform(y)
 
-
-        if cv_attr != None:
+        if cv_attr is not None:
             if isinstance(cv_attr, list):
                 groups = np.vstack([ds.sa[att].value for att in cv_attr]).T
             else:
                 groups = ds.sa[cv_attr].value
 
-        
         values = []
         indices = self._get_permutation_indices(len(y))
         
         save_partial = self.save_partial
 
         for n, idx in enumerate(indices):
-            y_ = y[idx] 
+            y_ = y[idx]
             
             # This is used to preserve partial good
             # files in case of permutations
@@ -165,14 +183,12 @@ class SearchLight(Analyzer):
             values.append(scores)
         
         self.scores = values
-
         splits = self._split_name(X, y, self.cv, groups)
-
         self._info = self._store_info(ds, cv_attr=cv_attr, test_order=splits)
 
         return self
 
-    
+
     def _split_name(self, X, y, cv, groups):
 
         if len(groups.shape) == 1:
@@ -200,7 +216,6 @@ class SearchLight(Analyzer):
                 pass
 
     
-
     def _save_image(self, path, image, score, n_permutation, suffix, fx, **kwargs):
 
         reverse = self._info['a'].mapper.reverse1
@@ -222,9 +237,6 @@ class SearchLight(Analyzer):
         save_map(filename, reverse(image), affine)
 
 
-
-
-
     def save(self, path=None, operations={"full": lambda x: x,
                                           "mean": lambda x: np.mean(x, axis=1)}, **kwargs):
         """This function is used to store searchlight images on disk.
@@ -242,8 +254,7 @@ class SearchLight(Analyzer):
             You can do several operation by defining a function 
             and adding it to the dictionary
         """
-
-        
+   
         path, prefix = Analyzer.save(self, path, **kwargs)
         kwargs['prefix'] = prefix
 
@@ -277,10 +288,12 @@ class SearchLight(Analyzer):
                     params_ = get_params(kwargs, keyword)
 
                     if keyword == "sample_slicer":
-                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
+                        params_ = {k: "+".join([str(v) for v in value]) 
+                                   for k, value in params_.items()}
                     
                     if keyword == "sample_transformer":
-                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_['attr'].items()}                   
+                        params_ = {k: "+".join([str(v) for v in value]) 
+                                   for k, value in params_['attr'].items()}                   
                     
                     params.update(params_)
         else:
@@ -297,7 +310,7 @@ class SearchLight(Analyzer):
         params_keys = list(params.keys())
         params_keys += ['score', 'perm']
         logger.debug(params_keys)
-        midpart = "_".join(["%s-%s" % (k, str(kwargs[k]).replace("_", "+")) \
+        midpart = "_".join(["%s-%s" % (k, str(kwargs[k]).replace("_", "+"))
                             for k in params_keys])
         
         filename = "%s.nii.gz" % ("_".join([prefix, midpart, suffix]))
