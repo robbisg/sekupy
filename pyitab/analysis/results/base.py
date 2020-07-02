@@ -150,14 +150,16 @@ def ttest_values(dataframe, keys, scores=["accuracy"], popmean=0.5):
 
 
 
-def get_permutation_values(dataframe, keys, scores=["accuracy"]):
+def get_permutation_values(dataframe, keys, scores=["accuracy"], permutation_key='permutation'):
     # TODO: Document
     # TODO: Multiple scores (test)
+    # TODO: Cast permutation to int
+    # TODO: Issue #56
     
     
     #keys = ['band', 'targets', 'permutation', "C", "k", "n_splits"]
 
-    df_perm = dataframe.loc[dataframe['permutation'] != 0]
+    df_perm = dataframe.loc[np.int_(dataframe[permutation_key].values) != 0]
     
     table_perm = pd.pivot_table(df_perm, 
                                 values=scores, 
@@ -167,10 +169,10 @@ def get_permutation_values(dataframe, keys, scores=["accuracy"]):
     
     options = {k:np.unique(table_perm[k]) for k in keys}
     
-    n_permutation = options.pop('permutation')[-1]
+    n_permutation = options.pop(permutation_key)[-1]
     
     keys, values = options.keys(), options.values()
-    opts = [dict(zip(keys,items)) for items in product(*values)]
+    opts = [dict(zip(keys, items)) for items in product(*values)]
     
     p_values = []
 
@@ -183,21 +185,25 @@ def get_permutation_values(dataframe, keys, scores=["accuracy"]):
         df_permutation = table_perm.copy()
         
         df_permutation = filter_dataframe(df_permutation, **item)
-        item.update({'permutation': [0]})
+        
+        
+        item.update({permutation_key: [0]})
         df_true = filter_dataframe(df_true, **item)
           
         for score in scores:
             
-            df_avg = np.mean(df_true[score].values)
-            
+            if 'fx' in keys:
+                score = 'score_%s' % (cond_dict['fx'])
+
+            df_avg = np.nanmean(df_true[score].values)
             permutation_values = df_permutation[score].values
 
             n_values = (np.count_nonzero(permutation_values > df_avg) + 1)
             
             p = n_values / float(n_permutation)
             
-            cond_dict[score+'_perm'] = np.mean(df_permutation[score].values)
-            cond_dict[score+'_true'] = np.mean(df_true[score].values)            
+            cond_dict[score+'_perm'] = np.nanmean(df_permutation[score].values)
+            cond_dict[score+'_true'] = np.nanmean(df_true[score].values)            
             cond_dict[score+'_p'] = p
         
         p_values.append(cond_dict)
@@ -229,10 +235,13 @@ def get_configuration_fields(conf, *args):
     import ast
     results = dict()
 
-    if 'id' in list(conf.keys()):
-        results['id'] = conf['id']
-    else:
-        results['id'] = "None"
+    fixed_items = ['id', 'num']
+
+    for item in fixed_items:
+        if item in list(conf.keys()):
+            results[item] = conf[item]
+        else:
+            results[item] = "None"
     
     for k, v in conf.items():
 
@@ -269,8 +278,14 @@ def get_configuration_fields(conf, *args):
             
             if arg == k:
                 results[k] = v
+
+    scores = None
+    if 'scores' in conf.keys():
+        scores = ast.literal_eval(conf['scores'])
+    elif 'analysis__scoring' in conf.keys():
+        scores = conf['analysis__scoring']
                 
-    return results, ast.literal_eval(conf['scores'])
+    return results, scores
 
 
 
@@ -345,7 +360,7 @@ def get_connectivity_results(path, dir_id, field_list=['sample_slicer'], load_cv
 
 
 
-def filter_dataframe(dataframe, **selection_dict):
+def filter_dataframe(dataframe, return_mask=False, **selection_dict):
     # TODO: Documentation
 
     _symbols = ['!', '<', '>']
@@ -366,7 +381,9 @@ def filter_dataframe(dataframe, **selection_dict):
                 condition_mask = np.logical_or(condition_mask, ds_values == value)
                 
         selection_mask = np.logical_and(selection_mask, condition_mask)
-        
+
+    if return_mask:
+        return dataframe.loc[selection_mask], selection_mask
     
     return dataframe.loc[selection_mask]
 
@@ -393,85 +410,6 @@ def aggregate_searchlight(path, dir_id, filter):
     dataframe = get_searchlight_results(path, dir_id, field_list=['sample_slicer'], load_cv=False)
     
     return
-
-
-def array2df(dataframe, key):
-    # TODO : Documentation
-    df = pd.DataFrame(dataframe[key].values.tolist(), 
-                      columns=['%s_%d' %(key, i) \
-                                    for i in range(dataframe[key].values[0].shape[0])])
-
-
-    df_keys = pd.DataFrame([row[:-1] for row in dataframe.values.tolist()], 
-                                    columns=dataframe.keys()[:-1])
-
-    df_concat = pd.concat(df, df_keys)
-
-    return df_concat
-
-
-def query_rows(dataframe, keys, attr, fx=np.max):
-
-
-    df_values = df_fx_over_keys(dataframe, keys, attr=attr, fx=fx)
-
-    queried_df = []
-
-    for i, row in df_values.iterrows():
-        mask = np.ones(dataframe.shape[0], dtype=np.bool)
-        for k in df_values.keys():
-            mask = np.logical_and(mask, dataframe[k].values == row[k])
-
-        queried_df.append(dataframe.loc[mask])
-
-
-    return pd.concat(queried_df)
-
-
-
-
-def df_fx_over_keys(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).sum(0), **fx_kwargs):
-    """This function perform a function on the dataframe, it groups the dataframe
-    by using the key parameter and applies a function to values indicated.
-    
-    Parameters
-    ----------
-    dataframe : pandas Dataframe
-        The dataframe to be processed by the function
-    keys : list of string
-        The keys that should be used to group the dataframe. These keys are those that
-        were preserved in the output.
-    attr : str, optional
-        The key were values should be found (the default is 'features')
-    fx : function, optional
-        The function that is applied to values. (the default is lambda x:np.vstack(x).sum(0))
-    
-    Returns
-    -------
-    dataframe : The processed dataframe.
-    """
-
-    df_sum = dataframe.groupby(keys)[attr].apply(fx, **fx_kwargs)
-
-    return df_sum.reset_index()
-
-
-def get_weights(dataframe):
-
-    from scipy.stats import zscore
-
-    df_weights = []
-    for i, row in dataframe.iterrows():
-        matrix = np.zeros_like(row['features'], dtype=np.float)
-        mask = np.equal(row['features'], 1)
-
-        matrix[mask] = zscore(row['weights'])
-
-        row['weights'] = matrix
-        
-        df_weights.append(row)
-
-    return pd.DataFrame(df_weights)
 
 
 
