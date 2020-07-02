@@ -44,9 +44,10 @@ def load_ds(conf_file, task, extra_sa=None,
     for i, subj in enumerate(subjects):
         
         # TODO: Keep in mind BIDS
-        ds = loader(data_path, subj, task, **conf)
-        
-        if ds is None:
+        try:
+            ds = loader(data_path, subj, task, **conf)
+        except Exception as e:
+            logger.debug(e)
             continue
         
         ds = prepro.transform(ds)
@@ -62,10 +63,11 @@ def load_ds(conf_file, task, extra_sa=None,
     
     ds_merged = vstack(ds_merged, a='all')
 
-    for k in ds_merged.a.keys():
-        if k not in ['snr', 'states', 'time', 'mapper']:
-            logger.debug(k)
-            ds_merged.a[k] = ds_merged.a[k].value[0]
+    if len(subjects) > 1:
+        for k in ds_merged.a.keys():
+            if k not in ['snr', 'states', 'time', 'mapper']:
+                ds_merged.a[k] = ds_merged.a[k].value[0]
+
     
     ds_merged.a.update(conf)
     ds_merged.a['task'] = task

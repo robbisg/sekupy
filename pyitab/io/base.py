@@ -53,19 +53,16 @@ def load_dataset(path, subj, folder, **kwargs):
         elif arg == 'extract_events':
             extract_events = bool(kwargs[arg])
     
-    
     # Load the filename list        
     file_list = load_filelist(path, subj, folder, **kwargs)   
 
-    
     # Load data
     try:
         fmri_list = load_fmri(file_list)
     except IOError as err:
         logger.error(err)
         return
-    
-       
+           
     # Loading attributes
     attr = load_attributes(path, subj, folder, **kwargs)
     logger.debug(attr)
@@ -94,7 +91,6 @@ def load_dataset(path, subj, folder, **kwargs):
     except ValueError as e:
         logger.error("ERROR: %s (%s)", e, subj)
         del fmri_list
-    
     
     # Add filename attributes for detrending purposes   
     ds = add_filename(ds, fmri_list)
@@ -334,9 +330,7 @@ def load_attributes (path, subj, task,  **kwargs):
         
     
     if len(attribute_list) == 0:
-        logger.error('ERROR: No attribute file found!')
-        logger.error( 'Checked in '+str(directory_list))
-        return None
+        raise FileNotFoundError("No attribute file found!")
     
     
     logger.debug(header)

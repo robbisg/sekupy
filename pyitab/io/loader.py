@@ -1,4 +1,3 @@
-from pyitab.preprocessing.pipelines import PreprocessingPipeline
 from pyitab.io.base import load_dataset
 from pyitab.io.configuration import read_configuration
 from pyitab.io.subjects import load_subjects
@@ -79,21 +78,24 @@ class DataLoader(object):
         
         
     def fetch(self, prepro=None, n_subjects=None, subject_names=None):
-        """[summary]
+        """This function starts to load data given the information provided
+        in the constructor.
         
         Parameters
         ----------
-        prepro : [type], optional
-            [description] (the default is None, which [default_description])
-        n_subjects : [type], optional
-            [description] (the default is None, which [default_description])
-        subject_names : [type], optional
-            [description] (the default is None, which [default_description])
+        prepro : ```pyitab.preprocessing.pipelines.PreprocessingPipeline``` 
+        or list of strings, optional
+            Preprocessing steps to be perfrormed at subject level (the default is None)
+        n_subjects : int, optional
+            Number of subjects to load in the order provided by the participants.csv file
+             (the default is None)
+        subject_names : list of strings, optional
+            The list of subject names to be loaded (the default is None)
         
         Returns
         -------
-        [type]
-            [description]
+        ds: pymvpa Dataset
+            The loaded dataset.
         """
    
         from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline, \
@@ -118,6 +120,13 @@ class DataLoader(object):
     
 
     def get_subjects(self):
+        """Returns the subject list
+
+        Returns
+        -------
+        subjects : list of strings
+            The subject list provided by participants.csv
+        """
 
         conf = read_configuration(self._configuration_file, 
                                   self._task)

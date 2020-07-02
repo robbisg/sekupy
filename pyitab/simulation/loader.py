@@ -57,15 +57,15 @@ class SimulationLoader(object):
         
         transformer = []
         for key in options['pipeline']:
-            class_ = function_mapper(key)
-            
+            klass = function_mapper(key)           
             arg_dict = get_params(options, key)
 
             if key == 'sample_slicer' and 'attr' in arg_dict.keys():
                 arg_dict = arg_dict['attr']
 
-            object_ = class_(**arg_dict)
-            transformer.append(object_)
+            logger.debug(klass)
+            objekt = klass(**arg_dict)
+            transformer.append(objekt)
         
         logger.debug(transformer)
         return PreprocessingPipeline(nodes=transformer)
