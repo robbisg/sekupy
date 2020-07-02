@@ -25,3 +25,5 @@ codecov
 pytest>=3.6.0
 pytest-cov
 tqdm
+h5py
+hmmlearn

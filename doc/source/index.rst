@@ -5,6 +5,10 @@
 
 Welcome to pyitab's documentation!
 ==================================
+This package aims at integrate easily different
+python packages build for neuroimaging and data analysis.
+
+
 
 .. toctree::
    :maxdepth: 3
