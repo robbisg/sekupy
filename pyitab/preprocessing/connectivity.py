@@ -94,4 +94,9 @@ class AverageEstimator(Transformer):
         Transformer.__init__(self, name=name, **kwargs)
 
     def transform(self, ds):
-        return super().transform(ds)()
+
+        ds_ = ds.copy()
+
+        ds_.samples = np.mean(ds_.samples, axis=1, keepdims=True)
+        
+        return Transformer.transform(self, ds_)
