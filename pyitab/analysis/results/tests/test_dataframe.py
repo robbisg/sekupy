@@ -23,8 +23,8 @@ def directory():
 def test_filter(dataframe):
 
     algorithms = {
-        "KMeans":101,
-        "SpectralClustering":89,
+        "KMeans": 101,
+        "SpectralClustering": 89,
         "GaussianMixture": 105
     }
 

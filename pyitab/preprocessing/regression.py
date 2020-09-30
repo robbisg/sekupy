@@ -1,4 +1,4 @@
-from nilearn.stats.regression import *
+from nilearn.glm.regression import *
 from pyitab.preprocessing.base import Transformer
 
 import logging

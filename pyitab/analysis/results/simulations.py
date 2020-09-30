@@ -45,7 +45,8 @@ def purge_fields(fields):
         else:
             v = np.safe_eval(v)[0]
             if k == 'ds.a.time':
-                v = v[0]
+                # TODO: take care of distributions
+                v = v['loc']
         
         k = k.split(".")[-1]
         fields.update({k: v})
@@ -73,6 +74,7 @@ def purge_dataframe(data, keys=['ds.a.snr',
 
         if k == 'n_components' or k == 'n_clusters':
             data[k][data[k].values == 'None'] = np.nan
+            data[k] = np.float_(data[k])
             values = pd.to_numeric(data[k]).values
             mask = np.logical_not(np.isnan(values))
             n_clusters[mask] = values[mask]
@@ -88,13 +90,13 @@ def purge_dataframe(data, keys=['ds.a.snr',
             else:
                 v = np.safe_eval(v)[0]
                 if k == 'ds.a.time':
-                    v = v[0]
+                    v = v['loc']
 
             values.append(v)
-        
+
         data[k[5:]] = values
     
-    data['n_states'] = n_clusters
+    data['n_states'] = np.int_(n_clusters)
 
     return data.drop(columns=keys, axis=1)
 
@@ -246,9 +248,9 @@ def calculate_metrics(dataframe, metrics_kwargs=None, fixed_variables={}):
     ----------
     dataframe : a pandas dataframe
         The dataframe must contain the field ```n_states```, it is supposed
-        to have other fields with unique values (e.g. those that identifies the analysis)        
+        to have other fields with unique values (e.g. to identify the analysis)        
     metrics_kwargs : dictionary, optional
-        dictionary with other metrics, , by default None
+        dictionary with other metrics, by default None
     fixed_variables : dict, optional
         Variables that will be added to output dataframe, usually they are fields
         that identify a single analysis, and are used to filter the dataframe, by default {}

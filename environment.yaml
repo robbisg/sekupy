@@ -29,3 +29,5 @@ dependencies:
      - nistats
      - hmmlearn
      - h5py
+     - pymvpa2
+     - pybids

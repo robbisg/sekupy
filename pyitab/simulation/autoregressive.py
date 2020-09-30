@@ -44,7 +44,7 @@ class SimulationModel(Transformer):
 
 
     # TODO: Not proper here!
-    def _create_ar_matrices(self, matrices, c=2.5, n=10000):
+    def _create_ar_matrices(self, matrices, c=2.5, n=20000):
         """This function randomly creates autoregressive matrices
         
         Parameters
@@ -69,9 +69,10 @@ class SimulationModel(Transformer):
         
         full_bs_matrix = np.zeros((n_brain_states, n_nodes, n_nodes, self.order))
         
-        has_converged = False
         for j in range(n_brain_states):
             
+            has_converged = False
+
             matrix = np.dstack([matrices[j] for _ in range(self.order)])
 
             FA = np.zeros((n_nodes*self.order, n_nodes*self.order))
@@ -84,10 +85,12 @@ class SimulationModel(Transformer):
                 eig, _ = sp.linalg.eig(FA)
 
                 if np.all(np.abs(eig) < 1):
+                    logger.info(k)
                     has_converged = True
                     break
             
             if not has_converged:
+                logger.info("Not converged")
                 raise Exception("Solutions not found, try to lower c or increase n")
 
             full_bs_matrix[j] = A.copy()
@@ -160,7 +163,7 @@ class DelayedModel(SimulationModel):
             m = ar_matrices[state]
             
             adjacency_matrix = np.int_(np.mean(np.abs(m), axis=2) != 0) - np.eye(m.shape[1])
-            diagonal = np.dstack([np.diag(np.diag(m[...,i])) for i in range(m.shape[-1])])
+            diagonal = np.dstack([np.diag(np.diag(m[..., i])) for i in range(m.shape[-1])])
 
             length = bs_length[i]
 
@@ -175,6 +178,9 @@ class DelayedModel(SimulationModel):
                     #                               data_bs[t-d, :] @ diagonal[:, :, d]
 
             leading, following = np.nonzero(adjacency_matrix)
+            logger.info(ar_matrices.shape)
+            logger.info((leading, following))
+            logger.info(data_bs.shape)
             for l, f in zip(leading, following):
                 data_bs[:, f] = data_bs[:, f] + self._get_delayed_signal(data_bs[:, l])
 
@@ -213,7 +219,6 @@ class PhaseDelayedModel(DelayedModel):
         DelayedModel.__init__(self, name, **kwargs)        
 
     def _get_delayed_signal(self, leading_signal):
-
         hilbert_l = signal.hilbert(leading_signal)
         hilbert_f = signal.hilbert(np.random.randn(*leading_signal.shape))
         angle = (np.angle(hilbert_l)+self.delay)

@@ -129,8 +129,13 @@ class ConnectivityStateSimulator(Transformer):
         logger.debug(duration)
         duration['params'].update({'size': self._length_dynamics})
 
-        data = duration['distribution'](**duration['params'])        
-        data = np.int_(self._fs * np.abs(data))
+        has_zero = True
+        while has_zero:
+            data = duration['distribution'](**duration['params'])
+            data = np.int_(self._fs * np.abs(data))
+            logger.info(data)
+            if np.count_nonzero(data) == 0:
+                has_zero = False
         
         self._duration = duration
 

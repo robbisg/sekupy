@@ -221,7 +221,7 @@ def get_configuration_fields(conf, *args):
     conf : dictionary
         The configuration dictionary to be digged.
 
-    args : list
+    args : list of strings
         List of keywords to be found in the configuration file.
     
     Returns

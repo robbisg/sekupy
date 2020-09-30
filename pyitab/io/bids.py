@@ -40,6 +40,8 @@ def load_bids_dataset(path, subj, task, **kwargs):
     roi_labels = dict()
     derivatives = False
 
+    logger.debug(kwargs)
+
     if 'roi_labels' in kwargs.keys():             # dictionary of mask {'mask_label': string}
         roi_labels = kwargs['roi_labels']
     
@@ -48,21 +50,29 @@ def load_bids_dataset(path, subj, task, **kwargs):
             derivatives = True
         else:
             derivatives = os.path.join(path, kwargs['bids_derivatives'])
+    
+    tr = None
+    if 'tr' in kwargs.keys():
+        tr = kwargs['tr']
 
     # TODO: Use kwargs to get derivatives etc.
+    logger.debug(derivatives)
     layout = BIDSLayout(path, derivatives=derivatives)
 
-    logger.debug(layout.get())
+    #logger.debug(layout.get())
 
 
     # Load the filename list
     kwargs_bids = get_bids_kwargs(kwargs)
     
-    subj = int(subj[5:])
+    if subj.find("-") != -1:
+        subj = int(subj.split('-')[1])
+
+    logger.debug((kwargs_bids, task, subj))
 
     file_list = layout.get(return_type='file', 
                            task=task, 
-                           extensions='nii.gz', 
+                           extension='.nii.gz', 
                            subject=subj,
                            **kwargs_bids
                            )
@@ -80,7 +90,7 @@ def load_bids_dataset(path, subj, task, **kwargs):
     # Loading attributes
     attr = load_bids_attributes(path, subj, task, 
                                 run_lengths=run_lengths, 
-                                layout=layout)
+                                layout=layout, tr=tr)
     
     if (attr is None) and (len(file_list) == 0):
         return None            
@@ -134,13 +144,19 @@ def load_bids_attributes(path, subj, task, **kwargs):
 
     event_files = layout.get(return_type='file',
                              task=task,
-                             extensions='tsv',
+                             extension='.tsv',
                              suffix='events',
                              subject=subj)
 
     logger.debug(event_files)
-
-    tr = layout.get_tr()
+    logger.debug(kwargs)
+    try:
+        tr = layout.get_tr()
+    except Exception as err:
+        if 'tr' in kwargs.keys():
+            tr = float(kwargs['tr'])
+        else:
+            raise Exception("tr must be set in configuration file")
     
     attribute_list = []
 
@@ -148,6 +164,7 @@ def load_bids_attributes(path, subj, task, **kwargs):
 
         attributes = dict()
         events = np.recfromcsv(eventfile, delimiter='\t', encoding='utf-8')
+        logger.debug(events)
         
         length = run_lengths[i]
 
@@ -184,11 +201,9 @@ def add_bids_attributes(event_key, events, length, tr):
     if dtype.kind is "U":
         targets[:] = 'rest'
 
-
     event_onsets = events['onset']
     event_duration = events['duration']
 
-    
     group_events = [[key, len(list(group))] for key, group in groupby(labels)]
 
     for j, (label, no_events) in enumerate(group_events):
@@ -228,7 +243,7 @@ def load_bids_mask(path, subject=None, task=None, **kwargs):
         kw_bids['desc'] = 'brain'
         mask_list = layout.get(return_type='file', 
                                task=task, 
-                               extensions='nii.gz', 
+                               extension='.nii.gz', 
                                subject=subject, 
                                **kw_bids)
 

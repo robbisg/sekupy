@@ -14,6 +14,18 @@ logger = logging.getLogger(__name__)
 
 
 def find_directory(path, **kwargs):
+    """[summary]
+
+    Parameters
+    ----------
+    path : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     dir_analysis = os.listdir(path)
     dir_analysis.sort()
     dir_analysis = [get_dictionary(f) for f in dir_analysis]
@@ -34,6 +46,26 @@ def find_directory(path, **kwargs):
 
 
 def get_values_bids(path, directory, field_list, result_keys, scores=None):
+    """[summary]
+
+    Parameters
+    ----------
+    path : [type]
+        [description]
+    directory : [type]
+        [description]
+    field_list : [type]
+        [description]
+    result_keys : [type]
+        [description]
+    scores : [type], optional
+        [description], by default None
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
 
     dir_path = os.path.join(path, directory)
@@ -253,6 +285,18 @@ def get_searchlight_results_bids(path, field_list=['sample_slicer'], **kwargs):
 
 # TODO: Generalize for dirs and files
 def get_dictionary(filename):
+    """[summary]
+
+    Parameters
+    ----------
+    filename : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     dictionary = dict()
 
     parts = filename.split("_")
@@ -272,8 +316,12 @@ def get_dictionary(filename):
             if len(pp) == 3:
                 trailing = pp[0]
                 ext = "%s.%s" % (pp[1], pp[2])
-            else:
+            elif len(pp) == 2:
                 trailing, ext = pp
+            else:
+                trailing = '+'.join(pp[:-2])
+                ext = '.'.join(pp[-2:])
+
 
             new_parts.append("filetype-%s" % (trailing))
             new_parts.append("extension-%s" % (ext))
