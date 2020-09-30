@@ -118,7 +118,7 @@ def ttest_values(dataframe, keys, scores=["accuracy"], popmean=0.5):
     options = {k: np.unique(dataframe[k]) for k in keys}
     
     keys, values = options.keys(), options.values()
-    opts = [dict(zip(keys,items)) for items in product(*values)]
+    opts = [dict(zip(keys, items)) for items in product(*values)]
     
     p_values = []
 
@@ -141,8 +141,6 @@ def ttest_values(dataframe, keys, scores=["accuracy"], popmean=0.5):
         
         p_values.append(cond_dict)
         
-           
-    
     return pd.DataFrame(p_values)
 
 

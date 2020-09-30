@@ -281,6 +281,10 @@ class FeatureStacker(Transformer):
         iterable = [np.unique(ds_.sa[a].value) for a in self._attr]
               
         ds_stack = []
+        """
+        key = self._stack_attr[0]
+        unique_stack_attr = np.unique(ds_.sa[key].value)
+        """
         for attr in product(*iterable):
             logger.debug(attr)
             
@@ -290,7 +294,16 @@ class FeatureStacker(Transformer):
                 mask = np.logical_and(mask, ds_.sa[self._attr[i]].value == a)
 
             logger.debug(ds_[mask].shape)
+            """
+            ds_stacked = []
+            for _, k in enumerate(unique_stack_attr):
+                values = ds_.sa[key].value
+                mask_attr = np.logical_and(mask, values == k)
+                ds_stacked.append(ds_[mask_attr])
             
+            ds_stacked = hstack(ds_stacked, a='unique')
+            #print(ds_stacked.shape)
+            """
             ds_stacked = hstack([d for d in ds_[mask]], a='unique')
             ds_stacked = self.update_attribute(ds_stacked, ds_[mask])
             ds_stack.append(ds_stacked)
