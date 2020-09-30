@@ -5,7 +5,6 @@ from pyitab.preprocessing.base import Transformer
 
 
 
-
 class ButterFilter(Transformer):
     # TODO: Then use a superclass Filter
     # It uses scipy filters (maybe can be used with MNE)

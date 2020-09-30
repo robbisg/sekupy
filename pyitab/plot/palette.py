@@ -5,6 +5,7 @@ import matplotlib.pyplot as pl
 def get_wes_palette(film="rushmore", n_colors=None):
 
     palette = {
+        "Aurora": ["#BF616A", "#D08770", "#EBCB8B", "#A3BE8C","#B48EAD"],
         "BottleRocket_all": ['#A42820', '#5F5647', '#9B110E', '#3F5151',
                              '#4E2A1E', '#550307', '#0C1707', '#FAD510',
                              '#CB2314', '#273046', '#354823', '#1E1E1E'],
@@ -15,13 +16,8 @@ def get_wes_palette(film="rushmore", n_colors=None):
         "BottleRocket2": ['#FAD510', '#CB2314', '#273046',
                           '#354823', '#1E1E1E'],
 
-        "Rushmore_all": ['#E1BD6D', '#EABE94', '#0B775E', '#35274A',
-                         '#F2300F', '#E1BD6D', '#EABE94', '#0B775E',
-                         '#35274A', '#F2300F'],
-
-        "Rushmore": ['#E1BD6D', '#EABE94', '#0B775E', '#35274A', '#F2300F'],
-
-        "Rushmore1": ['#E1BD6D', '#EABE94', '#0B775E', '#35274A', '#F2300F'],
+        "Rushmore": ['#E1BD6D', '#EABE94', '#0B775E', '#35274A',
+                         '#F2300F'],
 
         "Royal_all": ['#899DA4', '#C93312', '#FAEFD1', '#DC863B', '#9A8822',
                       '#F5CDB4', '#F8AFA8', '#FDDDA0', '#74A089'],
@@ -72,7 +68,11 @@ def get_wes_palette(film="rushmore", n_colors=None):
                         '#B6854D', '#39312F', '#1C1718'],
 
         "IsleofDogs2": ['#EAD3BF', '#AA9486', '#B6854D',
-                        '#39312F', '#1C1718']
+                        '#39312F', '#1C1718'],
+
+        "FrenchDispatch1": ['#5f8065', '#881f24', '#944c34', '#bb9d79', '#275066'],
+        "FrenchDispatch2": ['#73a87c', '#c1bc78', '#205d89', '#cf784b'],
+        "FrenchDispatch3": ['#eba2b6', '#e7ccaf', '#292176', '#e0bd59'],
     }
 
     return sns.color_palette(palette[film], n_colors=n_colors)

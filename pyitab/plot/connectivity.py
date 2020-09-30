@@ -664,7 +664,8 @@ def get_multi_vert(i, j, start_noise, end_noise, pos, node_angles):
 
 def plot_connectivity_lines(matrix, 
                             node_names, 
-                            kind='circle', 
+                            kind='circle',
+                            node_size=None,
                             node_position=None, 
                             node_colors=None, 
                             con_thresh=None,
@@ -719,7 +720,11 @@ def plot_connectivity_lines(matrix,
         node_colors = [plt.cm.winter(i / float(n_nodes))
                        for i in range(n_nodes)]
 
-    node_size = minmax_scale(np.abs(matrix).sum(0), feature_range=(0, 30)) ** 2.1 + 150
+    if node_size is None:
+        node_size = minmax_scale(np.abs(matrix).sum(0), feature_range=(0, 30)) ** 2.1 + 150
+    else:
+        node_size = np.ones(n_nodes) * node_size
+    
     size_ = np.abs(matrix).sum(1)
 
     k = -1
@@ -732,7 +737,7 @@ def plot_connectivity_lines(matrix,
     # we use the lower-triangular part
     indices = np.tril_indices(n_nodes, k)
     matrix = matrix[indices]
-
+    old_matrix = matrix.copy()
     
     # Draw lines between connected nodes, only draw the strongest connections
     if con_thresh == None:
@@ -764,9 +769,13 @@ def plot_connectivity_lines(matrix,
     indices = [ind[sort_idx] for ind in indices]
 
     # Get vmin vmax for color scaling
-
-    vmin = np.min(matrix[np.abs(matrix) >= con_thresh])
-    vmax = np.max(matrix)
+    above_thr = np.abs(matrix) >= con_thresh
+    if np.count_nonzero(above_thr) > 15:
+        vmin = np.min(matrix[np.abs(matrix) >= con_thresh])
+    else:
+        vmin = np.min(matrix)
+    
+    vmax = 1
     vrange = vmax - vmin
 
     # We want to add some "noise" to the start and end position of the
@@ -937,17 +946,17 @@ def plot_connectivity_lines(matrix,
             ha = 'right'
         
             
-        txt_size = fontsize + 2
+        txt_size = fontsize + 6.5
         txt_color = textcolor
         # Write only big names!
         if i not in nodes:
             txt_color = 'gray'
-            txt_size = fontsize - 3
+            txt_size = fontsize - 5
 
         # Highlight more the higher nodes
-        if i in node_high:
-            txt_color = 'crimson'
-            txt_size = fontsize + 7.5
+        #if i in node_high:
+            #txt_color = 'crimson'
+            #txt_size = fontsize + 7.5
 
         if kind == 'circle':
             axes.text(angle_rad, 1.27, name, 

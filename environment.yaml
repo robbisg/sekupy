@@ -25,6 +25,7 @@ dependencies:
      - distributed
      - joblib
      - nilearn
+     - pybids
      - scikit-learn
      - nistats
      - hmmlearn
