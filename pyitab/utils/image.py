@@ -154,7 +154,7 @@ def conjunction_map(image_map, mask, output_fname, output='mask'):
 
 
 
-def afni_converter(afni_fname, output_fname, brick):
+def afni_converter(afni_fname, output_fname, brick=None):
     """This function converts AFNI *.HEAD / *.BRIK files
     in nii.gz fortmat.
     
@@ -170,7 +170,9 @@ def afni_converter(afni_fname, output_fname, brick):
     """
 
     
-    command = "3dTcat -prefix %s %s[%s]" % (output_fname, afni_fname, str(brick))
+    command = "3dTcat -prefix %s %s" % (output_fname, afni_fname)
+    if brick is not None:
+        command += "[%s]" % (str(brick))
     print(command)
     os.system(command)
     
