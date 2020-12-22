@@ -55,12 +55,12 @@ def load_bids_dataset(path, subj, task, **kwargs):
     if 'tr' in kwargs.keys():
         tr = kwargs['tr']
 
+
     # TODO: Use kwargs to get derivatives etc.
     logger.debug(derivatives)
     layout = BIDSLayout(path, derivatives=derivatives)
 
     #logger.debug(layout.get())
-
 
     # Load the filename list
     kwargs_bids = get_bids_kwargs(kwargs)
@@ -68,35 +68,44 @@ def load_bids_dataset(path, subj, task, **kwargs):
     if subj.find("-") != -1:
         subj = int(subj.split('-')[1])
 
+    if 'task' not in kwargs_bids.keys():
+        kwargs_bids['task'] = task
+
     logger.debug((kwargs_bids, task, subj))
 
     file_list = layout.get(return_type='file', 
-                           task=task, 
                            extension='.nii.gz', 
                            subject=subj,
                            **kwargs_bids
                            )
     logger.debug(file_list)
+    
+    file_list = [f for f in file_list if f.find('pipeline') == -1]
+
     # Load data
     try:
         fmri_list = load_fmri(file_list)
-        
-    except IOError as err:
-        logger.error(err)
-        return
+    except Exception as err:
+        logger.debug(err)
     
-    run_lengths = [img.shape[-1] for img in fmri_list]
-
     # Loading attributes
-    attr = load_bids_attributes(path, subj, task, 
-                                run_lengths=run_lengths, 
-                                layout=layout, tr=tr)
+    run_lengths = [img.shape[-1] for img in fmri_list]
     
-    if (attr is None) and (len(file_list) == 0):
-        return None            
+    onset_offset = 0
+    if 'onset_offset' in kwargs.keys():
+        onset_offset = kwargs['onset_offset']
+
+    extra_duration = 0
+    if 'extra_duration' in kwargs.keys():
+        extra_duration = kwargs['extra_duration']
+    
+    attr = load_bids_attributes(path, subj, run_lengths=run_lengths, 
+                                layout=layout, tr=tr, onset_offset=onset_offset, 
+                                extra_duration=extra_duration, **kwargs_bids)
+               
 
     # Loading mask 
-    mask = load_bids_mask(path, subject=subj, task=task, **kwargs)
+    mask = load_bids_mask(path, subject=subj, layout=layout, **kwargs)
     roi_labels['brain'] = mask
     
     # Check roi_labels
@@ -135,36 +144,69 @@ def load_bids_dataset(path, subj, task, **kwargs):
 
 
 
-def load_bids_attributes(path, subj, task, **kwargs):
+def load_bids_attributes(path, subj, **kwargs):
+    """[summary]
+
+    Parameters
+    ----------
+    path : [type]
+        [description]
+    subj : [type]
+        [description]
+    **kwargs : dictionary
+        run_lenghts, tr, layout, onset_offset, extra_duration
+    Returns
+    -------
+    [type]
+        [description]
+
+    Raises
+    ------
+    Exception
+        [description]
+    """
+    
     # TODO: parameters are for compatibility
     # TODO: Test with different bids datasets
+    
+    for k in ['desc', 'scope']:
+        if k in kwargs.keys():
+            _ = kwargs.pop(k)
 
-    layout = kwargs['layout']
-    run_lengths = kwargs['run_lengths']
+    onset_offset = kwargs.pop('onset_offset')
+    extra_duration = kwargs.pop('extra_duration')
+    layout = kwargs.pop('layout')
+    run_lengths = kwargs.pop('run_lengths')
 
-    event_files = layout.get(return_type='file',
-                             task=task,
-                             extension='.tsv',
-                             suffix='events',
-                             subject=subj)
+    tr = None
+    if 'tr' in kwargs.keys():
+        tr = float(kwargs.pop('tr'))
 
-    logger.debug(event_files)
-    logger.debug(kwargs)
     try:
         tr = layout.get_tr()
     except Exception as err:
-        if 'tr' in kwargs.keys():
-            tr = float(kwargs['tr'])
-        else:
+        if tr is None:
             raise Exception("tr must be set in configuration file")
-    
-    attribute_list = []
 
+    kwargs['suffix'] = 'events'
+
+    event_files = layout.get(return_type='file',
+                             extension='.tsv',
+                             subject=subj,
+                             **kwargs
+                             )
+
+    logger.debug(event_files)
+    logger.debug(kwargs)
+
+    event_files = [e for e in event_files if e.find('stimlast') == -1]
+
+    attribute_list = []
+    
     for i, eventfile in enumerate(event_files):
 
         attributes = dict()
         events = np.recfromcsv(eventfile, delimiter='\t', encoding='utf-8')
-        logger.debug(events)
         
         length = run_lengths[i]
 
@@ -175,13 +217,19 @@ def load_bids_attributes(path, subj, task, **kwargs):
         events_names.remove('duration')
 
         for field in events_names:
-            attributes[field] = add_bids_attributes(field, events, length, tr)
+            attributes[field] = add_bids_attributes(field, 
+                                                    events, 
+                                                    length, 
+                                                    tr,
+                                                    onset_offset=onset_offset,
+                                                    extra_duration=extra_duration
+                                                    )
 
         attributes['targets'] = attributes['trial_type'].copy()
 
         attribute_list.append(attributes.copy())
     
-    logger.debug(attribute_list)
+    #logger.debug(attribute_list)
 
     attribute_dict = {k: np.hstack([dic[k] for dic in attribute_list]) for k in attribute_list[0]}
     sa = SampleAttributesCollection(attribute_dict)
@@ -190,8 +238,10 @@ def load_bids_attributes(path, subj, task, **kwargs):
 
 
 
-def add_bids_attributes(event_key, events, length, tr):
-        
+def add_bids_attributes(event_key, events, length, tr, onset_offset=0, extra_duration=0):
+
+    #logger.debug((event_key, events, length))
+    # TODO: Add frame field
     from itertools import groupby
 
     labels = events[event_key]
@@ -202,15 +252,32 @@ def add_bids_attributes(event_key, events, length, tr):
         targets[:] = 'rest'
 
     event_onsets = events['onset']
+    event_onsets = np.hstack((event_onsets, [length * tr]))
     event_duration = events['duration']
 
     group_events = [[key, len(list(group))] for key, group in groupby(labels)]
 
     for j, (label, no_events) in enumerate(group_events):
-        idx = np.nonzero(labels == label)
+        idx = np.nonzero(labels == label)[0]
         
+        for i in idx:
+            event_onset = event_onsets[i]
+            event_end = event_onset + event_duration[i]
+           
+            volume_onset = np.int(np.floor(event_onset / tr))
+            volume_duration = np.int(np.rint(event_end / tr))
+
+            volume_onset += onset_offset
+            volume_duration += extra_duration
+
+
+            targets[volume_onset:volume_duration] = label
+
+        """
         event_onset = event_onsets[idx][0]
-        event_end = event_onsets[idx][-1] + event_duration[idx][-1]
+        #event_end = event_onsets[idx][-1] + event_duration[idx][-1]
+        event_end = event_onsets[idx]
+        
 
         duration = event_end - event_onset
 
@@ -218,7 +285,8 @@ def add_bids_attributes(event_key, events, length, tr):
         volume_onset = np.int(np.ceil(event_onset / tr))
 
         targets[volume_onset:volume_onset+volume_duration] = label
-
+        """
+    #logger.debug(targets)
     return targets
 
 
@@ -228,7 +296,11 @@ def get_bids_kwargs(kwargs):
     for arg in kwargs:
         if arg.find("bids_") != -1:
             key = arg[5:]
-            bids_kw[key] = kwargs[arg]
+
+            if isinstance(kwargs[arg], str):
+                bids_kw[key] = kwargs[arg].split(',')
+            else:
+                bids_kw[key] = kwargs[arg]
 
     _ = bids_kw.pop('derivatives')
 
@@ -237,17 +309,23 @@ def get_bids_kwargs(kwargs):
 
 def load_bids_mask(path, subject=None, task=None, **kwargs):
 
-    if 'bidsmask' in kwargs:
-        layout = kwargs['layout']
-        kw_bids = get_bids_kwargs(kwargs)
-        kw_bids['desc'] = 'brain'
-        mask_list = layout.get(return_type='file', 
-                               task=task, 
-                               extension='.nii.gz', 
-                               subject=subject, 
-                               **kw_bids)
-
-        return ni.load(mask_list[0])
     
+    layout = kwargs['layout']
+    kw_bids = get_bids_kwargs(kwargs)
+    kw_bids['suffix'] = 'mask'
+
+    logger.debug(kw_bids)
+
+    if 'run' in kw_bids.keys():
+        _ = kw_bids.pop('run')
+
+    mask_list = layout.get(return_type='file', 
+                            extension='.nii.gz', 
+                            subject=subject,
+                            **kw_bids)
+
+    if len(mask_list) > 0:
+        logger.info("Mask used: %s" % (mask_list[0]))
+        return ni.load(mask_list[0])
     else:
         return load_mask(path, **kwargs)

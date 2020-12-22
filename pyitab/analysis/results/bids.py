@@ -9,39 +9,9 @@ from scipy.stats import ttest_1samp
 from itertools import product
 from joblib import Parallel, delayed
 from pyitab.analysis.results.base import get_configuration_fields, filter_dataframe
+from pyitab.utils.bids import get_dictionary, find_directory
 
 logger = logging.getLogger(__name__)
-
-
-def find_directory(path, **kwargs):
-    """[summary]
-
-    Parameters
-    ----------
-    path : [type]
-        [description]
-
-    Returns
-    -------
-    [type]
-        [description]
-    """
-    dir_analysis = os.listdir(path)
-    dir_analysis.sort()
-    dir_analysis = [get_dictionary(f) for f in dir_analysis]
-
-    filtered_dirs = []
-    for key, value in kwargs.items():
-        for dictionary in dir_analysis:
-            if key in dictionary.keys():
-                value = value.replace("_", "+")
-                if value == dictionary[key]:
-                    filtered_dirs.append(dictionary)
-
-    logger.info(filtered_dirs)
-
-    return filtered_dirs
-
 
 
 
@@ -145,6 +115,7 @@ def get_results_bids(path, field_list=['sample_slicer'],
 
     
     filtered_dirs = find_directory(path, **kwargs)
+    logger.debug(filtered_dirs)
 
     results = []
 
@@ -227,15 +198,13 @@ def get_permutation_values(dataframe, keys, scores=["accuracy"]):
             cond_dict[score+'_p'] = p
         
         p_values.append(cond_dict)
-        
-           
-    
+            
     return pd.DataFrame(p_values)
 
 
 def get_searchlight_results_bids(path, field_list=['sample_slicer'], **kwargs):
     
-
+    kwargs.update({'analysis':'searchlight'})
     filtered_dirs = find_directory(path, **kwargs)
 
     results = []
@@ -282,64 +251,3 @@ def get_searchlight_results_bids(path, field_list=['sample_slicer'], **kwargs):
         #dataframe = filter_dataframe(dataframe, **filter)
 
     return dataframe
-
-# TODO: Generalize for dirs and files
-def get_dictionary(filename):
-    """[summary]
-
-    Parameters
-    ----------
-    filename : [type]
-        [description]
-
-    Returns
-    -------
-    [type]
-        [description]
-    """
-    dictionary = dict()
-
-    parts = filename.split("_")
-
-    index = [i for i, f in enumerate(parts) if f.find("-") == -1]
-
-    if len(index) == len(parts):
-        return dictionary
-
-    new_parts = []
-    for i in index:
-        part = parts[i]
-        logger.debug(part)
-        if i == len(parts) - 1:
-            pp = part.split(".")
-
-            if len(pp) == 3:
-                trailing = pp[0]
-                ext = "%s.%s" % (pp[1], pp[2])
-            elif len(pp) == 2:
-                trailing, ext = pp
-            else:
-                trailing = '+'.join(pp[:-2])
-                ext = '.'.join(pp[-2:])
-
-
-            new_parts.append("filetype-%s" % (trailing))
-            new_parts.append("extension-%s" % (ext))
-
-        if i == 0:
-            new_parts.append("subjecttype-%s" %(part))
-
-    parts += new_parts
-    logger.debug(parts)
-
-    for part in parts:
-        try:
-            key, value = part.split("-")
-        except Exception as err:
-            continue
-
-        dictionary[key] = value
-    
-    dictionary['filename'] = filename
-
-    return dictionary

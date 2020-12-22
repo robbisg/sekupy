@@ -38,7 +38,7 @@ def test_bids_mask():
                           task='objectviewing',
                           layout=layout,
                           bids_derivatives='True',
-                          bidsmask="mask",
+                          suffix="mask",
                           scope='derivatives')
 
     assert isinstance(mask, ni.Nifti1Image)

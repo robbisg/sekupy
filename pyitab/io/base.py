@@ -248,6 +248,7 @@ def load_fmri(filelist):
 
 def load_mask(path, **kwargs):
     
+    mask_path = path
     for arg in kwargs: 
         if (arg == 'mask_dir'):
             mask_path = kwargs[arg]
@@ -282,7 +283,7 @@ def find_roi(path, roi_list):
     for roi in roi_list:
         mask_list += [m for m in found_rois if m.find(roi) != -1]
    
-    mask_list = [m for m in mask_list if m.find(".nii.gz")!=-1 or m.find(".img")!=-1 or m.find(".nii") != -1]
+    mask_list = [m for m in mask_list if m[-7:] == ".nii.gz" or m[-4:] == ".img" or m[-4:] == ".nii"]
     
     logger.debug(' '.join(mask_list))
     logger.info('Mask searched in '+path+' Mask(s) found: '+str(len(mask_list)))
