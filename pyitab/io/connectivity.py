@@ -73,7 +73,8 @@ def load_mat_data(path, subj, folder, **kwargs):
 
 
 def load_mat_ds(path, subj, folder, **kwargs):   
-        
+    
+    logger.debug(kwargs)
     data, info = load_mat_data(path, subj, folder, **kwargs)
     
     # load attributes

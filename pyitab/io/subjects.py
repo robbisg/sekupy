@@ -44,8 +44,10 @@ def load_subjects(configuration, selected_subjects=None, n_subjects=None):
                                                delimiter=delimiter,
                                                n_subjects=n_subjects)
 
+        logger.debug(subjects, extra_sa)
         subjects = subjects[:n_subjects]
         extra_sa = {k: extra_sa[k][:n_subjects] for k in extra_sa.keys()}
+
 
     else:
         subjects = os.listdir(data_path)
@@ -99,12 +101,11 @@ def load_subject_file(fname, n_subjects=None, delimiter=","):
     '''
 
     subject_array = np.recfromcsv(fname, delimiter=delimiter, encoding='utf-8')
-
+    
     fields = subject_array.dtype.names
-
     subjects = subject_array[fields[0]]
     extra_sa = {k: subject_array[k] for k in fields}
-    
+
     return subjects, extra_sa
 
 

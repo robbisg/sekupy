@@ -26,10 +26,11 @@ def get_params(param_dict, keyword):
             key_split = key[idx:]
             logger.debug(key_split)
             
+            # This is for special purpose target transformer
             if key_split == "%s":
-                if 'target_trans__target' in param_dict.keys():
-                    key_split = key_split %(param_dict['target_trans__target'])
-                    
+                if 'target_transformer__target' in param_dict.keys():
+                    key_split = key_split %(param_dict['target_transformer__target'])
+                                    
             params[key_split] = param_dict[key]
 
     logger.debug("%s %s" % (keyword, str(params)))

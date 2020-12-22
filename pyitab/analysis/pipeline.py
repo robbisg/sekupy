@@ -62,7 +62,6 @@ class AnalysisPipeline(Analyzer):
         ds_ = self._transform(ds)
         _ = self._estimator.fit(ds_, **kwargs)
         
-
         return self
 
 
