@@ -411,10 +411,29 @@ def aggregate_searchlight(path, dir_id, filter):
 
 
 
-def dataframe_to_afni():
+def dataframe_to_afni(dataframe, outpath=None, command='3dttest++', label_attr='task', **filter):
     """This should return a command or similar to perform
     statistics in AFNI
+
+    Use filter to select fields of interest
     
     """
+    filtered = filter_dataframe(dataframe, **filter)
+
+    command = "3dttest++ -singletonA 0.5 -setB %s -prefix %s"
+
+    setB = ""
+    for i, sub in dataframe.iterrows():
+        setB += "sub%02d %s'[0]' " % (i+1, dataframe['filename'])
+
+    command = command % (setB, path)
+
+    return command
+
+
+
+
+
+
 
     return

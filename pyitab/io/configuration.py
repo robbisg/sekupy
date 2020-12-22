@@ -95,7 +95,7 @@ def check_configuration(cfg):
     
     for key in mandatory_keys:
         if key not in cfg.keys():
-            logger.error("No %s field in configuration" % (key))
+            logger.debug("No %s field in configuration" % (key))
             
             
         

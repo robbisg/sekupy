@@ -62,3 +62,57 @@ def make_dict_product(as_filter=True, **kwargs):
         configurations.append(dict(zip(args, elem)))
 
     return configurations
+
+
+def make_analysis(path, analysis, participants_fname=None, **configuration):
+
+    import os
+    import configparser
+    
+    # Make directory
+    analysis_path = os.path.join(path, analysis)
+    os.makedirs(analysis_path)
+
+    if participants_fname is None:
+        participants_fname = 'participants.csv'
+
+    # Create configuration file
+    conf = {
+        'path': {
+            'data_path': analysis_path,
+            'subjects': os.path.join(path, analysis, participants_fname),
+            'types': [analysis],
+            'experiment': analysis
+        },
+        analysis: {
+            'event_file': 'None',
+            'sub_dir': 'None', 
+            'event_header': 'None',
+            'img_pattern':'None',
+            'runs':'None',
+            'mask_dir':'None',
+            'brain_mask':'None',
+            'bids_derivatives':'None',
+            'bids_scope':'None', 
+            'bids_desc':'None',
+        },
+    }
+
+    config = configparser.ConfigParser()
+
+    for k in configuration.keys():
+        if k in conf[analysis].keys() or k.find("bids_") != -1:
+            conf[analysis][k] = str(configuration[k])
+        
+    for k, v in list(conf[analysis].items()):
+        if v == 'None':
+            conf[analysis].pop(k)
+
+    config.update(conf)
+
+    conf_fname = os.path.join(analysis_path, analysis+'.conf')
+    with open(conf_fname, 'w') as configfile:
+        config.write(configfile)
+
+    return conf_fname
+

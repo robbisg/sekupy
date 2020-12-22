@@ -10,14 +10,41 @@ logger = logging.getLogger(__name__)
 
 
 
-def load_ds(conf_file, task, extra_sa=None,
+def load_ds(conf_file, task, 
+            extra_sa=None,
             loader=load_dataset, 
             prepro=None,
-            n_subjects=None, selected_subjects=None,
+            n_subjects=None, 
+            selected_subjects=None,
             **kwargs):
+    """This is function loads a PyMVPA dataset given
+    the configuration file and a loader.
 
-    # TODO: Documentation
+    Parameters
+    ----------
+    conf_file : str
+        Path of the configuration file 
+        (see more in ```pyitab.io.configuration.read_configuration```)
+    task : str
+        name of the task that is used, this should be contatined in
+        configuration file
+    extra_sa : dictionary, optional
+        set of extra sample attributes to be attached to the dataset, by default None
+    loader : function, optional
+        The function used to load the data in a correct way, by default load_dataset
+    prepro : ```pyitab.preprocessing.Pipeline``` object 
+                or list of ```pyitab.preprocessing.Transformer```, optional
+        Preprocessing pipeline to be performed at dataset-level, by default None
+    n_subjects : int, optional
+        number of subjects to be loaded, by default None
+    selected_subjects : list of string, optional
+        name of the subjects to be loaded, by default None
 
+    Returns
+    -------
+    ```mvpa2.suite.Dataset```
+        The loaded dataset
+    """
 
     # TODO: conf file should include the full path
     conf = read_configuration(conf_file, task)
@@ -47,7 +74,8 @@ def load_ds(conf_file, task, extra_sa=None,
         try:
             ds = loader(data_path, subj, task, **conf)
         except Exception as e:
-            logger.debug(e)
+            logger.info(e)
+            print(e)
             continue
         
         ds = prepro.transform(ds)
