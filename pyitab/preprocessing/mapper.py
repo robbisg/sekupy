@@ -17,6 +17,7 @@ from pyitab.simulation.autoregressive import PhaseDelayedModel, AutoRegressiveMo
 from pyitab.simulation.connectivity import ConnectivityStateSimulator
 from pyitab.preprocessing.filter import ButterFilter
 from pyitab.preprocessing.connectivity import SlidingWindowConnectivity
+from pyitab.preprocessing.sklearn import ScikitWrapper
 
 
 
@@ -52,6 +53,7 @@ def function_mapper(name):
               'sliding_window_connectivity': SlidingWindowConnectivity,
               'butter_filter': ButterFilter,
               'resampler': Resampler,
+              'scikit_wrapper': ScikitWrapper,
               }
     
     return mapper[name]

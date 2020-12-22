@@ -106,13 +106,19 @@ class SampleAverager(Transformer):
 
 class TargetTransformer(Transformer):
     
-    def __init__(self, attr=None, **kwargs):
+    def __init__(self, attr=None, fx=None, **kwargs):
         self._attribute = attr
+        self._fx = fx
         Transformer.__init__(self, name='target_transformer', attr=attr)
     
     def transform(self, ds):
         logger.info("Dataset preprocessing: Target set to %s" , (self._attribute))
         ds.targets = ds.sa[self._attribute]
+
+        if self._fx is not None:
+            fx = self._fx[1]
+            logger.info("Dataset preprocessing: targets modified using %s" , (self._fx[0]))
+            ds.targets = fx(ds.targets)
         
         return Transformer.transform(self, ds)
 
@@ -281,10 +287,10 @@ class FeatureStacker(Transformer):
         iterable = [np.unique(ds_.sa[a].value) for a in self._attr]
               
         ds_stack = []
-        """
+        
         key = self._stack_attr[0]
         unique_stack_attr = np.unique(ds_.sa[key].value)
-        """
+        
         for attr in product(*iterable):
             logger.debug(attr)
             
@@ -294,7 +300,7 @@ class FeatureStacker(Transformer):
                 mask = np.logical_and(mask, ds_.sa[self._attr[i]].value == a)
 
             logger.debug(ds_[mask].shape)
-            """
+            
             ds_stacked = []
             for _, k in enumerate(unique_stack_attr):
                 values = ds_.sa[key].value
@@ -303,7 +309,7 @@ class FeatureStacker(Transformer):
             
             ds_stacked = hstack(ds_stacked, a='unique')
             #print(ds_stacked.shape)
-            """
+            
             ds_stacked = hstack([d for d in ds_[mask]], a='unique')
             ds_stacked = self.update_attribute(ds_stacked, ds_[mask])
             ds_stack.append(ds_stacked)
