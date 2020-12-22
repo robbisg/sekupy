@@ -245,6 +245,30 @@ def get_aalmeg_info(background='black', grouping='LR'):
     return labels, colors, node_idx, coords, networks, node_angles
 
 
+def get_eeg_channels(n_channels=159):
+    
+    index_ = range(n_channels)
+    names = list()
+    colors_lr = list()
+    coords = list()
+    networks = list()
+    for i in index_:
+        names.append("ch-%03d" % (i+1))
+        colors_lr.append("green")
+        coords.append([0, 0, i])
+        networks.append("Brain")
+
+    node_angles = circular_layout(index_, 
+                                  index_,
+                                  start_pos=90,
+                                  group_sep=3.
+                                  )
+   
+    
+    return names, colors_lr, index_, coords, names, node_angles
+
+
+
 def get_viviana_info():
 
     network = ['DAN','VAN','SMN','VIS','AUD','LAN','DMN']
@@ -300,6 +324,7 @@ def get_atlas_info(atlas_name='findlab'):
         'atlas90': get_atlas90_info,
         'aal_meg': get_aalmeg_info,
         'viviana': get_viviana_info,
+        'eeg_channels': get_eeg_channels,
 
     }
 
