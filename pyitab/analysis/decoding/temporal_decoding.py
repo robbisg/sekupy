@@ -162,7 +162,7 @@ class TemporalDecoding(RoiDecoding):
                     **kwargs)
 
   
-    def _save_score(self, score):
+    def _save_score(self, score, save_estimator=False):
          
         mat_file = dict()
         
@@ -172,7 +172,7 @@ class TemporalDecoding(RoiDecoding):
                 mat_file[key] = value
             
             elif key == 'estimator':
-                mat_estimator = self._save_estimator(value)
+                mat_estimator = self._save_estimator(value, save_estimator)
                 mat_file.update(mat_estimator)
         
             elif key == "splits":
@@ -187,7 +187,9 @@ class TemporalDecoding(RoiDecoding):
 
 
 
-    def _save_estimator(self, estimators):
+    def _save_estimator(self, estimators, save_estimator):
+
+        from joblib import dump
         
         mat_ = dict()
         mat_['weights'] = []

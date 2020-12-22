@@ -8,6 +8,7 @@ from sklearn.model_selection._split import LeaveOneGroupOut
 
 from tqdm import tqdm
 
+from joblib import load, dump
 
 from pyitab.ext.sklearn._validation import cross_validate
 from pyitab.analysis.base import Analyzer
@@ -202,7 +203,10 @@ class Decoding(Analyzer):
         
         import os
 
-        
+        if 'save_estimator' in kwargs.keys():
+            save_estimator = kwargs.pop('save_estimator')
+        else:
+            save_estimator = False
 
         path, prefix = Analyzer.save(self, path=path, **kwargs)
         kwargs.update({'prefix': prefix})
@@ -219,14 +223,19 @@ class Decoding(Analyzer):
                 logger.info("Saving %s" % (filename))
                 
                 savemat(os.path.join(path, filename), mat_score)
-                #logger.debug(hpy().heap())
+                
+                if save_estimator:
+                    filename_est = filename[:-9]+"_model.pickle"
+                    dump(score, os.path.join(path, filename_est))
+                    logger.info("Saving model: %s" % (filename_est))
+                    
                 del mat_score
                 
         return
 
 
     # TODO: Is it better to use a function in utils?
-    def _save_score(self, score):
+    def _save_score(self, score, save_estimator=False):
          
         mat_file = dict()
         
@@ -264,8 +273,9 @@ class Decoding(Analyzer):
         
         for est in estimator:
             
-            w = est.named_steps['clf'].coef_
-            mat_['weights'].append(w)
+            if hasattr(est.named_steps['clf'], 'coef_'):
+                w = est.named_steps['clf'].coef_
+                mat_['weights'].append(w)
             
             if 'fsel' in est.named_steps.keys():
                 f = est.named_steps['fsel'].get_support()
@@ -301,13 +311,14 @@ class Decoding(Analyzer):
                 if keyword in kwargs['prepro']:
                     params_ = get_params(kwargs, keyword)
 
+                    if 'fx' in params_.keys() and keyword == 'target_transformer':
+                        params_['target_transformer-fx'] = params_['fx'][0]
+
                     if keyword == "sample_slicer":
                         params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
                     
                     if keyword == "sample_transformer":
                         params_ = {k: "+".join([str(v) for v in value]) for k, value in params_['attr'].items()}
-                    
-                    
 
                     params.update(params_)
         else:
