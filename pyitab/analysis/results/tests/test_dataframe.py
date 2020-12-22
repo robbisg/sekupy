@@ -37,7 +37,7 @@ def test_filter(dataframe):
 
 
 def test_load_simulations(directory):
-
+    print(directory)
     dataframe = get_results(directory, pipeline="c2b+real")
     assert len(dataframe) == 4
 
@@ -48,17 +48,5 @@ def test_load_simulations(directory):
     
     assert len(dataframe) == 2
 
-    dataframe = get_results(directory,  
-                            pipeline='c2b+real',  
-                            field_list=[
-                                'sample_slicer',  
-                                'n_clusters',  
-                                'n_components',  
-                                'ds.a.snr', 
-                                'ds.a.time', 
-                                'ds.a.states', 
-                                'fetch',  
-                                'algorithm']
-                            )
 
     
