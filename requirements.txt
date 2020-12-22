@@ -8,6 +8,7 @@ scikit-learn
 pymvpa2
 nilearn
 mne
+mne-hcp
 nibabel
 pybids
 nitime
