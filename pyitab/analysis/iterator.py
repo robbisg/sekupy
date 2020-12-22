@@ -143,8 +143,10 @@ class AnalysisIterator(object):
         
         combination_list = []
         for obj in objects:
-            name = obj[0][0][0]
+            # This is the line that breaks tests!!!
+            name = obj[0][0]
             print(obj)
+            
             est_params = get_params(params, name)
             print(est_params)
 
