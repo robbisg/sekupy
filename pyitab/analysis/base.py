@@ -1,5 +1,6 @@
 import logging
 import os
+import numpy as np
 from pyitab.utils.files import make_dir
 from pyitab.utils.time import get_time
 from pyitab.utils import get_id
@@ -116,7 +117,7 @@ class Analyzer(Node):
 
         pipeline_directory += ["%s-%s" % ('id', id_)]
 
-        subjects = self._info['subjects']
+        subjects = np.unique(self._info['sa'].subject)
         if len(subjects) != 1:
             subdir = 'group'
         else:
@@ -140,7 +141,7 @@ class Analyzer(Node):
 
         prefix_list = os.path.basename(fname_list[0]).split("_")
 
-        subjects = self._info['subjects']
+        subjects = np.unique(self._info['sa'].subject)
         if len(subjects) != 1:
             prefix_list[0] = "group"
         
@@ -203,7 +204,6 @@ class Analyzer(Node):
         info = dict()
         info['analysis'] = self.name
         info['path'] = self._info['a'].data_path
-        #info['id'] = ".".join([get_time(elements=3), "%04d" % self.num, self.id])
         info['id'] = "%s+%04d" % (self.id, self.num)
         info['experiment'] = self._info['a'].experiment
 
