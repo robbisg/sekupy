@@ -1,33 +1,25 @@
-.. pyitab documentation master file, created by
-   sphinx-quickstart on Fri Nov 23 12:14:29 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+pyitab package
+==============
 
-Welcome to pyitab's documentation!
-==================================
-This package aims at integrate easily different
-python packages build for neuroimaging and data analysis.
+Yet another neuroimaging package!
+
+This package aims at easily integrate and run complex
+pipelines for brain data analysis.
 
 
+Basic Tools
+-----------
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
-   analysis
-   preprocessing
-   plot
-   utils
-   io
-
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   analysis/base
+   ext/base
+   io/base
+   plot/base
+   preprocessing/base
+   simulation/base 
+   results/base
+   utils/base
 
 
