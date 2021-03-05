@@ -34,4 +34,3 @@ dependencies:
      - pybids
      - pytest
      - mne-hcp
-     - mne
