@@ -6,7 +6,7 @@ pandas
 seaborn
 statsmodels
 scikit-learn
-pymvpa2
+#pymvpa2
 nilearn
 mne
 mne-hcp
