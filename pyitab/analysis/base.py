@@ -34,7 +34,7 @@ class Analyzer(Node):
 
     def save(self, path=None, **kwargs):
         """Basic function for saving information about the analysis.
-        Basically it should be overriden in subclasses. 
+        Basically it should be overriden in subclasses.
 
         This implementation creates the folder in which results are
         stored, following BIDS specification.
@@ -125,7 +125,8 @@ class Analyzer(Node):
 
         
         result_path = os.path.join(path, 
-                                   'derivatives', 
+                                   'derivatives',
+                                   pipeline_directory[0],
                                    "_".join(pipeline_directory), 
                                    subdir)
 
@@ -258,7 +259,6 @@ class Analyzer(Node):
             return getattr(self, '_test_id')
 
 
-    
     def _save_dataset_description(self, path):
         """This function saves a dataset_description.json
         for BIDS dataformat

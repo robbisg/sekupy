@@ -83,7 +83,7 @@ class DataLoader(object):
         
         Parameters
         ----------
-        prepro : ```pyitab.preprocessing.pipelines.PreprocessingPipeline``` 
+        prepro : :class:`~pyitab.preprocessing.pipelines.PreprocessingPipeline`
         or list of strings, optional
             Preprocessing steps to be perfrormed at subject level (the default is None)
         n_subjects : int, optional
@@ -94,7 +94,7 @@ class DataLoader(object):
         
         Returns
         -------
-        ds: pymvpa Dataset
+        ds: :class:`~mvpa2.dataset.Dataset`
             The loaded dataset.
         """
    

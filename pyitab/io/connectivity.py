@@ -2,7 +2,7 @@ from mvpa2.base.collections import SampleAttributesCollection
 from mvpa2.datasets.base import Dataset
 from mvpa2.datasets import vstack
 
-from sklearn.preprocessing.label import LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 
 from pyitab.io.configuration import read_configuration
 from pyitab.base import Node

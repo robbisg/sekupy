@@ -41,12 +41,9 @@ class ResidualTransformer(Transformer):
     def get_model(self, X, **kwargs):
 
         mapper = {'ols': OLSModel,
-                  'ar' :  ARModel}
+                  'ar' : ARModel}
 
         return mapper[self.model](X, **kwargs)
-
-
-
 
 
 class SampleResidualTransformer(ResidualTransformer):

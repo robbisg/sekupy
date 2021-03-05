@@ -37,7 +37,6 @@ def load_subjects(configuration, selected_subjects=None, n_subjects=None):
         if ext == '.tsv':
             delimiter = "\t"
 
-
         logger.debug(subject_file)
         
         subjects, extra_sa = load_subject_file(subject_file,

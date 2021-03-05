@@ -78,9 +78,10 @@ def remove_value_nifti(img_fname, value, output_fname, mask_fname=None):
 
 
 def remove_mean_nifti(img_fname, output_fname, mask_fname=None):
-    """This function is used to remove the average value from an 
-    nifti file. If a mask is provided, the average is calculated only in the mask
-    voxels.
+    """This function is used to remove the average value from a 
+    nifti file. 
+    If a mask is provided, the average is calculated only using the mask
+    nonzero voxels.
     
     Parameters
     ----------
@@ -88,12 +89,12 @@ def remove_mean_nifti(img_fname, output_fname, mask_fname=None):
         The filename of the input image
     output_fname : string
         The output filename of the stored image
-    mask : ndarray, optional
+    mask : :class:`numpy.ndarray`, optional
         The mask on which average is calculated (the default is None)
     
     Returns
     -------
-    output_image
+    output_image : :class:`~nibabel.nifti1.Nifti1Image`
         The nifti image
     """
 
@@ -117,19 +118,21 @@ def remove_mean_nifti(img_fname, output_fname, mask_fname=None):
 
 
 
-def conjunction_map(image_map, mask, output_fname, output='mask'):
-    """This is a function to perform conjunction operation of two maps.
-    If output is 'mask' the output will be an image of all ones, in the other
+def conjunction_map(a_map, b_map, output_fname, output='mask'):
+    """This is a function to perform conjunction operation of two maps (a * b).
+    The second map will be considered as a binary image, using nonzero values to
+    mask the first one.
+    If output is 'mask' the output will be binary image, in the other
     case ('image') the output will be with image_map values in nonzero mask voxels.
     
     Parameters
     ----------
-    image_map : string
+    a_map : string
         The filename of the input image
-    mask : string
+    b_map : string
         The filename of the input image
-    output_fname : [type]
-        The filename of the input image
+    output_fname : string
+        The filename of the output image
     output : str, optional | {default='mask', 'image_map'}
         The output type. If 'mask' the output will be a binary image, else
         the values of the conjunction are those of image_map.
@@ -137,12 +140,12 @@ def conjunction_map(image_map, mask, output_fname, output='mask'):
     """
 
     
-    img = ni.load(image_map)
-    mask_img = ni.load(mask)
+    a_img = ni.load(a_map)
+    b_img = ni.load(b_map)
     
-    mask_int = np.int_(mask_img.get_data() != 0)
+    mask_int = np.int_(b_img.get_data() != 0)
     
-    data = img.get_data()
+    data = a_img.get_data()
     if output == 'mask':
         data /= data
     
@@ -184,7 +187,7 @@ def afni_converter(afni_fname, output_fname, brick=None):
     return
 
 
-def save_map(filename, map_array, affine=np.eye(4), return_nifti=True):
+def save_map(filename, map_array, affine=None, return_nifti=True):
     """This function saves an a 3D/4D map in nifti format.
     
     Parameters
@@ -195,10 +198,12 @@ def save_map(filename, map_array, affine=np.eye(4), return_nifti=True):
         The array of the map to be stored
     affine : matrix (dim x dim), optional
         Affine transformation of the map
-        (the default is np.eye(4))
+        (the default is None)
     
     """
 
+    if affine is None:
+        affine = np.eye(4)
         
     map_zscore = ni.Nifti1Image(map_array, affine)
     ni.save(map_zscore, filename)

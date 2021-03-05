@@ -1,18 +1,24 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from pyitab.utils.atlas import  get_atlas_info
-import os
-from scipy.stats import zscore
-from numpy.ma.core import masked_array
 import seaborn as sns
+import os
+
+from scipy.stats import zscore
+from scipy.spatial.distance import squareform
+
+from numpy.ma.core import masked_array
+
 from itertools import cycle
 from pyitab.utils.matrix import copy_matrix, array_to_matrix
+from pyitab.utils.atlas import  get_atlas_info
+
 from mne.viz import circular_layout
 from mne.viz.circle import _plot_connectivity_circle_onpick
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 
 def plot_matrix(matrix, roi_names, networks, threshold=None, **kwargs):
@@ -72,9 +78,9 @@ def plot_matrix(matrix, roi_names, networks, threshold=None, **kwargs):
         ax_color = 'k'
         facecolor_ = 'white'
     
-    f = plt.figure(figsize=(16., 12.), facecolor=facecolor_, dpi=300)
-    #f = plt.figure()
-    a = f.add_subplot(111)
+    if len(matrix.shape) == 1:
+        matrix = squareform(matrix)
+
     
     max_value = np.max(np.abs(matrix))
     
@@ -86,20 +92,25 @@ def plot_matrix(matrix, roi_names, networks, threshold=None, **kwargs):
     
     max_value = np.max(np.abs(z_matrix))
 
+    f = plt.figure(#figsize=(16., 12.), 
+                   facecolor=facecolor_, 
+                   #dpi=300
+                   )
+    a = f.add_subplot(111)
     ax = a.imshow(z_matrix, 
                   interpolation='nearest', 
                   cmap=plt.cm.RdBu_r,
                   #cmap='Greys',
-                  alpha=0.5,
+                  #alpha=0.5,
                   vmax=max_value,
-                  vmin=max_value*-1
+                  #vmin=max_value*-1
                   )
     
     if threshold is not None:
         thresh_matrix = masked_array(z_matrix, (np.abs(z_matrix) < threshold))
         ax = a.imshow(thresh_matrix,
                       interpolation='nearest', 
-                      cmap=plt.cm.bwr,
+                      cmap=plt.cm.magma,
                       #cmap='gray',
                       vmax=max_value,
                       vmin=max_value*-1,
@@ -111,27 +122,27 @@ def plot_matrix(matrix, roi_names, networks, threshold=None, **kwargs):
     ### Draw networks separation lines ###
     network_ticks = [] 
     network_name, indices = np.unique(networks, return_index=True)
-    counter = -0.5
+    tick_position = -0.5
     
     colors_ = []
     for net in np.unique(networks):
                     
-        items_idx = np.nonzero(networks == net)
-        items = items_idx[0].shape[0]
+        elements_idx = np.nonzero(networks == net)
+        n_elements = elements_idx[0].shape[0]
         
         ix = np.nonzero(networks == net)
         if _plot_cfg['ticks_type'] == 'networks':
-            tick_ = items_idx[0].mean()
+            tick_ = elements_idx[0].mean()
             colors_.append(_plot_cfg['ticks_color'])
         else:
-            tick_ = items_idx[0]
+            tick_ = elements_idx[0]
             colors_.append(_plot_cfg['ticks_color'][tick_])
             
-        counter = counter + items
+        tick_position += n_elements
         
         network_ticks.append(tick_)
-        a.axvline(x=counter, ymin=min_, ymax=max_)
-        a.axhline(y=counter, xmin=min_, xmax=max_)
+        a.axvline(x=tick_position, ymin=min_, ymax=max_)
+        a.axhline(y=tick_position, xmin=min_, xmax=max_)
     
     
     if _plot_cfg['ticks_type'] == 'networks':

@@ -204,6 +204,7 @@ def load_bids_attributes(path, subj, **kwargs):
     attribute_list = []
     
     for i, eventfile in enumerate(event_files):
+        #logger.info(eventfile)
 
         attributes = dict()
         events = np.recfromcsv(eventfile, delimiter='\t', encoding='utf-8')
@@ -231,7 +232,21 @@ def load_bids_attributes(path, subj, **kwargs):
     
     #logger.debug(attribute_list)
 
-    attribute_dict = {k: np.hstack([dic[k] for dic in attribute_list]) for k in attribute_list[0]}
+    columns = set([k for item in attribute_list for k in item.keys()])
+
+    attribute_dict = {k:[] for k in list(columns)}
+    for i, attr in enumerate(attribute_list):
+        for k in attr.keys():
+            attribute_dict[k] = np.hstack((attribute_dict[k], attr[k]))
+            nelem = run_lengths[i]
+        
+        if len(attr.keys()) != len(columns):
+            for c in list(columns):
+                if c not in attr.keys():
+                    attribute_dict[c] = np.hstack((attribute_dict[c], -1*np.ones(nelem)))
+
+
+    #attribute_dict = {k: np.hstack([dic[k] for dic in attribute_list]) for k in attribute_list[11]}
     sa = SampleAttributesCollection(attribute_dict)
 
     return sa
@@ -245,6 +260,9 @@ def add_bids_attributes(event_key, events, length, tr, onset_offset=0, extra_dur
     from itertools import groupby
 
     labels = events[event_key]
+    
+    # This is to avoid 0-shaped event
+    labels = labels.reshape(labels.size)
     dtype = events.dtype[event_key]
 
     targets = np.zeros(length, dtype=dtype)
@@ -254,6 +272,7 @@ def add_bids_attributes(event_key, events, length, tr, onset_offset=0, extra_dur
     event_onsets = events['onset']
     event_onsets = np.hstack((event_onsets, [length * tr]))
     event_duration = events['duration']
+    event_duration = event_duration.reshape(event_duration.size)
 
     group_events = [[key, len(list(group))] for key, group in groupby(labels)]
 

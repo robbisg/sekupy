@@ -61,7 +61,7 @@ def load_reftep_power(filename, **kwargs):
                'mep-left':  y[:,1],
                'subject':   [subject for _ in range(y.shape[0])],
                'file':      [filename for _ in range(y.shape[0])],
-               'chunks' :   np.arange(y.shape[0])
+               'chunks':    np.arange(y.shape[0])
                                      })
 
     a = DatasetAttributesCollection({})
@@ -87,8 +87,8 @@ def load_reftep_iplv(filename, **kwargs):
     sa = {k:[v for _ in range(y.shape[0])] for k, v in sa_dict.items()}
     
     sa.update({'targets':   y[:,0],
-               'mep-right': y[:,0],
-               'mep-left':  y[:,1],
+               'mep-rapb':  y[:,0],
+               'mep-rfdi':  y[:,1],
                'subject':   [subject for _ in range(y.shape[0])],
                'file':      [filename for _ in range(y.shape[0])],
                'chunks' :   np.arange(y.shape[0])
@@ -202,8 +202,8 @@ def load_bids_mambo_dataset(path, subj, task, **kwargs):
     kwargs_bids = get_bids_kwargs(kwargs)
     
     # Raise exception if it is a integer
-    if subj.find("-") != -1:
-        subj = int(subj.split('-')[1])
+    if isinstance(subj, str) and subj.find("-") != -1:
+        subj = subj.split('-')[1]
 
     if 'task' not in kwargs_bids.keys():
         kwargs_bids['task'] = [task]

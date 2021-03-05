@@ -7,7 +7,9 @@ logger = logging.getLogger(__name__)
 
 
 class ScikitWrapper(Transformer):
-    """[summary]
+    """Transformer to be used with scikit-learn transformers.
+    They must implement fit_transform method, one application
+    can be Principal Component decomposition.
 
     Parameters
     ----------
@@ -18,7 +20,7 @@ class ScikitWrapper(Transformer):
     def __init__(self, estimator=None, **kwargs):
         
         self.node = estimator
-        Transformer.__init__(self, name='feature_znormalizer')
+        Transformer.__init__(self, name='scikit-transfomer')
         
     
     def transform(self, ds):

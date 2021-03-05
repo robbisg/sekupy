@@ -219,11 +219,10 @@ def test_save_multisubject_decoding(fetch_ds, tmpdir):
     experiment = experiment.replace("_", "+")
 
     pipeline_folder = "pipeline-%s_analysis-%s_experiment-%s_roi-%s_id-%s" % \
-        ('test', 'roi+decoding', experiment, 
-            'all', str(a._estimator._test_id))
+        ('test', 'roi+decoding', experiment, 'all', str(a._estimator._test_id))
     print(pipeline_folder)
     
-    expected_folder = os.path.join(path, 'derivatives', pipeline_folder)
+    expected_folder = os.path.join(path, 'derivatives', 'pipeline-test', pipeline_folder)
     print(os.listdir(expected_folder))
     assert os.path.exists(expected_folder)
     assert len(os.listdir(expected_folder)) == 2 + 1
