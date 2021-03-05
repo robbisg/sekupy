@@ -1,8 +1,8 @@
 import numpy as np
 
-from sklearn.metrics.scorer import _check_multimetric_scoring
+from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
-from sklearn.preprocessing.label import LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import LeaveOneGroupOut
 
@@ -10,10 +10,11 @@ from sklearn.model_selection._split import LeaveOneGroupOut
 from tqdm import tqdm
 
 from pyitab.utils.dataset import get_ds_data
+from pyitab.analysis.utils import get_rois
 
 from pyitab.ext.sklearn._validation import cross_validate
 
-from pyitab.preprocessing.functions import FeatureSlicer
+from pyitab.preprocessing import FeatureSlicer
 from pyitab.analysis.decoding import Decoding
 from pyitab.preprocessing.base import Transformer
 
@@ -87,27 +88,7 @@ class RoiDecoding(Decoding):
                           name=name,
                           **kwargs,
                           )
-
-
-    def _get_rois(self, ds, roi):
-        """Gets the roi list if the attribute is all"""
-           
-        
-        if roi != 'all':
-            rois = roi
-        else:
-            rois = [r for r in ds.fa.keys() if r != 'voxel_indices']
-        
-        rois_values = []
-        
-        for r in rois:
-            for v in np.unique(ds.fa[r].value):
-                if v != 0:
-                    value = (r, [v])
-                    rois_values.append(value)
-            
-        return rois_values    
-    
+  
 
     def fit(self, ds, 
             cv_attr='chunks', 
@@ -148,7 +129,7 @@ class RoiDecoding(Decoding):
         """
 
         if roi_values is None:
-            roi_values = self._get_rois(ds, roi)
+            roi_values = get_rois(ds, roi)
                 
         scores = dict()
         # TODO: How to use multiple ROIs
