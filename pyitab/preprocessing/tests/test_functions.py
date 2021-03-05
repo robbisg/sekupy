@@ -1,5 +1,6 @@
 from pyitab.tests import fetch_ds
-from pyitab.preprocessing.functions import *
+from pyitab.preprocessing import SampleAverager, SampleSlicer, \
+    TargetTransformer, FeatureStacker
 
 from imblearn.over_sampling import RandomOverSampler
 import numpy as np
@@ -35,50 +36,6 @@ def test_targettransformer(fetch_ds):
 
     last_item = list(ds.a.prepro[-1].keys())[0]
     assert last_item == 'target_transformer'
-
-
-def test_featureslicer(fetch_ds):
-    ds = fetch_ds
-
-    unique = np.unique(ds.fa.brain)
-    assert len(unique) != 2
-
-    ds = FeatureSlicer(brain=[2, 3]).transform(ds)
-    unique = np.unique(ds.fa.brain)
-    assert len(unique) == 2
-
-    last_item = list(ds.a.prepro[-1].keys())[0]
-    assert last_item == 'feature_slicer'
-
-
-def test_sampleslicer(fetch_ds):
-    ds = fetch_ds
-
-    unique = np.unique(ds.sa.subject)
-    assert len(unique) != 1
-
-    ds = SampleSlicer(subject=['subj01']).transform(ds)
-    unique = np.unique(ds.sa.subject)
-    assert len(unique) == 1
-
-    last_item = list(ds.a.prepro[-1].keys())[0]
-    assert last_item == 'sample_slicer'
-    
-
-def test_datasetmasker(fetch_ds):
-
-    ds = fetch_ds
-    assert ds.shape == (120, 843)
-
-    mask = np.zeros_like(ds.samples[:, 0], dtype=np.bool)
-    mask[np.arange(10)] = True
-
-    ds = DatasetMasker(mask=mask).transform(ds)
-
-    assert ds.shape[0] == 10
-
-    last_item = list(ds.a.prepro[-1].keys())[0]
-    assert last_item == 'dataset_masker' 
 
 
 def test_featurestacker(fetch_ds):

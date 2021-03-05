@@ -1,5 +1,5 @@
 from pyitab.preprocessing.base import Transformer
-from pyitab.preprocessing.functions import SampleSlicer
+from pyitab.preprocessing.slicers import SampleSlicer
 from pyitab.utils.dataset import get_ds_data
 from pyitab.preprocessing.balancing.utils import sample_generator
 from mvpa2.datasets.base import Dataset

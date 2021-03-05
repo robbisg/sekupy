@@ -1,10 +1,11 @@
 from pyitab.preprocessing.base import Transformer
-from pyitab.preprocessing.functions import Detrender, TargetTransformer, \
-    FeatureSlicer, FeatureSlicer, SampleSlicer, FeatureStacker, DatasetMasker, \
-    SampleTransformer, TemporalTransformer, Resampler
+from pyitab.preprocessing import Detrender, TargetTransformer, \
+     FeatureStacker, SampleTransformer, TemporalTransformer, Resampler
+
+from pyitab.preprocessing.slicers import FeatureSlicer, SampleSlicer, DatasetMasker
 from pyitab.preprocessing.normalizers import FeatureZNormalizer, \
     SampleZNormalizer, SampleSigmaNormalizer, FeatureSigmaNormalizer, \
-    DatasetFxNormalizer
+    DatasetFxNormalizer, SampleFxNormalizer
 from pyitab.preprocessing.balancing.base import Balancer
 from pyitab.preprocessing.balancing.imbalancer import Imbalancer
 from pyitab.preprocessing.math import ZFisherTransformer, \
@@ -30,11 +31,12 @@ def function_mapper(name):
               'sample_transformer': SampleTransformer,
               'feature_slicer': FeatureSlicer,
               'sample_slicer': SampleSlicer,
-              'sample_normalizer': SampleZNormalizer,
-              'feature_normalizer': FeatureZNormalizer,
+              'sample_znormalizer': SampleZNormalizer,
+              'feature_znormalizer': FeatureZNormalizer,
               'sample_sigmanorm': SampleSigmaNormalizer,
               'feature_sigmanorm': FeatureSigmaNormalizer,
               'ds_normalizer': DatasetFxNormalizer,
+              'sample_normalizer': SampleFxNormalizer,
               'feature_stacker': FeatureStacker,
               'balancer': Balancer,
               'imbalancer': Imbalancer,

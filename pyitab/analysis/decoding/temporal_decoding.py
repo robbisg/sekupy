@@ -1,8 +1,8 @@
 import numpy as np
 
-from sklearn.metrics.scorer import check_scoring
+from sklearn.metrics._scorer import check_scoring
 from sklearn.svm import SVC
-from sklearn.preprocessing.label import LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import LeaveOneGroupOut
 
@@ -12,7 +12,7 @@ from pyitab.utils.dataset import get_ds_data
 from pyitab.utils.dataset import temporal_attribute_reshaping, \
     temporal_transformation
 
-from pyitab.preprocessing.functions import FeatureSlicer
+from pyitab.preprocessing import FeatureSlicer
 from pyitab.analysis.decoding.roi_decoding import RoiDecoding
 from pyitab.preprocessing.base import Transformer
 
@@ -97,7 +97,9 @@ class TemporalDecoding(RoiDecoding):
             estimator = Pipeline(steps=[('clf', estimator)])
 
         self.estimator = GeneralizingEstimator(estimator)
-        self.scoring = None 
+
+        # This seems the only way to cope with this
+        self.scoring = None
     
 
     def _get_data(self, ds, cv_attr, 

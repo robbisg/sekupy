@@ -11,6 +11,7 @@ from itertools import product
 from mvpa2.base.dataset import hstack, vstack
 from pyitab.preprocessing.base import Transformer
 from pyitab.preprocessing.base import PreprocessingPipeline
+from pyitab.preprocessing.slicers import SampleSlicer
 
 from pyitab.utils.dataset import temporal_attribute_reshaping, \
     temporal_transformation
@@ -61,7 +62,6 @@ class Detrender(Transformer):
         ds = self.node.forward(ds)
         return Transformer.transform(self, ds)
                    
-
 
 class SampleAverager(Transformer):
     """This transformer is used to average data.
@@ -124,117 +124,7 @@ class TargetTransformer(Transformer):
 
 
 
-class FeatureSlicer(Transformer):
-    """ This transformer filters the dataset using features as specified on a dictionary
-    The dictionary indicates the feature attributes to be used as key and a list
-    with conditions to be selected:
-    
-    selection_dict = {
-                        'accuracy': ['I'],
-                        'frame':[1,2,3]
-                        }
-                        
-    This dictionary means that we will select all features with frame attribute
-    equal to 1 OR 2 OR 3 AND all samples with accuracy equal to 'I'.
-
-    
-    """
-    
-    def __init__(self, **kwargs):
-        
-        self._selection = dict()
-        for arg in kwargs:
-            self._selection[arg] = kwargs[arg]
-        Transformer.__init__(self, name='feature_slicer', **self._selection)  
-
-    
-    def _set_mapper(self, **kwargs):
-
-        for k, v in kwargs.items():
-            kwargs[k] = "+".join(str(v)) 
-
-        return Transformer._set_mapper(self, **kwargs)
-
-
-    def transform(self, ds):
-        
-        selection_dict = self._selection
-    
-        selection_mask = np.ones(ds.shape[1], dtype=np.bool)
-        for key, values in selection_dict.items():
-            
-            logger.info("Selected %s from %s attribute.", str(values), key)
-            
-            ds_values = ds.fa[key].value
-            condition_mask = np.zeros_like(ds_values, dtype=np.bool)
-            
-            for value in values:
-
-                if str(value)[0] == '!':
-                    array_val = np.array(value[1:]).astype(ds_values.dtype)
-                    condition_mask = np.logical_or(condition_mask, ds_values != array_val)
-                else:
-                    condition_mask = np.logical_or(condition_mask, ds_values == value)
-                    
-            selection_mask = np.logical_and(selection_mask, condition_mask)
-            
-        
-        return Transformer.transform(self, ds[:, selection_mask])
-
-
-
-class SampleSlicer(Transformer):
-    """
-    Selects only portions of the dataset based on a dictionary
-    The dictionary indicates the sample attributes to be used as key and a list
-    with conditions to be selected:
-    
-    selection_dict = {
-                        'frame': [1,2,3]
-                        }
-                        
-    This dictionary means that we will select all samples with frame attribute
-    equal to 1 OR 2 OR 3 AND all samples with accuracy equal to 'I'.
-    
-    """
-
-    def __init__(self, **kwargs):
-        
-        self._selection = dict()
-        for arg in kwargs:
-            self._selection[arg] = kwargs[arg]
-         
-        Transformer.__init__(self, name='sample_slicer', **kwargs)
-
-    
-    def _set_mapper(self, **kwargs):
-
-        for k, v in kwargs.items():
-            kwargs[k] = "+".join([str(vv) for vv in v])
-
-        return Transformer._set_mapper(self, **kwargs)
-
-
-
-    def transform(self, ds):
-        
-        selection_dict = self._selection
-    
-        selection_mask = np.ones_like(ds.targets, dtype=np.bool)
-        for key, values in selection_dict.items():
-            
-            logger.info("Selected %s from %s attribute.", str(values), key)
-            
-            ds_values = ds.sa[key].value
-            condition_mask = np.zeros_like(ds_values, dtype=np.bool)
-            
-            for value in values:        
-                condition_mask = np.logical_or(condition_mask, ds_values == value)
-                
-            selection_mask = np.logical_and(selection_mask, condition_mask)
-            
-        return Transformer.transform(self, ds[selection_mask])
-    
+ 
 
 
 class FeatureStacker(Transformer):
@@ -333,26 +223,7 @@ class FeatureStacker(Transformer):
         return ds
 
 
-class DatasetMasker(Transformer):
-    """
-    """
 
-    def __init__(self, 
-                 mask=None, 
-                 **kwargs):
-        
-        self._mask = mask
-        Transformer.__init__(self, name='dataset_masker')    
-
-
-    def transform(self, ds):
-
-        if self._mask is None:
-            self._mask = np.ones_like(ds.samples[:,0])
-
-        ds = ds[self._mask]
-        
-        return Transformer.transform(self, ds)
 
 
 

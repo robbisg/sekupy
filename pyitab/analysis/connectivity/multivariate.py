@@ -2,7 +2,8 @@ from pyitab.analysis.base import Analyzer
 from pyitab.utils.math import z_fisher, partial_correlation
 from pyitab.preprocessing.connectivity import SpeedEstimator
 from pyitab.preprocessing.base import Transformer
-from pyitab.preprocessing.functions import FeatureSlicer
+from pyitab.preprocessing import FeatureSlicer
+from pyitab.analysis.utils import get_rois
 from nitime.analysis import CorrelationAnalyzer
 from nitime.timeseries import TimeSeries
 from scipy.stats import zscore
@@ -14,9 +15,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 class TrajectoryConnectivity(Analyzer):
-    # TODO: Function documentation
+    
 
     def __init__(self, name='mvfc', **kwargs):
+        """[summary]
+
+        Parameters
+        ----------
+        name : str, optional
+            [description], by default 'mvfc'
+        """
         
         
         Analyzer.__init__(self, name, **kwargs)
@@ -24,13 +32,12 @@ class TrajectoryConnectivity(Analyzer):
 
     def fit(self,
             ds,
-            cv_attr='chunks',
             roi='all',
             roi_values=None,
             estimator=SpeedEstimator(),
             use_partialcorr=False,
             ):
-        """Fits the connectivity of the dataset.
+        """Fits the multivariate connectivity of the dataset.
 
         Parameters
         -----------
@@ -66,7 +73,7 @@ class TrajectoryConnectivity(Analyzer):
 
 
         if roi_values == None:
-            roi_values = self._get_rois(ds, roi)
+            roi_values = get_rois(ds, roi)
                 
         self._tc = dict()
 
@@ -88,32 +95,10 @@ class TrajectoryConnectivity(Analyzer):
         self.scores = self._fit(self._tc, use_partialcorr)
 
         self._info = self._store_info(ds, 
-                                      cv_attr=cv_attr,
                                       roi=roi,
                                       prepro=estimator)
         
         return self
-    
-    
-    
-    def _get_rois(self, ds, roi):
-        """Gets the roi list if the attribute is all"""
-           
-        
-        if roi != 'all':
-            rois = roi
-        else:
-            rois = [r for r in ds.fa.keys() if r != 'voxel_indices']
-        
-        rois_values = []
-        
-        for r in rois:
-            for v in np.unique(ds.fa[r].value):
-                if v != 0:
-                    value = (r, [v])
-                    rois_values.append(value)
-            
-        return rois_values 
 
 
     def _fit(self, tc, use_partialcorr):

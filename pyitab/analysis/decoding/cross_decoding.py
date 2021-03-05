@@ -1,8 +1,8 @@
 import numpy as np
 
-from sklearn.metrics.scorer import _check_multimetric_scoring
+from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
-from sklearn.preprocessing.label import LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import LeaveOneGroupOut
 
@@ -13,7 +13,7 @@ from pyitab.utils.dataset import get_ds_data
 
 from pyitab.ext.sklearn._validation import cross_validate
 
-from pyitab.preprocessing.functions import FeatureSlicer, SampleSlicer
+from pyitab.preprocessing import FeatureSlicer, SampleSlicer
 from pyitab.analysis.decoding import Decoding
 from pyitab.analysis.decoding.roi_decoding import RoiDecoding
 from pyitab.preprocessing.base import Transformer
@@ -175,8 +175,9 @@ class CrossDecoding(Decoding):
             ds_ = prepro.transform(ds_)
             
             X, y, groups = self.analysis._get_data(ds_, cv_attr, **kwargs)
+            cross_score = np.array([est.score(X, y) for est in estimator])
 
-            cross_scores["mask-%s_value-%s" % (mask, value)] = [est.score(X, y) for est in estimator]
+            cross_scores["mask-%s_value-%s" % (mask, value)] = cross_score
 
         self.cross_scores = cross_scores
         

@@ -1,5 +1,5 @@
 from pyitab.tests import fetch_ds
-from pyitab.preprocessing.functions import SampleSlicer, TargetTransformer
+from pyitab.preprocessing import SampleSlicer, TargetTransformer
 from pyitab.preprocessing.balancing.base import Balancer
 from pyitab.preprocessing.balancing.imbalancer import Imbalancer
 

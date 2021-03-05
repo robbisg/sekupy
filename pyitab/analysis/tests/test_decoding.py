@@ -1,4 +1,5 @@
-from pyitab.preprocessing.functions import SampleSlicer, TargetTransformer
+from pyitab.preprocessing import TargetTransformer
+from pyitab.preprocessing import SampleSlicer
 from pyitab.analysis.decoding.temporal_decoding import TemporalDecoding
 from pyitab.analysis.decoding.roi_decoding import RoiDecoding
 
@@ -23,6 +24,7 @@ def test_temporal_decoding(fetch_ds):
     analysis = TemporalDecoding(cv=StratifiedShuffleSplit(n_splits=n_splits, 
                                                           test_size=0.2), 
                                 verbose=0,
+                                scoring='accuracy',
                                 permutation=n_permutation)
 
     analysis.fit(ds, time_attr='trial')
@@ -33,7 +35,8 @@ def test_temporal_decoding(fetch_ds):
     roi_result = scores['mask-brain_value-2.0']
     assert len(roi_result) == n_permutation + 1
     assert roi_result[0]['test_score'].shape == (n_splits, 3, 3)
-
+    assert np.max(roi_result[0]['test_score']) <= 1.
+   
 
 def test_decoding(fetch_ds):
 
@@ -61,5 +64,5 @@ def test_decoding(fetch_ds):
     
     roi_result = scores['mask-brain_value-2.0']
     assert len(roi_result) == n_permutation + 1
-    assert roi_result[0]['test_score'].shape == (n_splits,)
+    assert roi_result[0]['test_accuracy'].shape == (n_splits,)
 

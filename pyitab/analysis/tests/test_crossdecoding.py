@@ -1,4 +1,4 @@
-from pyitab.preprocessing.functions import SampleSlicer, TargetTransformer
+from pyitab.preprocessing import SampleSlicer, TargetTransformer
 from pyitab.analysis.decoding.temporal_decoding import TemporalDecoding
 from pyitab.analysis.decoding.cross_decoding import CrossDecoding
 
@@ -34,8 +34,7 @@ def test_crossdecoding(fetch_ds):
     assert len(scores.keys()) == 26 # No. of ROI
     
     roi_result = scores['mask-brain_value-2.0']
-    assert len(roi_result) == n_permutation + 1
-    assert roi_result[0]['test_score'].shape == (n_splits, 3, 3)
+    assert roi_result.shape == (2, 3, 3)
 
     
 

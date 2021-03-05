@@ -1,4 +1,4 @@
-from pyitab.preprocessing.functions import SampleSlicer, TargetTransformer
+from pyitab.preprocessing import SampleSlicer, TargetTransformer
 from pyitab.analysis.searchlight import SearchLight
 from sklearn.model_selection import StratifiedShuffleSplit
 
@@ -34,3 +34,14 @@ def test_searchlight(fetch_ds):
         assert "test_%s" % (k) in score.keys()
 
     assert score['test_r2'].shape == (843, n_splits)
+
+    scoring = 'r2'
+    analysis = SearchLight(scoring=scoring, 
+                           cv=StratifiedShuffleSplit(n_splits=n_splits, 
+                                                     test_size=0.2), 
+                           verbose=0,
+                           permutation=1)
+
+    analysis.fit(ds)
+    score = scores[0]
+    assert "test_r2" in score.keys()
