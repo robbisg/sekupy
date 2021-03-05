@@ -104,3 +104,27 @@ def load_ds(conf_file, task,
         ds_merged.sa['subject'] = ds_merged.sa.pop('name')
     
     return ds_merged
+
+
+def dataset_wizard(X, y=None, **kwargs):
+
+    from mvpa2.base.collections import SampleAttributesCollection, \
+        DatasetAttributesCollection, FeatureAttributesCollection
+    from mvpa2.datasets.base import Dataset
+    import numpy as np
+
+
+    sa = SampleAttributesCollection({
+        'targets': y,
+        'subject': np.ones(X.shape[0]),
+        'file': ["foo.mat" for _ in range(X.shape[0])]
+    })
+
+    fa = FeatureAttributesCollection({'matrix_values':np.ones(X.shape[1])})
+    a = DatasetAttributesCollection({'data_path':'/media/robbis/DATA/meg/hcp/', 
+                                    'experiment':'hcp', 
+                                    })
+
+    ds = Dataset(X, sa=sa, a=a, fa=fa)
+
+    return ds

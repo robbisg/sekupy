@@ -6,7 +6,7 @@ from pyitab.io.base import add_attributes
 from pyitab.preprocessing.base import Transformer
 from mvpa2.base.collections import SampleAttributesCollection
 from mvpa2.datasets.base import Dataset
-from scipy.spatial.distance import euclidean
+from scipy.spatial.distance import pdist
 from scipy import signal
 import itertools
 
@@ -78,11 +78,13 @@ class SpeedEstimator(Transformer):
     def __init__(self, name='speed_tc', **kwargs):
         Transformer.__init__(self, name=name, **kwargs) 
 
-    def transform(self, ds):
+    def transform(self, ds, metric='euclidean'):
 
         ds_ = ds.copy()
 
-        trajectory = [euclidean(ds.samples[i+1], ds.samples[i]) 
+        X = ds.samples
+
+        trajectory = [pdist(np.vstack((X[i+1], X[i])), metric) 
                          for i in range(ds.shape[0]-1)]
 
         ds_.samples = np.array(trajectory)
