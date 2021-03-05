@@ -4,9 +4,9 @@ import os
 import numpy as np
 from scipy.io import loadmat
 from joblib import Parallel, delayed
-from pyitab.analysis.results.bids import get_configuration_fields, get_dictionary, \
+from pyitab.results.bids import get_configuration_fields, get_dictionary, \
     find_directory
-from pyitab.analysis.results.base import filter_dataframe
+from pyitab.results.base import filter_dataframe
 from sklearn import metrics
 import logging
 
@@ -290,7 +290,7 @@ def calculate_metrics(dataframe, metrics_kwargs=None, fixed_variables={}):
 
         metrics_ = dict()
         
-        k = dataframe['n_states'].values[i]
+        k = dataframe['n_clusters'].values[i]
         
         logger.info('Calculating metrics for k: %s' %(str(k)))
         
@@ -387,7 +387,7 @@ def find_best_k(dataframe):
         df = filter_dataframe(dataframe, name=[name])
         df = df.sort_values('k')
         values = df['value'].values
-        k_step = df['k'].values
+        k_step = np.int_(df['k'].values)
 
         if name in ['Silhouette', 'Krzanowski-Lai', 'Index I']:
             guessed_cluster = np.nonzero(np.max(values) == values)[0][0] + k_step[0]

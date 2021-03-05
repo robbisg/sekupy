@@ -2,8 +2,8 @@ import pytest
 import pandas as pd
 import os
 
-from pyitab.analysis.results.base import filter_dataframe
-from pyitab.analysis.results.simulations import get_results
+from pyitab.results.base import filter_dataframe
+from pyitab.results.simulations import get_results
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 currdir = os.path.abspath(os.path.join(currdir, os.pardir))
@@ -14,6 +14,7 @@ datadir = os.path.join(currdir, "tests", "data")
 def dataframe():
     print(datadir)
     return pd.read_csv(os.path.join(datadir, "test.csv"))
+
 
 @pytest.fixture
 def directory():
@@ -43,10 +44,7 @@ def test_load_simulations(directory):
 
     dataframe = get_results(directory,
                             field_list=['algorithm'],
-                            pipeline="c2b+real", 
-                            filter={"algorithm":["SpectralClustering"]})
+                            pipeline="c2b+real",
+                            filter={"algorithm": ["SpectralClustering"]})
     
     assert len(dataframe) == 2
-
-
-    

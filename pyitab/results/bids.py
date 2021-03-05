@@ -8,7 +8,7 @@ from scipy.io import loadmat
 from scipy.stats import ttest_1samp
 from itertools import product
 from joblib import Parallel, delayed
-from pyitab.analysis.results.base import get_configuration_fields, filter_dataframe
+from pyitab.results.base import get_configuration_fields, filter_dataframe
 from pyitab.utils.bids import get_dictionary, find_directory
 
 logger = logging.getLogger(__name__)
@@ -84,7 +84,8 @@ def get_values_bids(path, directory, field_list, result_keys, scores=None):
 def get_results_bids(path, field_list=['sample_slicer'], 
                     result_keys=[], scores=['score'], 
                     n_jobs=-1,  verbose=1, filter=None,
-                    get_function=get_values_bids,
+                    get_function=get_values_bids, 
+                    subjects=None,
                     **kwargs):
     """This function is used to collect the results from analysis folders.
     
@@ -103,6 +104,10 @@ def get_results_bids(path, field_list=['sample_slicer'],
          (the default is None, which [default_description])
     scores : list, optional
         Use mse and corr for regression, score for basic decoding
+    get_function: fx, optional
+        The fucntion used to load data
+    subjects : list, optional
+        List of string representing subject's results to be loaded.
     **kwargs : dictionary, optional
         List of parameters used to filter BIDS folder by 'pipeline' for example.
     
@@ -126,6 +131,8 @@ def get_results_bids(path, field_list=['sample_slicer'],
         subject_dirs = os.listdir(pipeline_dir)
         subject_dirs = [d for d in subject_dirs if d.find(".json") == -1]
 
+        if subjects is not None:
+            subject_dirs = [d for d in subject_dirs if d in subjects]
 
         r = [get_function(pipeline_dir, s, field_list, result_keys, scores=scores) \
              for s in subject_dirs]
