@@ -1,8 +1,8 @@
 import numpy as np
 
-from sklearn.metrics.scorer import _check_multimetric_scoring
+from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
-from sklearn.preprocessing.label import LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import LeaveOneGroupOut
 
@@ -84,11 +84,17 @@ class Decoding(Analyzer):
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.permutation = permutation
-        self.scoring = scoring
+        
         self.cv = cv
         self.verbose = verbose
-        self.scoring, _ = _check_multimetric_scoring(self.estimator, 
-                                                     scoring=self.scoring)
+
+        if isinstance(scoring, str):
+            scoring = [scoring]
+
+        self.scoring = _check_multimetric_scoring(self.estimator, 
+                                                  scoring=scoring)
+
+        print(self.scoring)
 
         Analyzer.__init__(self, name=name, **kwargs)
 
@@ -118,24 +124,24 @@ class Decoding(Analyzer):
         """General method to fit data"""
         
 
-        X, y, groups = self._get_data(ds, cv_attr, **kwargs)
+        X, y_, groups = self._get_data(ds, cv_attr, **kwargs)
 
-        indices = self._get_permutation_indices(len(y))
+        indices = self._get_permutation_indices(len(y_))
                 
         self.scores = []
         for idx in indices:
             
-            y_ = y[idx]
+            y = y_[idx]
 
-            scores = cross_validate(self.estimator, X, y_, groups,
-                                    self.scoring, self.cv, self.n_jobs,
-                                    self.verbose, return_estimator=True, 
+            scores = cross_validate(self.estimator, X, y, groups=groups,
+                                    scoring=self.scoring, cv=self.cv, n_jobs=self.n_jobs,
+                                    verbose=self.verbose, return_estimator=True, 
                                     return_splits=return_splits, 
                                     return_decisions=return_decisions,
                                     return_predictions=return_predictions)
             
             self.scores.append(scores)
-            if cv_attr is not None:
+            if cv_attr is not None and return_splits:
                 scores['split_name'] = self._split_name(scores['splits'], 
                                                         cv_attr,
                                                         groups)

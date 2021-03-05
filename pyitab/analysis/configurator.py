@@ -1,6 +1,6 @@
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import GroupShuffleSplit
-from sklearn.svm.classes import SVC
+from sklearn.svm import SVC
 from pyitab.preprocessing.mapper import function_mapper
 from pyitab.preprocessing.pipelines import PreprocessingPipeline
 from pyitab.analysis.searchlight import SearchLight
@@ -156,7 +156,8 @@ class AnalysisConfigurator(object):
     
     def _get_estimator(self):
 
-        estimator = Pipeline(steps=self._default_options["estimator"])
+        steps = self._default_options["estimator"]
+        estimator = Pipeline(steps=steps)
         
         params = self._get_params("estimator")
         _ = estimator.set_params(**params)

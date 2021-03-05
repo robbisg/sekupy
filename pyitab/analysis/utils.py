@@ -1,4 +1,4 @@
-
+import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
@@ -35,3 +35,22 @@ def get_params(param_dict, keyword):
 
     logger.debug("%s %s" % (keyword, str(params)))
     return params
+
+
+def get_rois(ds, roi):
+    """Gets the roi list if the attribute is all"""
+    
+    if roi != 'all':
+        rois = roi
+    else:
+        rois = [r for r in ds.fa.keys() if r != 'voxel_indices']
+    
+    rois_values = []
+    
+    for r in rois:
+        for v in np.unique(ds.fa[r].value):
+            if v != 0:
+                value = (r, [v])
+                rois_values.append(value)
+        
+    return rois_values    

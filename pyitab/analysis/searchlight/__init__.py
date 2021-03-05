@@ -6,7 +6,7 @@ from nilearn import masking
 
 from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.svm import SVC
-from sklearn.preprocessing.label import LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection._split import LeaveOneGroupOut
 from sklearn.pipeline import Pipeline
 
@@ -150,8 +150,11 @@ class SearchLight(Analyzer):
         A = get_seeds(ds, self.radius)
         
         estimator = self.estimator
+        
+        if isinstance(self.scoring, str):
+            self.scoring = [self.scoring]
             
-        self.scoring, _ = _check_multimetric_scoring(estimator, 
+        self.scoring = _check_multimetric_scoring(estimator, 
                                                      scoring=self.scoring)
         
         X, y = get_ds_data(ds)
