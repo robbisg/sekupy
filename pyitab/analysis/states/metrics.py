@@ -251,3 +251,13 @@ def index_i(X, labels):
     i_ = (1./k * np.float(e1)/ek * dk * mk)**2
 
     return i_        
+
+
+metrics = {'silhouette': metrics.silhouette_score,
+           'kl': kl_criterion,
+           'wgss': wgss,
+           'gev': global_explained_variance,
+           'ev': explained_variance,
+           'ch': ch_criterion
+           }
+           

@@ -3,42 +3,51 @@ from scipy.spatial.distance import cdist
 from scipy.stats import pearsonr, ttest_ind, zscore
 from typing import Optional, Tuple
 
-class GSBS():
-    def __init__(self, tr_tuning=1, blocksize=50, dmin=1):
-        """This class uses a greedy search algorithm to segment timeseries
-        into neural state with stable activity patterns.
-        The algorithm identifies the timepoint of state transition and 
-        the best number of states using t-statistics
+from pyitab.analysis.base import Analyzer
+from pyitab.utils.dataset import get_ds_data
 
-        You can find more information about the method here:
-        Geerligs L., van Gerven M., Güçlü U (2020) 
-        Detecting neural state transitions underlying event segmentation
-        biorXiv. https://doi.org/10.1101/2020.04.30.069989
+class _GSBS(Analyzer):
+    """
+    This class uses a greedy search algorithm to segment timeseries
+    into neural state with stable activity patterns.
+    The algorithm identifies the timepoint of state transition and 
+    the best number of states using t-statistics
 
-        Parameters
-        ----------
-        kmax : int
-            Maximum number of neural states to be estimated.
-            (a reasonable choice is t/2) (maybe should be included in fit)
-        tr_tuning : int, optional
-            Number of timepoints to be included in the finetuning, it 
-            optimizes the transition time around a boundary.
-            If = 0 no fine tuning is performed, if < 0 all timepoints are 
-            included, by default 1.
-        blocksize : int, optional
-            Minimal number that constitues a block, this is used to speed up the 
-            computation when the number of tp is large, it finds local optimun 
-            within a block of blocksize, by default 50.
-        dmin : int, optional
-            Number of timepoints around the diagonal that are not taken into 
-            account in the computation of the t-distance metric, by default 1.
-        """
+    You can find more information about the method here:
+    Geerligs L., van Gerven M., Güçlü U (2020) 
+    Detecting neural state transitions underlying event segmentation
+    biorXiv. https://doi.org/10.1101/2020.04.30.069989
+
+    Parameters
+    ----------
+    kmax : int
+        Maximum number of neural states to be estimated.
+        (a reasonable choice is t/2) (maybe should be included in fit)
+    tr_tuning : int, optional
+        Number of timepoints to be included in the finetuning, it 
+        optimizes the transition time around a boundary.
+        If = 0 no fine tuning is performed, if < 0 all timepoints are 
+        included, by default 1.
+    blocksize : int, optional
+        Minimal number that constitues a block, this is used to speed up the 
+        computation when the number of tp is large, it finds local optimun 
+        within a block of blocksize, by default 50.
+    dmin : int, optional
+        Number of timepoints around the diagonal that are not taken into 
+        account in the computation of the t-distance metric, by default 1.
+    """
+
+    def __init__(self, tr_tuning=1, blocksize=50, dmin=1, **kwargs):
+
+
         self.dmin = dmin
         self.finetune = tr_tuning
         self.blocksize = blocksize
 
+        Analyzer.__init__(self, name='gsbs', **kwargs)
+
     
-    def get_bounds(self, k) -> ndarray:
+    def get_bounds(self, k):
         """
         Keyword Arguments:
             k {Optional[int]} -- number of states
@@ -59,7 +68,7 @@ class GSBS():
             return self._bounds * self.get_deltas(k)
 
 
-    def get_deltas(self, k:int = None):
+    def get_deltas(self, k=None):
         """
         Keyword Arguments:
             k {Optional[int]} -- number of states
@@ -83,7 +92,7 @@ class GSBS():
         return deltas
 
 
-    def get_states(self, k:int = None) -> ndarray:
+    def get_states(self, X, k=None):
         """
         Keyword Arguments:
             k {Optional[int]} -- number of states
@@ -97,12 +106,12 @@ class GSBS():
         assert self._argmax is not None
         if k is None:
             k = self._argmax
-        states = self._states(self.get_deltas(k), self.x)+1
+        states = self.assign_states(X, self.get_deltas(k)) + 1
         return states
 
 
 
-    def get_state_patterns(self, k:int = None) -> ndarray:
+    def get_state_patterns(self, X, k=None):
         """
         Keyword Arguments:
             k {Optional[int]} -- number of states
@@ -115,19 +124,19 @@ class GSBS():
         """
         assert self._argmax is not None
         if k is None:
-            k=self._argmax
+            k = self._argmax
         deltas = self.get_deltas(k)
-        states = self._states(deltas, self.x)
-        states_unique = unique(states)
-        xmeans = np.zeros((len(states_unique), self.x.shape[1]), float)
+        states = self.assign_states(X, deltas)
+        states_unique = np.unique(states)
+        xmeans = np.zeros((len(states_unique), X.shape[1]), float)
 
         for state in states_unique:
-            xmeans[state] = self.x[state == states].mean(0)
+            xmeans[state] = X[state == states].mean(0)
 
         return xmeans
 
 
-    def get_strengths(self, k:int = None) -> ndarray:
+    def get_strengths(self, X, k=None):
         """
         Keyword Arguments:
             k {Optional[int]} -- number of states
@@ -142,15 +151,15 @@ class GSBS():
         """
         assert self._argmax is not None
         if k is None:
-            k=self._argmax
+            k = self._argmax
         deltas = self.get_deltas(k)
-        states = self.assign_states(deltas, self.x)
+        states = self.assign_states(X, deltas)
         states_unique = np.unique(states)
         pcorrs = np.zeros(len(states_unique) - 1, float)
-        xmeans = np.zeros((len(states_unique), self.x.shape[1]), float)
+        xmeans = np.zeros((len(states_unique), X.shape[1]), float)
 
         for state in states_unique:
-            xmeans[state] = self.x[state == states].mean(0)
+            xmeans[state] = X[state == states].mean(0)
             if state > 0:
                 pcorrs[state - 1] = pearsonr(xmeans[state], xmeans[state - 1])[0]
 
@@ -158,7 +167,7 @@ class GSBS():
         strengths[deltas == 1] = 1 - pcorrs
 
         return strengths
-    """
+
 
 
     def fit(self, X, y=None, kmax=None):
@@ -204,6 +213,13 @@ class GSBS():
 
         self._argmax = self._tdists.argmax()
 
+        self.scores = dict()
+        self.scores['labels'] = self.get_states(X)
+        self.scores['states'] = self.get_state_patterns(X)
+
+
+
+
 
     def finetuning(self, X, Z):
 
@@ -228,7 +244,7 @@ class GSBS():
 
 
     def assign_states(self, X, deltas):
-        states = np.zeros(X.shape[0], int)
+        states = np.zeros(len(deltas), int)
         for i, delta in enumerate(deltas[1:]):
             states[i + 1] = states[i] + np.int(delta)
 
@@ -248,14 +264,14 @@ class GSBS():
             xmeans[mask_state] = Xt[mask_state].mean(0)
 
         for i in boundopt:
-            if deltas[i] is False:
-                state = np.nonzero(states[i] == states)[0]
-                xmean = np.copy(xmeans[state])
-                xmeans[state[0]: i] = Xt[state[0]: i].mean(0)
-                xmeans[i: state[-1] + 1] = Xt[i: state[-1] + 1].mean(0)
+            if deltas[i] == False:
+                state_idx = np.nonzero(states[i] == states)[0]
+                xmean = np.copy(xmeans[state_idx])
+                xmeans[state_idx[0]: i] = Xt[state_idx[0]: i].mean(0)
+                xmeans[i: state_idx[-1] + 1] = Xt[i: state_idx[-1] + 1].mean(0)
                 zmeans = zscore(xmeans, axis=1, ddof=1)
                 wdists[i] = xmeans.shape[1] * (zmeans * Zt).mean() / (xmeans.shape[1] - 1)
-                xmeans[state] = xmean
+                xmeans[state_idx] = xmean
 
         return wdists
 
@@ -274,7 +290,7 @@ class GSBS():
                 if numt > blocksize or s == max(states):
                     xt = X[state]
                     zt = Z[state]
-                    wdists = self.calculate_wdists(xt, zt, deltas[state], boundopt, states[state])
+                    wdists = self.calculate_wdists(xt, zt, deltas[state], None, states[state])
                     boundopt[s] = wdists.argmax() + state[0]
                     prevstate = s
 
@@ -287,3 +303,42 @@ class GSBS():
         wdists = self.calculate_wdists(X, Z, deltas, boundopt, states)
 
         return wdists
+
+
+
+class GSBS(_GSBS):
+    """
+    This class uses a greedy search algorithm to segment timeseries
+    into neural state with stable activity patterns.
+    The algorithm identifies the timepoint of state transition and 
+    the best number of states using t-statistics
+
+    You can find more information about the method here:
+    Geerligs L., van Gerven M., Güçlü U (2020) 
+    Detecting neural state transitions underlying event segmentation
+    biorXiv. https://doi.org/10.1101/2020.04.30.069989
+
+    Parameters
+    ----------
+    kmax : int
+        Maximum number of neural states to be estimated.
+        (a reasonable choice is t/2) (maybe should be included in fit)
+    tr_tuning : int, optional
+        Number of timepoints to be included in the finetuning, it 
+        optimizes the transition time around a boundary.
+        If = 0 no fine tuning is performed, if < 0 all timepoints are 
+        included, by default 1.
+    blocksize : int, optional
+        Minimal number that constitues a block, this is used to speed up the 
+        computation when the number of tp is large, it finds local optimun 
+        within a block of blocksize, by default 50.
+    dmin : int, optional
+        Number of timepoints around the diagonal that are not taken into 
+        account in the computation of the t-distance metric, by default 1.
+    """
+
+    def fit(self, ds, kmax=None):
+        X, _ = get_ds_data(ds)
+        super().fit(X, kmax=kmax)
+
+

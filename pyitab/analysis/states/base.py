@@ -29,6 +29,36 @@ class Clustering(Analyzer):
     def fit(self, ds,
             prepro=VarianceSubsampler(),
             **kwargs):
+        """This method fits the dataset using the clustering algorithm
+
+        Parameters
+        ----------
+        ds : [type]
+            [description]
+        prepro : [type], optional
+            [description], by default VarianceSubsampler()
+
+        Attributes
+        -------
+        scores: dict
+            The results of the state identification
+            'labels': array
+                array with the assigned cluster for the 
+                subsampled set of samples
+            'states': array
+                the centroids of the clustered set using
+                the subsampled dataset.
+            'dynamics': array
+                the predicted labels of the full dataset using
+                the fitted algorithm 
+            'X': array
+                the subsampled dataset
+            'targets': array
+                the targets of the dataset (if applicable)
+            'state_similarity': array
+                the similarity of the dataset with the most
+                similar centroid
+        """
 
 
         # Check if estimator needs n_clusters
@@ -176,7 +206,7 @@ class Clustering(Analyzer):
 
     def get_transition_matrix(self, dynamics=None):
         """
-        Extract the probability transition matrix given the
+        Extracts the probability transition matrix given the
         fitted timecourse for each subject.
         This is the output of fit_centroids function
         
@@ -212,7 +242,7 @@ class Clustering(Analyzer):
 
     def get_state_duration(self, dynamics=None):
         """
-        Extract the average of state duration given the
+        Extracts the average of state duration given the
         fitted timecourse for each subject.
         This is the output of fit_centroids function
         

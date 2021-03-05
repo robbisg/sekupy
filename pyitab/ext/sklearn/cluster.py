@@ -68,24 +68,24 @@ class PeakDensityClustering(BaseEstimator, ClusterMixin, TransformerMixin):
     
     def __init__(self, dc='percentage', percentage=2., 
                  cluster_threshold=12., rhofx=gaussian_kernel):
-    """[summary]
-    
-    Parameters
-    ----------
-    dc : str, optional
-        [description], by default 'percentage'
-    percentage : [type], optional
-        [description], by default 2.
-    cluster_threshold : [type], optional
-        [description], by default 12.
-    rhofx : [type], optional
-        [description], by default gaussian_kernel
-    
-    Returns
-    -------
-    [type]
-        [description]
-    """
+        """[summary]
+        
+        Parameters
+        ----------
+        dc : str, optional
+            [description], by default 'percentage'
+        percentage : [type], optional
+            [description], by default 2.
+        cluster_threshold : [type], optional
+            [description], by default 12.
+        rhofx : [type], optional
+            [description], by default gaussian_kernel
+        
+        Returns
+        -------
+        [type]
+            [description]
+        """
         
         if dc != 'percentage':
             self.dc = dc
