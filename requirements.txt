@@ -9,8 +9,6 @@ mne
 mne-hcp
 nibabel
 pybids
-nipy
-nitime
 imbalanced-learn
 joblib
 bokeh
