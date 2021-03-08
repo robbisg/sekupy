@@ -18,8 +18,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        sudo apt-get install python3-tk swig build-essential gfortran
+        sudo apt-get install swig build-essential gfortran python3-dev python-tk
+        sudo apt-get install -y python3-numpy python-blosc
         python -m pip install --upgrade pip
+        pip install cython wheel
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         sudo python setup.py develop
