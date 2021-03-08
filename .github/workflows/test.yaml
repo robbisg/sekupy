@@ -20,13 +20,13 @@ jobs:
       run: |
         sudo apt-get install swig build-essential gfortran python3-dev python-tk
         sudo apt-get install -y python3-blosc
-        python -m pip install --upgrade pip
-        pip install cython wheel
-        pip install flake8 pytest
+        python3 -m pip install --upgrade pip
+        pip3 install cython wheel
+        pip3 install flake8 pytest
         pip3 install tk cytoolz
-        pip3 install numpy==1.13 scipy
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        sudo python setup.py develop
+        pip3 install numpy
+        if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
+        sudo python3 setup.py develop
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
