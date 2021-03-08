@@ -1,4 +1,4 @@
-#numpy
+numpy==1.15
 #cython
 #scipy==1.2
 matplotlib
@@ -6,7 +6,6 @@ pandas
 seaborn
 statsmodels
 scikit-learn
-pymvpa2
 nilearn
 mne
 mne-hcp
@@ -31,3 +30,4 @@ h5py
 hmmlearn
 pybids
 mne-hcp
+pymvpa2
