@@ -19,12 +19,12 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install swig build-essential gfortran python3-dev python-tk
-        sudo apt-get install -y python3-numpy python3-blosc
+        sudo apt-get install -y python3-blosc
         python -m pip install --upgrade pip
         pip install cython wheel
         pip install flake8 pytest
         pip3 install tk cytoolz
-        pip3 install numpy scipy
+        pip3 install numpy==1.15 scipy
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         sudo python setup.py develop
     - name: Lint with flake8
