@@ -1,11 +1,12 @@
 numpy
+cython
 scipy==1.2
 matplotlib
 pandas
 seaborn
 statsmodels
 scikit-learn
-pymvpa2
+#pymvpa2
 nilearn
 mne
 mne-hcp
