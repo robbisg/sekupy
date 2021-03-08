@@ -11,6 +11,7 @@ dist/
 .vscode/*
 .vscode
 .coveragerc
+.coveragerc*
 .coverage
 .coverage.*
 *.temp

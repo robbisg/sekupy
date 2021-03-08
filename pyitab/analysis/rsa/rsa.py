@@ -14,8 +14,6 @@ from scipy.spatial.distance import pdist
 import logging
 logger = logging.getLogger(__name__)
 
-
-# TODO: Inherit from MetaDecoding
 class RSA(Analyzer):
     """Implement representational similarity analysis (RSA) using 
     an arbitrary type of similarity measure.
@@ -41,7 +39,6 @@ class RSA(Analyzer):
     
     Attributes
     -----------
-
     scores : dict.
             The dictionary of results for each roi selected.
             The key is the union of the name of the roi and the value(s).
@@ -51,14 +48,12 @@ class RSA(Analyzer):
 
     def __init__(self, 
                  n_jobs=1, 
-                 distance='euclidean', 
                  permutation=0,
                  verbose=1,
                  name='rsa',
                  **kwargs):
 
         
-        self.distance = distance
         self.n_jobs = n_jobs
         self.permutation = permutation
         self.verbose = verbose
@@ -72,11 +67,12 @@ class RSA(Analyzer):
 
     def fit(self, ds,  
             roi='all', 
-            roi_values=None, 
+            roi_values=None,
+            distance='euclidean',
             prepro=Transformer(),
             **kwargs):
 
-        """[summary]
+        """Fits the RSA on the dataset
         
         Parameters
         ----------
@@ -91,6 +87,8 @@ class RSA(Analyzer):
             A list of key, value tuple where the key is the
             roi name, specified in ds.fa.roi and value is the value of the
             subroi. (the default is None, which [default_description])
+        distance : str, optional
+            The metric to be used to calculate the dissimilarity. (default: euclidean)
         prepro : [type], optional
             [description] (the default is Transformer(), which [default_description])
         return_predictions : bool, optional
@@ -98,10 +96,6 @@ class RSA(Analyzer):
         return_splits : bool, optional
             [description] (the default is True, which [default_description])
         
-        Returns
-        -------
-        [type]
-            [description]
         """
 
         if roi_values is None:
@@ -118,7 +112,7 @@ class RSA(Analyzer):
             
             X = ds_.samples
 
-            distance = pdist(X, metric=self.distance)
+            distance = pdist(X, metric=distance)
            
             string_value = "+".join([str(v) for v in value])
             scores["mask-%s_value-%s" % (r, string_value)] = distance
@@ -160,20 +154,13 @@ class RSA(Analyzer):
 
 
     def save(self, path=None, **kwargs):
-        """[summary]
+        """Save the results
         
         Parameters
         ----------
-        path : [type], optional
-            [description] (the default is None, which [default_description])
-        
-        Returns
-        -------
-        [type]
-            [description]
-
-        <source_keywords>_task-<task>_mask-<mask>_
-        value-<roi_value>_distance-<datetime>_<key>-<value>_data.mat
+        path : str, optional
+            path where to store files (the default is 
+            set up by :class:`pyitab.analysis.Analyzer`)
         """
         
         import os

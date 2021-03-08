@@ -15,18 +15,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 class TrajectoryConnectivity(Analyzer):
+    """This function implements multivariate connectivity as
+    in `Guidotti et al. 2019, Neuroimage 
+    <https://doi.org/10.1016/j.neuroimage.2019.01.071>`_
+    """
     
 
-    def __init__(self, name='mvfc', **kwargs):
-        """[summary]
-
-        Parameters
-        ----------
-        name : str, optional
-            [description], by default 'mvfc'
-        """
-        
-        
+    def __init__(self, name='mvfc', **kwargs):        
         Analyzer.__init__(self, name, **kwargs)
 
 
@@ -42,18 +37,16 @@ class TrajectoryConnectivity(Analyzer):
         Parameters
         -----------
     
-        ds : PyMVPA dataset
+        ds : :class:`~mvpa2.dataset.Dataset`
             The dataset to be used to fit the data
     
         cv_attr : string. Default is 'chunks'.
             The attribute to be used to separate data in the cross validation.
             If cv attribute is specified this parameter is ignored.
-            
     
         roi : list of strings. Default is 'all'
             The list of rois to be selected for the analysis. 
             Each string must correspond to a key in the dataset feature attributes.
-
             
         roi_values : list of tuple, optional. Default is None
             The list of tuple must have as first element the name of roi to be used,
@@ -63,9 +56,8 @@ class TrajectoryConnectivity(Analyzer):
             (e.g. roi_values = [('lateral_ips', [2,4,6]), ('left_precuneus', [10,12])] 
              performs two analysis on lateral_ips and left_precuneus with the
              union of rois with values of 2,4,6 and 10,12 )
-             
-             
-        prepro : Node or PreprocessingPipeline implementing transform, optional.
+                          
+        prepro : instance of :class:`pyitab.base.Transformer`, optional.
             A transformation of series of transformation to be performed
             before the decoding analysis is performed.
         

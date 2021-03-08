@@ -33,7 +33,6 @@ class Detrender(Transformer):
     
     """
 
-    
     def __init__(self, degree=1, chunks_attr='chunks', **kwargs):
 
         self._degree = degree
@@ -47,13 +46,13 @@ class Detrender(Transformer):
         
         Parameters
         ----------
-        ds : pymvpa Dataset
-            The dataset to be transformed.
+        ds : :class:`~mvpa2.dataset.Dataset`
+            The dataset to be detrended.
         
         Returns
         -------
-        ds : pymvpa Dataset
-            The transformed dataset
+        ds : :class:`~mvpa2.dataset.Dataset`
+            The detrended dataset
         """
         
         self.node.train(ds)
@@ -88,12 +87,12 @@ class SampleAverager(Transformer):
         
         Parameters
         ----------
-        ds : pymvpa Dataset
+        ds : :class:`~mvpa2.dataset.Dataset`
             The dataset to be transformed.
         
         Returns
         -------
-        ds : pymvpa Dataset
+        ds : :class:`~mvpa2.dataset.Dataset`
             The transformed dataset
         """
         logger.info('Dataset preprocessing: Averaging samples...')
