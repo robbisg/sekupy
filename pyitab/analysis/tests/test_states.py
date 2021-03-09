@@ -1,17 +1,14 @@
 from pyitab.preprocessing import SampleSlicer, TargetTransformer
 from pyitab.analysis.decoding.temporal_decoding import TemporalDecoding
-from pyitab.analysis.decoding.roi_decoding import RoiDecoding
 
 from sklearn.model_selection import StratifiedShuffleSplit
-from pyitab.analysis.states.base import Clustering
 from pyitab.analysis.states.pipeline import StateAnalyzer
 from pyitab.analysis.states.subsamplers import VarianceSubsampler
-
+from pyitab.tests import fetch_ds
 
 import numpy as np
-import os
 import pytest
-from pyitab.tests import fetch_ds
+
 
 
 @pytest.mark.skip()

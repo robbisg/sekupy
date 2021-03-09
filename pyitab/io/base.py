@@ -57,6 +57,7 @@ def load_dataset(path, subj, folder, **kwargs):
     file_list = load_filelist(path, subj, folder, **kwargs)   
 
     # Load data
+    fmri_list = []
     try:
         fmri_list = load_fmri(file_list)
     except IOError as err:
@@ -90,11 +91,9 @@ def load_dataset(path, subj, folder, **kwargs):
         logger.debug('Dataset loaded...')
     except ValueError as e:
         logger.error("ERROR: %s (%s)", e, subj)
-        del fmri_list
     
     # Add filename attributes for detrending purposes   
     ds = add_filename(ds, fmri_list)
-    del fmri_list
     
     # Update Dataset attributes
     if extract_events:
@@ -105,7 +104,9 @@ def load_dataset(path, subj, folder, **kwargs):
     
     # If the attribute file has more fields than chunks and targets    
     ds = add_attributes(ds, attr)
-         
+    
+    del fmri_list
+
     return ds 
 
 

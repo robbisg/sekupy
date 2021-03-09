@@ -426,14 +426,6 @@ def dataframe_to_afni(dataframe, outpath=None, command='3dttest++', label_attr='
     for i, sub in dataframe.iterrows():
         setB += "sub%02d %s'[0]' " % (i+1, dataframe['filename'])
 
-    command = command % (setB, path)
+    command = command % (setB, outpath)
 
     return command
-
-
-
-
-
-
-
-    return

@@ -10,15 +10,12 @@ import numpy as np
 from mvpa2.base.dataset import vstack
 
 import logging
-
-
-
 logger = logging.getLogger(__name__)
 
 
 class Balancer(Transformer):
     """[summary]
-    
+
     Parameters
     ----------
     balancer : [type], optional
@@ -27,12 +24,10 @@ class Balancer(Transformer):
         [description] (the default is 'chunks', which [default_description])
     force_balance : boolean
         [description]
-    
     """
-    
-    
+
     def __init__(self, 
-                 balancer=RandomUnderSampler(), 
+                 balancer=RandomUnderSampler(),
                  attr='chunks', **kwargs):
 
         # TODO: attribute list
@@ -42,9 +37,9 @@ class Balancer(Transformer):
         self._balancer = self._check_balancer(balancer)     
                    
         Transformer.__init__(self, 
-                            name=self._balancer.name, 
-                            attr=attr, 
-                            balancer=self._balancer._balancer)
+                             name=self._balancer.name, 
+                             attr=attr, 
+                             balancer=self._balancer._balancer)
         
     
     
@@ -59,65 +54,62 @@ class Balancer(Transformer):
         logger.debug(balancer_type)
 
         return balancer_
-        
-        
-    
+
+
     def transform(self, ds):
-        logger.info("Using %s" %(str(self._balancer._balancer)))
+        logger.info("Using %s" % (str(self._balancer._balancer)))
         return self._balancer.transform(ds)
-     
-    
-    
 
 class SamplingBalancer(Transformer):
-    
-    
+
     def __init__(self, balancer, attr='chunks', name='balancer', **kwargs):
-        
+
         self._attr = attr
         self._balancer = balancer
         self._force_balancing = False
 
         if isinstance(balancer.sampling_strategy, dict):
             self._force_balancing = True
-        
+
         Transformer.__init__(self, name=name, **kwargs)
-        
-        
-        
+
+
     def transform(self, ds):
-        
+
         logger.info("Init: %s" % (str(Counter(ds.targets))))
-        
+
         if self._attr != 'all':
             balanced_ds = self._balance_attr(ds)
         else:
             balanced_ds = self._balance(ds)
 
         logger.info("Final: %s" % (str(Counter(balanced_ds.targets))))
-        
+
         return Transformer.transform(self, balanced_ds)
+
 
     def _balance(self, ds):
         return
-    
-    
-    
+
+
     def _balance_attr(self, ds):
-        
+
         from itertools import product
 
         if not isinstance(self._attr, list):
             self._attr = [self._attr]
 
         n_attributes = len(self._attr)
-        unique_attributes = product(*[np.unique(ds.sa[v].value) for v in self._attr])
+        unique_attributes = product(*[np.unique(ds.sa[v].value)
+                                        for v in self._attr])
 
         logger.debug(unique_attributes)
 
         balanced_ds = []
         for attributes in unique_attributes:
-            selection_dict = {self._attr[i]:[attributes[i]] for i in range(n_attributes)}
+            selection_dict = {self._attr[i]: [attributes[i]]
+                                    for i in range(n_attributes)}
+
             logger.debug(selection_dict)
             ds_ = SampleSlicer(**selection_dict).transform(ds)
             

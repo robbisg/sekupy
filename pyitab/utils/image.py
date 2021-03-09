@@ -137,9 +137,7 @@ def conjunction_map(a_map, b_map, output_fname, output='mask'):
         The output type. If 'mask' the output will be a binary image, else
         the values of the conjunction are those of image_map.
     
-    """
-
-    
+    """ 
     a_img = ni.load(a_map)
     b_img = ni.load(b_map)
     
@@ -151,7 +149,7 @@ def conjunction_map(a_map, b_map, output_fname, output='mask'):
     
     out_img = np.float_(data * mask_int)
     
-    save_map(output_fname, out_img, affine=img.affine)
+    save_map(output_fname, out_img, affine=a_img.affine)
     
     return
 

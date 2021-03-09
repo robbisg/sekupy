@@ -124,7 +124,6 @@ def load_bids_dataset(path, subj, task, **kwargs):
         logger.debug('Dataset loaded...')
     except ValueError as e:
         logger.error("ERROR: %s (%s)", e, subj)
-        del fmri_list
     
     
     # Add filename attributes for detrending purposes   

@@ -1,13 +1,15 @@
 import numpy as np
 
 from pyitab.utils.dataset import get_ds_data
-from pyitab.analysis.utils import get_rois
+from pyitab.analysis.utils import get_rois, get_params
 
 from pyitab.preprocessing import FeatureSlicer
 from pyitab.analysis.base import Analyzer
 from pyitab.preprocessing.base import Transformer
 
 from scipy.io.matlab.mio import savemat
+
+from joblib import Parallel, delayed
 
 import logging
 logger = logging.getLogger(__name__)
@@ -66,8 +68,9 @@ class RoiAnalyzer(Analyzer):
         scores = dict()
         # TODO: How to use multiple ROIs
 
-        scores = Parallel(n_jobs=self.n_jobs)(delayed(self._parallel_roi)(ds, r, v) \
-            for r, v in roi_values)
+        scores = Parallel(n_jobs=self.n_jobs) \
+                    (delayed(self._parallel_roi)(ds, r, v, prepro, **kwargs)
+                        for r, v in roi_values)
 
         """
         for r, value in roi_values:
@@ -89,9 +92,9 @@ class RoiAnalyzer(Analyzer):
         
         return self
 
-    def _parallel_roi(self, ds, roi, value):
+    def _parallel_roi(self, ds, roi, value, prepro, **kwargs):
         
-        ds_ = FeatureSlicer(**{r: value}).transform(ds)
+        ds_ = FeatureSlicer(**{roi: value}).transform(ds)
         ds_ = prepro.transform(ds_)
             
         logger.info("Dataset shape %s" % (str(ds_.shape)))
@@ -99,7 +102,7 @@ class RoiAnalyzer(Analyzer):
         self.analysis.fit(ds_, **kwargs)
         
         string_value = "+".join([str(v) for v in value])
-        key = "mask-%s_value-%s" % (r, string_value)
+        key = "mask-%s_value-%s" % (roi, string_value)
         value = self.analysis.scores.copy()
 
         return (key, value)
