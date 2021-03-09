@@ -15,7 +15,7 @@ def test_load_subject_file():
     # Testing main functionality
     subjects, extra_sa = load_subject_file(subject_file)
 
-    assert len(subjects) == 5
+    assert len(subjects) == 4
     assert 'age' in extra_sa.keys()
 
 

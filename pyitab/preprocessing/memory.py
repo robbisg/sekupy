@@ -39,6 +39,8 @@ class MemoryReducer(Transformer):
 
         elif np.issubdtype(array.dtype, int):
             return self._check_int(array)
+        
+        return np.float16(array)
 
     
     def _check_int(self, array):
