@@ -24,7 +24,7 @@ jobs:
         pip3 install cython wheel
         pip3 install flake8 pytest
         pip3 install tk cytoolz
-        pip3 install numpy=1.15.4
+        pip3 install numpy==1.15.4
         if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
         sudo python3 setup.py develop
     - name: Lint with flake8
