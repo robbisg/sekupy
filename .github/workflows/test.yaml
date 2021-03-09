@@ -16,6 +16,16 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        # This path is specific to Ubuntu
+        path: ~/.cache/pip
+        # Look to see if there is a cache hit for the corresponding requirements file
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements-min.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          ${{ runner.os }}-
     - name: Install dependencies
       run: |
         sudo apt-get install swig build-essential gfortran python3-dev python-tk
@@ -24,7 +34,7 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         pip3 install cython wheel
-        pip3 install flake8 pytest
+        pip3 install flake8 pytest pytest-cov
         pip3 install tk cytoolz
         pip3 install numpy
     - name: Install package requirements.txt
@@ -39,4 +49,4 @@ jobs:
         # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        python -m pytest --pyargs pyitab --cov=pyitab
