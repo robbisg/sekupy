@@ -28,6 +28,7 @@ jobs:
         pip3 install tk cytoolz
         pip3 install numpy
     - name: Install package requirements.txt
+      run: |
         if [ -f requirements-min.txt ]; then pip3 install -r requirements-min.txt; fi
         sudo python3 setup.py develop
     - name: Lint with flake8
