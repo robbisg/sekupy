@@ -50,3 +50,6 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest --pyargs pyitab --cov=pyitab
+    - uses: codecov/codecov-action@v1
+      if: success()
+      name: 'Upload coverage to CodeCov'
