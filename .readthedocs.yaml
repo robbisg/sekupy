@@ -15,6 +15,3 @@ python:
    version: 3.8
    install:
    - requirements: requirements-min.txt
-   - method: pip
-      extra_requirements:
-        - numpy
