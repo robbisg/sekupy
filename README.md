@@ -1,6 +1,5 @@
 # pyitab
 
-[![Build Status](https://travis-ci.org/robbisg/pyitab.svg?branch=master)](https://travis-ci.org/robbisg/pyitab)
 [![example workflow](https://github.com/robbisg/pyitab/actions/workflows/test.yaml/badge.svg)
 [![codecov](https://codecov.io/gh/robbisg/pyitab/branch/master/graph/badge.svg)](https://codecov.io/gh/robbisg/pyitab)
 [![Documentation Status](https://readthedocs.org/projects/pyitab/badge/?version=latest)](https://pyitab.readthedocs.io/en/latest/?badge=latest)
