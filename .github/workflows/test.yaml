@@ -20,19 +20,22 @@ jobs:
       run: |
         sudo apt-get install swig build-essential gfortran python3-dev python-tk
         sudo apt-get install -y python3-blosc
+    - name: Install dependencies with pip
+      run: |
         python3 -m pip install --upgrade pip
         pip3 install cython wheel
         pip3 install flake8 pytest
         pip3 install tk cytoolz
-        pip3 install numpy==1.15.4
+        pip3 install numpy
+    - name: Install package requirements.txt
         if [ -f requirements-min.txt ]; then pip3 install -r requirements-min.txt; fi
         sudo python3 setup.py develop
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
         pytest

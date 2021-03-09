@@ -152,7 +152,7 @@ class UnderSamplingBalancer(SamplingBalancer):
             logger.debug(count)
             return ds
         
-        _ = self._balancer.fit_sample(X, y)
+        _ = self._balancer.fit_resample(X, y)
         self._mask = self._balancer.sample_indices_
         
         return ds[self._mask]
@@ -172,7 +172,7 @@ class OverSamplingBalancer(SamplingBalancer):
         if len(X.shape) > 2:
             raise NotImplementedError('Over-sampling not implemented for this dataset.')
         
-        X_, y_ = self._balancer.fit_sample(X, y)
+        X_, y_ = self._balancer.fit_resample(X, y)
         
         ds_ = self._update_ds(ds, X_, y_)
 

@@ -119,7 +119,7 @@ class TemporalDecoding(RoiDecoding):
         t_values = ds.sa[time_attr].value
         X, y = temporal_transformation(X, y, t_values)
 
-        _ = balancer.fit_sample(X[:,:,0], y)
+        _ = balancer.fit_resample(X[:,:,0], y)
         indices = balancer.sample_indices_
         indices = np.sort(indices)
 

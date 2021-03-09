@@ -174,7 +174,7 @@ def test_iterator_subjectwise():
     pass
 
 
-def test_save_multisubject_decoding(fetch_ds, tmpdir):
+def test_save_multisubject_decoding(fetch_ds, tmp_path):
 
     import os
     options = {
@@ -204,7 +204,7 @@ def test_save_multisubject_decoding(fetch_ds, tmpdir):
                                 config_kwargs=example_configuration)
 
 
-    path = tmpdir
+    path = str(tmp_path)
     for conf in iterator:
         kwargs = conf._get_kwargs()
 
@@ -232,8 +232,15 @@ def test_save_multisubject_decoding(fetch_ds, tmpdir):
     assert os.path.exists(os.path.join(expected_folder, 'subj01'))
  
     params = get_params(conf._default_options, 'sample_slicer')
+    params.update(get_params(conf._default_options, 'target_transformer'))
     
-    slicers = "_".join(["%s-%s" % (k, "+".join(v)) for k, v in params.items()])
+    slicers = list()
+    for k, v in params.items():
+        if isinstance(v, str):
+            v = [v]
+        slicers.append("%s-%s" % (k, "+".join(v)))
+
+    slicers = "_".join(slicers)
     fname = "bids_%s_mask-%s_value-%s_perm-%s_data.%s" % \
                 (slicers, 'brain', '2.0', '0000', 'mat')
     

@@ -1,8 +1,7 @@
 import numpy as np
 
 from pyitab.utils.dataset import get_ds_data
-from pyitab.analysis.utils import get_rois
-
+from pyitab.analysis.utils import get_rois, get_params
 
 from pyitab.preprocessing import FeatureSlicer
 from pyitab.analysis.base import Analyzer
@@ -68,7 +67,7 @@ class RSA(Analyzer):
     def fit(self, ds,  
             roi='all', 
             roi_values=None,
-            distance='euclidean',
+            metric='euclidean',
             prepro=Transformer(),
             **kwargs):
 
@@ -112,18 +111,19 @@ class RSA(Analyzer):
             
             X = ds_.samples
 
-            distance = pdist(X, metric=distance)
+            distance = pdist(X, metric=metric)
            
             string_value = "+".join([str(v) for v in value])
             scores["mask-%s_value-%s" % (r, string_value)] = distance
         
 
         self._info = self._store_info(ds, 
-                                      distance=self.distance,
+                                      distance=metric,
                                       roi=roi,
                                       prepro=prepro)
 
         self.scores = scores
+        self.distance = metric
         self.conditions = ds.targets.copy()
         
         return self

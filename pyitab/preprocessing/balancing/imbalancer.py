@@ -29,7 +29,7 @@ class Imbalancer(Transformer):
         
         ratio = self.get_ratio(y)
         balancer = RandomUnderSampler(sampling_strategy=ratio)
-        _ = balancer.fit_sample(X, y)
+        _ = balancer.fit_resample(X, y)
         
         mask[balancer.sample_indices_] = True
         

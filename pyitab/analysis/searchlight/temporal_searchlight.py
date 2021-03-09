@@ -117,7 +117,7 @@ class TemporalSearchLight(SearchLight):
 
         X, y = temporal_transformation(X, y, t_values)
 
-        _, _, indices = self._balancer.fit_sample(X[:,:,0], y)
+        _, _, indices = self._balancer.fit_resample(X[:,:,0], y)
         indices = np.sort(indices)
 
         groups = None

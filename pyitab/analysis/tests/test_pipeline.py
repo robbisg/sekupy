@@ -4,11 +4,11 @@ from sklearn.model_selection import StratifiedShuffleSplit, LeaveOneGroupOut
 from pyitab.analysis.decoding.roi_decoding import RoiDecoding
 from pyitab.analysis.utils import get_params
 
-
 from pyitab.tests import fetch_ds, get_datadir, tmpdir
 
 import pytest
 import numpy as np
+from pathlib import Path
 
 example_configuration = {   
                             'prepro': ['sample_slicer', 'target_transformer'],
@@ -86,7 +86,7 @@ def test_fit_with_ds(fetch_ds, get_datadir):
     assert roi_result[0]['test_accuracy'].shape == (4,)
 
 
-def test_save_pipeline_decoding(fetch_ds, tmpdir):
+def test_save_pipeline_decoding(fetch_ds, tmp_path):
 
     import os
     example_configuration = {   
@@ -110,7 +110,7 @@ def test_save_pipeline_decoding(fetch_ds, tmpdir):
     a = AnalysisPipeline(conf, name='test')
     a.fit(ds)
 
-    path = tmpdir
+    path = str(tmp_path)
     a.save(path=path)
 
     print(path)
@@ -123,7 +123,7 @@ def test_save_pipeline_decoding(fetch_ds, tmpdir):
             'all', str(a._estimator._test_id))
     print(pipeline_folder)
     
-    expected_folder = os.path.join(path, 'derivatives', pipeline_folder)
+    expected_folder = os.path.join(path, 'derivatives', "pipeline-test", pipeline_folder)
     assert os.path.exists(expected_folder)
     assert os.path.exists(os.path.join(expected_folder, "dataset_description.json"))
     
@@ -132,13 +132,20 @@ def test_save_pipeline_decoding(fetch_ds, tmpdir):
 
     print(conf._default_options) 
     params = get_params(conf._default_options, 'sample_slicer')
+    params.update(get_params(conf._default_options, 'target_transformer'))
     
-    slicers = "_".join(["%s-%s" % (k, "+".join(v)) for k, v in params.items()])
+    slicers = list()
+    for k, v in params.items():
+        if isinstance(v, str):
+            v = [v]
+        slicers.append("%s-%s" % (k, "+".join(v)))
+
+    slicers = "_".join(slicers)
     fname = "bids_%s_mask-%s_value-%s_perm-%s_data.%s" % \
                 (slicers, 'brain', '2.0', '0000', 'mat')
-    print(os.listdir(os.path.join(path, 'derivatives', pipeline_folder, 'subj01')))
+    print(os.listdir(os.path.join(expected_folder, 'subj01')))
     assert os.path.exists(os.path.join(subject_folder, fname))
-    # assert os.path.exists(os.path.join(subject_folder, conf_fname))
+    #assert os.path.exists(os.path.join(subject_folder, conf_fname))
     
     assert len(os.listdir(subject_folder)) == 26 + 1
 
