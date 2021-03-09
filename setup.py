@@ -62,9 +62,7 @@ setup(
 
     # List run-time dependencies here.  These will be installed by pip when your
     # project is installed.
-    install_requires = ['nitime',
-                        'nipy',
-                        'nibabel',
+    install_requires = ['nibabel',
                         'mne',
                         'imbalanced-learn',
                         'tqdm',
