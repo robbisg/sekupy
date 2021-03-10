@@ -16,5 +16,5 @@ python:
   install:
     - requirements: requirements-doc.txt
     - method: setuptools
-      path: pyitab
+      path: .
   system_packages: true
