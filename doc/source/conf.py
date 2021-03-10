@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('..\..'))
 # -- Project information -----------------------------------------------------
 
 project = 'pyitab'
-copyright = '2018, Roberto Guidotti'
+copyright = '2021, Roberto Guidotti'
 author = 'Roberto Guidotti'
 
 # The short X.Y version
@@ -182,7 +182,7 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
-
+autodoc_mock_imports = ["mvpa2"]
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
