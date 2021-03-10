@@ -12,3 +12,16 @@ xlrd
 tqdm
 h5py
 numpy
+numpy
+cython
+flake8
+lxml
+mkl
+sphinx
+sphinx-gallery
+rinohtype
+furo
+numpydoc
+coverage
+pillow
+joblib
