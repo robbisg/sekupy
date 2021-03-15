@@ -14,12 +14,14 @@ logger = logging.getLogger(__name__)
 
 
 class Balancer(Transformer):
-    """[summary]
+    """This class is used to transform an unblanced dataset in a balanced
+    dataset.
 
     Parameters
     ----------
-    balancer : [type], optional
-        [description] (the default is RandomUnderSampler(), which [default_description])
+    balancer : :class:`~imblearn.base.BaseSampler`, optional
+        [description] (the default is :class:`~imblearn.under_sampling.RandomUnderSampler` 
+        which [default_description])
     attr : str, optional
         [description] (the default is 'chunks', which [default_description])
     force_balance : boolean

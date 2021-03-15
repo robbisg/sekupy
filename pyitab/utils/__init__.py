@@ -64,7 +64,23 @@ def make_dict_product(as_filter=True, **kwargs):
     return configurations
 
 
-def make_analysis(path, analysis, participants_fname=None, **configuration):
+def setup_analysis(path, analysis, participants_fname=None, **configuration):
+    """This function sets up the analysis files 
+
+    Parameters
+    ----------
+    path : [type]
+        [description]
+    analysis : [type]
+        [description]
+    participants_fname : [type], optional
+        [description], by default None
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
     import os
     import configparser

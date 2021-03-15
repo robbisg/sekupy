@@ -57,7 +57,7 @@ class TrajectoryConnectivity(Analyzer):
              performs two analysis on lateral_ips and left_precuneus with the
              union of rois with values of 2,4,6 and 10,12 )
                           
-        prepro : instance of :class:`pyitab.base.Transformer`, optional.
+        prepro : instance of :class:`~pyitab.base.Transformer`, optional.
             A transformation of series of transformation to be performed
             before the decoding analysis is performed.
         
