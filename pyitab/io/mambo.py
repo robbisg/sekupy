@@ -6,6 +6,8 @@ from mvpa2.base.collections import SampleAttributesCollection, \
 from mvpa2.datasets.base import Dataset
 from mvpa2.datasets import vstack
 
+from pyitab.io._loaders import mambo_mapper
+
 import h5py
 import os
 import numpy as np
@@ -223,18 +225,10 @@ def load_bids_mambo_dataset(path, subj, task, **kwargs):
     for f in file_list:
         logger.info(f['filename'])
         data, sa, a, fa = load_fx(f['filename'], subject=subj)
+        logger.debug(data.shape)
         ds = Dataset(data, sa=sa, a=a, fa=fa)
         datasets.append(ds)
 
     dataset = vstack(datasets, a='all')
 
     return dataset
-
-
-
-mambo_mapper = {
-    'hcp-motor': load_hcp_motor,
-    'reftep-iplv': load_reftep_iplv,
-    'reftep-power': load_reftep_power,
-    'reftep-sensor': load_reftep_sensor
-}

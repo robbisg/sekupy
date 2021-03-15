@@ -52,9 +52,6 @@ def load_mat_data(path, subj, folder, **kwargs):
     
     # load data from mat
     filelist = load_filelist(path, subj, folder, **kwargs)
-
-    if filelist is None or len(filelist) == 0:
-        return None, None
     
     data = []
     info = {'file': []}
@@ -143,13 +140,5 @@ def edit_attr(attr, shape):
         for label in attr[key]:
             attr_[key] += [label for i in range(factor)]
             
-    """    
-    attr_['roi_labels'] = []
-    for j in range(len(attr.targets)):
-        for i in range(shape[1]):
-            attr_['roi_labels'] += ["roi_%02d" % (i+1)]
-    """
-    
-    #attr_['roi_labels'][:shape[1]]
     return SampleAttributesCollection(attr_), None
     

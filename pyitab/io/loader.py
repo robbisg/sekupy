@@ -2,11 +2,27 @@ from pyitab.io.base import load_dataset
 from pyitab.io.configuration import read_configuration
 from pyitab.io.subjects import load_subjects
 from pyitab.io import load_ds
-from pyitab.io.mapper import get_loader
+from pyitab.io.bids import load_bids_dataset
+from pyitab.io.connectivity import load_mat_ds
+from pyitab.io.base import load_dataset
+from pyitab.simulation.loader import load_simulations
+from pyitab.io.mambo import load_bids_mambo_dataset
 
 import logging
 logger = logging.getLogger(__name__)
 
+
+def get_loader(name):
+
+    mapper = {
+        'bids': load_bids_dataset,
+        'base': load_dataset,
+        'mat': load_mat_ds,
+        'simulations': load_simulations,
+        'bids-meg': load_bids_mambo_dataset
+    }
+
+    return mapper[name]
 
 # TODO : Documentation
 class DataLoader(object):
@@ -15,7 +31,8 @@ class DataLoader(object):
     the task should be a section in the configuration file.
 
     Configuration file should be like this example below:
-
+    
+    ```
     [path]
     data_path=/
     subjects=subjects.csv
@@ -35,7 +52,7 @@ class DataLoader(object):
 
     [roi_labels]
     lateral_ips=/media/robbis/DATA/fmri/carlo_ofp/1_single_ROIs/lateral_ips.nii.gz
-    
+    ```
     
     Parameters
     ----------

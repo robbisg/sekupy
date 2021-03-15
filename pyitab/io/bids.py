@@ -42,7 +42,7 @@ def load_bids_dataset(path, subj, task, **kwargs):
 
     logger.debug(kwargs)
 
-    if 'roi_labels' in kwargs.keys():             # dictionary of mask {'mask_label': string}
+    if 'roi_labels' in kwargs.keys():
         roi_labels = kwargs['roi_labels']
     
     if 'bids_derivatives' in kwargs.keys():
@@ -55,8 +55,6 @@ def load_bids_dataset(path, subj, task, **kwargs):
     if 'tr' in kwargs.keys():
         tr = kwargs['tr']
 
-
-    # TODO: Use kwargs to get derivatives etc.
     logger.debug(derivatives)
     layout = BIDSLayout(path, derivatives=derivatives)
 
@@ -71,26 +69,26 @@ def load_bids_dataset(path, subj, task, **kwargs):
     if 'task' not in kwargs_bids.keys():
         kwargs_bids['task'] = task
 
+    if 'suffix' not in kwargs_bids.keys():
+        kwargs_bids['suffix'] = 'bold'
+
     logger.debug((kwargs_bids, task, subj))
 
     file_list = layout.get(return_type='file', 
                            extension='.nii.gz', 
                            subject=subj,
-                           **kwargs_bids
-                           )
+                           **kwargs_bids)
+
     logger.debug(file_list)
-    
+
     file_list = [f for f in file_list if f.find('pipeline') == -1]
 
     # Load data
-    try:
-        fmri_list = load_fmri(file_list)
-    except Exception as err:
-        logger.debug(err)
-    
+    fmri_list = load_fmri(file_list)
+
     # Loading attributes
     run_lengths = [img.shape[-1] for img in fmri_list]
-    
+
     onset_offset = 0
     if 'onset_offset' in kwargs.keys():
         onset_offset = kwargs['onset_offset']
@@ -100,33 +98,32 @@ def load_bids_dataset(path, subj, task, **kwargs):
         extra_duration = kwargs['extra_duration']
     
     attr = load_bids_attributes(path, subj, run_lengths=run_lengths, 
-                                layout=layout, tr=tr, onset_offset=onset_offset, 
-                                extra_duration=extra_duration, **kwargs_bids)
+                                layout=layout, tr=tr, 
+                                onset_offset=onset_offset, 
+                                extra_duration=extra_duration, 
+                                **kwargs_bids)
                
 
-    # Loading mask 
-    mask = load_bids_mask(path, subject=subj, layout=layout, **kwargs)
+    # Loading mask
+    mask = load_bids_mask(path, subject=subj, 
+                          task=task, layout=layout, **kwargs)
     roi_labels['brain'] = mask
     
     # Check roi_labels
     roi_labels = load_roi_labels(roi_labels)
 
     # Load the pymvpa dataset.    
-    try:
-        logger.info('Loading dataset...')
-        
-        ds = fmri_dataset(fmri_list, 
-                          targets=attr.targets, 
-                          chunks=attr.chunks, 
-                          mask=mask,
-                          add_fa=roi_labels)
-        
-        logger.debug('Dataset loaded...')
-    except ValueError as e:
-        logger.error("ERROR: %s (%s)", e, subj)
+    logger.info('Loading dataset...')
     
+    ds = fmri_dataset(fmri_list, 
+                      targets=attr.targets, 
+                      chunks=attr.chunks, 
+                      mask=mask,
+                      add_fa=roi_labels)
     
-    # Add filename attributes for detrending purposes   
+    logger.debug('Dataset loaded...')
+
+    # Add filename attributes for detrending purposes
     ds = add_filename(ds, fmri_list)
     del fmri_list
     
@@ -140,7 +137,6 @@ def load_bids_dataset(path, subj, task, **kwargs):
     ds = add_attributes(ds, attr)
          
     return ds 
-
 
 
 def load_bids_attributes(path, subj, **kwargs):
@@ -288,23 +284,8 @@ def add_bids_attributes(event_key, events, length, tr, onset_offset=0, extra_dur
             volume_onset += onset_offset
             volume_duration += extra_duration
 
-
             targets[volume_onset:volume_duration] = label
 
-        """
-        event_onset = event_onsets[idx][0]
-        #event_end = event_onsets[idx][-1] + event_duration[idx][-1]
-        event_end = event_onsets[idx]
-        
-
-        duration = event_end - event_onset
-
-        volume_duration = np.int(np.rint(duration / tr))
-        volume_onset = np.int(np.ceil(event_onset / tr))
-
-        targets[volume_onset:volume_onset+volume_duration] = label
-        """
-    #logger.debug(targets)
     return targets
 
 
@@ -319,31 +300,41 @@ def get_bids_kwargs(kwargs):
                 bids_kw[key] = kwargs[arg].split(',')
             else:
                 bids_kw[key] = kwargs[arg]
+            
+    
+        if arg == 'bids_derivatives':
+            bids_kw.pop('derivatives')
 
-    _ = bids_kw.pop('derivatives')
+        if arg == 'bids_desc':
+            bids_kw.pop('desc')
 
     return bids_kw
 
 
 def load_bids_mask(path, subject=None, task=None, **kwargs):
 
-    
+    if 'brain_mask' in kwargs.keys():
+        return load_mask(path, **kwargs)
+
     layout = kwargs['layout']
     kw_bids = get_bids_kwargs(kwargs)
     kw_bids['suffix'] = 'mask'
+
+    if 'task' not in kw_bids.keys():
+        kw_bids['task'] = task
 
     logger.debug(kw_bids)
 
     if 'run' in kw_bids.keys():
         _ = kw_bids.pop('run')
 
-    mask_list = layout.get(return_type='file', 
-                            extension='.nii.gz', 
-                            subject=subject,
-                            **kw_bids)
+    mask_list = layout.get(return_type='file',
+                           extension='.nii.gz',
+                           subject=subject,
+                           **kw_bids)
 
-    if len(mask_list) > 0:
-        logger.info("Mask used: %s" % (mask_list[0]))
-        return ni.load(mask_list[0])
-    else:
-        return load_mask(path, **kwargs)
+    logger.debug(mask_list)
+    logger.info("Mask used: %s" % (mask_list[0]))
+
+    return ni.load(mask_list[0])
+

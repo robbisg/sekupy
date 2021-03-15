@@ -71,12 +71,7 @@ def load_ds(conf_file, task,
     for i, subj in enumerate(subjects):
         
         # TODO: Keep in mind BIDS
-        try:
-            ds = loader(data_path, subj, task, **conf)
-        except Exception as e:
-            logger.info(e)
-            print(e)
-            continue
+        ds = loader(data_path, subj, task, **conf)
         
         ds = prepro.transform(ds)
         
