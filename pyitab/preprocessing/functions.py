@@ -122,10 +122,6 @@ class TargetTransformer(Transformer):
         return Transformer.transform(self, ds)
 
 
-
- 
-
-
 class FeatureStacker(Transformer):
     """This function is used to stack features with different sample attribute keys, to
     use these features, jointly.

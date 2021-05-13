@@ -113,15 +113,12 @@ def test_save_pipeline_decoding(fetch_ds, tmp_path):
     path = str(tmp_path)
     a.save(path=path)
 
-    print(path)
-    print(a._estimator._test_id)
     experiment = conf._default_options['ds.a.experiment']
     experiment = experiment.replace("_","+")
 
     pipeline_folder = "pipeline-%s_analysis-%s_experiment-%s_roi-%s_id-%s" % \
         ('test', 'roi+decoding', experiment, 
             'all', str(a._estimator._test_id))
-    print(pipeline_folder)
     
     expected_folder = os.path.join(path, 'derivatives', "pipeline-test", pipeline_folder)
     assert os.path.exists(expected_folder)
@@ -130,7 +127,6 @@ def test_save_pipeline_decoding(fetch_ds, tmp_path):
     subject_folder = os.path.join(expected_folder, 'subj01')
     assert os.path.exists(subject_folder)
 
-    print(conf._default_options) 
     params = get_params(conf._default_options, 'sample_slicer')
     params.update(get_params(conf._default_options, 'target_transformer'))
     
@@ -143,7 +139,7 @@ def test_save_pipeline_decoding(fetch_ds, tmp_path):
     slicers = "_".join(slicers)
     fname = "bids_%s_mask-%s_value-%s_perm-%s_data.%s" % \
                 (slicers, 'brain', '2.0', '0000', 'mat')
-    print(os.listdir(os.path.join(expected_folder, 'subj01')))
+
     assert os.path.exists(os.path.join(subject_folder, fname))
     #assert os.path.exists(os.path.join(subject_folder, conf_fname))
     

@@ -139,16 +139,16 @@ class AnalysisIterator(object):
         objects = keyword_list.pop(key)
         
         params = get_params(keyword_list, key)
-        print(params)
+        logger.debug(params)
         
         combination_list = []
         for obj in objects:
             # This is the line that breaks tests!!!
             name = obj[0][0]
-            print(obj)
+            logger.debug(obj)
             
             est_params = get_params(params, name)
-            print(est_params)
+            logger.debug(est_params)
 
             if len(est_params) == 0:
                 combination_list += [{'estimator': obj}]

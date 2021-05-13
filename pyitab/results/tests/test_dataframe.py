@@ -38,7 +38,6 @@ def test_filter(dataframe):
 
 
 def test_load_simulations(directory):
-    print(directory)
     dataframe = get_results(directory, pipeline="c2b+real")
     assert len(dataframe) == 4
 

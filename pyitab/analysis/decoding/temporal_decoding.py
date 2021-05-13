@@ -6,8 +6,6 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import LeaveOneGroupOut
 
-from tqdm import tqdm
-
 from pyitab.utils.dataset import get_ds_data
 from pyitab.utils.dataset import temporal_attribute_reshaping, \
     temporal_transformation

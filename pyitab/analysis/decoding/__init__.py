@@ -6,8 +6,6 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection._split import LeaveOneGroupOut
 
-from tqdm import tqdm
-
 from joblib import load, dump
 
 from pyitab.ext.sklearn._validation import cross_validate
@@ -94,7 +92,7 @@ class Decoding(Analyzer):
         self.scoring = _check_multimetric_scoring(self.estimator, 
                                                   scoring=scoring)
 
-        print(self.scoring)
+        logger.debug(self.scoring)
 
         Analyzer.__init__(self, name=name, **kwargs)
 
@@ -328,7 +326,12 @@ class Decoding(Analyzer):
 
                     params.update(params_)
         else:
-            params['targets'] = "+".join(list(np.unique(self._info['sa']['targets'])))
+            targets_list = list(np.unique(self._info['sa']['targets']))
+            if len(targets_list) > 4:
+                targets_list = targets_list[:4]
+                
+            params['targets'] = "+".join(targets_list)
+
 
         logger.debug(params)
 

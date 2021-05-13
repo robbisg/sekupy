@@ -4,7 +4,6 @@ import os
 from scipy.io import loadmat
 from scipy.stats import ttest_1samp
 import numpy as np
-from tqdm import tqdm
 from itertools import product
 from joblib import Parallel, delayed
 import logging

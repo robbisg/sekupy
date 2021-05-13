@@ -383,7 +383,6 @@ def get_rois_names(path):
     big_table = {}
     rois = glob.glob(path+"*mask.nii.gz")
     for fname in rois:
-        print(fname)
         table = where_am_i(fname)
         key = fname.split('/')[-1].split('.')[0][:-5]
         big_table[key] = table
