@@ -64,6 +64,19 @@ class AnalysisPipeline(Analyzer):
         
         return self
 
+    def _get_ds(self):
+        if hasattr(self, '_ds'):
+            return self._ds
+        
+        objects = self._configurator.fit()
+
+        self._loader = objects['loader']
+        fetch_kw = self._configurator._get_function_kwargs(function="fetch")
+        logger.info(fetch_kw)
+        ds = self._loader.fetch(**fetch_kw)
+
+        return ds
+
 
 
     def _transform(self, ds):
