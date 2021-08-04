@@ -36,7 +36,7 @@ def run_analysis(ds, default_config, default_options=dict(),
     from pyitab.analysis.iterator import AnalysisIterator
     from pyitab.analysis.pipeline import AnalysisPipeline
 
-    from sentry_sdk import capture_exception
+    import gc
     import sentry_sdk
     sentry_sdk.init(
         "https://f2866916959e41bc81abdfaf580f3d26@o252224.ingest.sentry.io/1439199",
@@ -51,14 +51,19 @@ def run_analysis(ds, default_config, default_options=dict(),
                                 )
 
     errs = []
-
     for conf in iterator:
         kwargs = conf._get_kwargs()
         try:
             a = AnalysisPipeline(conf, name=name).fit(ds, **kwargs)
             a.save(subdir=subdir)
+
+            
         except Exception as err:
             errs.append([conf._default_options, err])
-            capture_exception(err)
+            sentry_sdk.capture_exception(err)
+            a = 'foo'
+        
+        del a
+        gc.collect()
     
     return errs

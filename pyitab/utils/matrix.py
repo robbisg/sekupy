@@ -2,6 +2,7 @@ import numpy as np
 
 # TODO: Documentation
 def array_to_matrix(array, nan_mask=None, copy=True, **kwargs):
+    # Deprecated (use squareform)
     
     if nan_mask is None:
         # second degree resolution to get matrix dimensions #

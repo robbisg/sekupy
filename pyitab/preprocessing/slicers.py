@@ -42,13 +42,13 @@ class FeatureSlicer(Transformer):
         
         selection_dict = self._selection
     
-        selection_mask = np.ones(ds.shape[1], dtype=np.bool)
+        selection_mask = np.ones(ds.shape[1], dtype=bool)
         for key, values in selection_dict.items():
             
             logger.info("Selected %s from %s attribute.", str(values), key)
             
             ds_values = ds.fa[key].value
-            condition_mask = np.zeros_like(ds_values, dtype=np.bool)
+            condition_mask = np.zeros_like(ds_values, dtype=bool)
             
             for value in values:
 
@@ -102,13 +102,13 @@ class SampleSlicer(Transformer):
         
         selection_dict = self._selection
     
-        selection_mask = np.ones_like(ds.targets, dtype=np.bool)
+        selection_mask = np.ones_like(ds.targets, dtype=bool)
         for key, values in selection_dict.items():
             
             logger.info("Selected %s from %s attribute.", str(values), key)
             
             ds_values = ds.sa[key].value
-            condition_mask = np.zeros_like(ds_values, dtype=np.bool)
+            condition_mask = np.zeros_like(ds_values, dtype=bool)
             
             for value in values:        
                 condition_mask = np.logical_or(condition_mask, ds_values == value)
@@ -122,22 +122,26 @@ class DatasetMasker(Transformer):
     """
     """
 
-    def __init__(self, 
-                 mask=None, 
+    def __init__(self,
+                 mask=None,
                  **kwargs):
-        
+
         self._mask = mask
         Transformer.__init__(self, name='dataset_masker')    
 
 
-    def transform(self, ds):
+    def transform(self, ds, axis=0):
 
         if self._mask is None:
-            self._mask = np.ones_like(ds.samples[:,0])
+            self._mask = np.ones_like(ds.samples[:, 0])
 
-        ds = ds[self._mask]
+        if axis == 0:
+            ds = ds[self._mask]
+        else:
+            ds = ds[:, self._mask]
         
         return Transformer.transform(self, ds)
+
 
 class SampleExpressionSlicer(Transformer):
 
@@ -198,5 +202,59 @@ class SampleExpressionSlicer(Transformer):
         mask = compare(attributes, value)
 
         ds_ = ds[mask]
+
+        return ds_
+
+
+class FeatureExpressionSlicer(Transformer):
+
+    def __init__(self, fx=np.greater):
+        # Update doc
+        """This object is used when we want to slice samples based
+        on some values and thresholds. For example if we want to 
+        exclude features with some common characteristics, 
+        for example those with nans.
+
+        Parameters
+        ----------
+        attr : str
+            The sample attribute to use for slicing and calculating
+            values.
+        compare_fx : numpy function or lambda
+            This function must take the sample attribute
+            and a value/vector as input and return a vector of
+            boolean.
+        attr_transformer : funcion, optional
+            This function can be used to further process the attribute
+            for example the np.abs can be used, by default None
+        """
+
+        if fx is None:
+            def fx(x): np.logical_not(np.isnan(x).sum(0))
+
+        self._fx = fx
+
+    
+    def transform(self, ds):
+        """[summary]
+
+        Parameters
+        ----------
+        ds : pymvpa dataset
+            The dataset to be used
+        value : int or fx, optional
+            The function used to generate a value to be compared
+            with the attribute using the compare_fx funtion, 
+            by default lambdax:np.mean(x)+1.5*np.std(x)
+
+        Returns
+        -------
+        ds : pymvpa dataset
+            The sliced dataset
+        """
+
+        mask = self._fx(ds.samples)
+
+        ds_ = ds[:, mask]
 
         return ds_

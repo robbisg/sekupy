@@ -37,7 +37,7 @@ def get_values_bids(path, directory, field_list, result_keys, scores=None):
         [description]
     """
 
-
+    # TODO: Insert this in subroutine
     dir_path = os.path.join(path, directory)
 
     conf_fname = os.path.join(dir_path, "configuration.json")
@@ -51,6 +51,7 @@ def get_values_bids(path, directory, field_list, result_keys, scores=None):
     files = [f for f in files if f.find(".mat") != -1]
     
     results = []
+    # TODO: Maybe until here
 
     for fname in files:
         fname_fields = get_dictionary(fname)
@@ -117,8 +118,7 @@ def get_results_bids(path, field_list=['sample_slicer'],
         A table of the results in pandas format
     """
     # TODO: Use function for this snippet
-
-    
+   
     filtered_dirs = find_directory(path, **kwargs)
     logger.debug(filtered_dirs)
 
@@ -128,9 +128,13 @@ def get_results_bids(path, field_list=['sample_slicer'],
         
         # read json
         pipeline_dir = os.path.join(path, item['filename'])
+        
         subject_dirs = os.listdir(pipeline_dir)
+        logger.debug(subject_dirs)
+        
         subject_dirs = [d for d in subject_dirs if d.find(".json") == -1]
-
+        logger.debug(subject_dirs)
+        
         if subjects is not None:
             subject_dirs = [d for d in subject_dirs if d in subjects]
 
