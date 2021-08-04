@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 
-def ds_to_dataframe(ds, keys=['band', 'targets', 'subjects'], melt=False):
+def ds_to_dataframe(ds, keys=None, melt=False):
     """[summary]
     
     Parameters
@@ -24,6 +24,9 @@ def ds_to_dataframe(ds, keys=['band', 'targets', 'subjects'], melt=False):
     
     df_dict = {}
     df_list = []
+
+    if keys is None:
+        keys = list(ds.sa.keys())
     
     for sample in ds:
         for k in keys:

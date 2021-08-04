@@ -118,6 +118,7 @@ class Decoding(Analyzer):
             return_predictions=False,
             return_splits=True,
             return_decisions=False,
+            return_estimator=True,
             **kwargs):
         """General method to fit data"""
         
@@ -127,13 +128,20 @@ class Decoding(Analyzer):
         indices = self._get_permutation_indices(len(y_))
                 
         self.scores = []
-        for idx in indices:
+        for p, idx in enumerate(indices):
             
             y = y_[idx]
 
+            if p != 0:
+                return_decisions = False
+                return_predictions = False
+                return_splits = False
+                return_estimator = False
+
+
             scores = cross_validate(self.estimator, X, y, groups=groups,
                                     scoring=self.scoring, cv=self.cv, n_jobs=self.n_jobs,
-                                    verbose=self.verbose, return_estimator=True, 
+                                    verbose=self.verbose, return_estimator=return_estimator, 
                                     return_splits=return_splits, 
                                     return_decisions=return_decisions,
                                     return_predictions=return_predictions)
@@ -316,7 +324,7 @@ class Decoding(Analyzer):
                     params_ = get_params(kwargs, keyword)
 
                     if 'fx' in params_.keys() and keyword == 'target_transformer':
-                        params_['target_transformer-fx'] = params_['fx'][0]
+                        params_['transformerfx'] = params_['fx'][0]
 
                     if keyword == "sample_slicer":
                         params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
@@ -334,14 +342,27 @@ class Decoding(Analyzer):
 
 
         logger.debug(params)
+        for k in ['subject', 'fx']:
+            if k in params.keys():
+                _ = params.pop(k)
 
         trailing = kwargs.pop('mask')
         trailing += "_perm-%s" % (kwargs.pop('perm'))
-        # TODO: Solve empty prefix
+        
+        # TODO: Solve empty prefix, midpart
         prefix = kwargs.pop('prefix')
+        if prefix == '':
+            prefix = 'group'
+
         midpart = "_".join(["%s-%s" % (k, str(v).replace("_", "+")) \
              for k, v in params.items()])
+
+        if midpart == '':
+            fileparts = [prefix, trailing]
+        else:
+            fileparts = [prefix, midpart, trailing]
         
-        filename = "%s_data.mat" % ("_".join([prefix, midpart, trailing]))
+        filename = "%s_data.mat" % ("_".join(fileparts))
 
         return filename
+        
