@@ -1,92 +1,72 @@
-from nilearn.glm.regression import *
-from pyitab.preprocessing.base import Transformer
+from pyitab.mixin import LinearModelMixin
+import numpy as np
 
+import patsy
 import logging
 logger = logging.getLogger(__name__)
 
-class ResidualTransformer(Transformer):
-    
 
-    def __init__(self, name='residual', 
-                 model='ols', attr='all', **kwargs):
-
-        self.design_attr = attr
-        self.model = model
-        Transformer.__init__(self, name=name, model=model)
-
-    
-    def transform(self, ds, **model_kwargs):
-
-        X = self.build_design_matrix(ds)
-        # TODO: Center X columns?
-        model = self.get_model(X.T, **model_kwargs)
-        
-        Y = ds.samples
-
-        self.scores_ = model.fit(Y)
-
-        ds_ = ds.copy()
-        ds_.samples = self.scores_.resid
-        logger.info("Residuals from GLM with %s attributes" % (', '.join(self.design_attr)))
-
-        return ds_
-
-
-
-    def build_design_matrix(self, ds):
-        # Override in subclasses
-        pass
-
-    # TODO: Use another function / class
-    def get_model(self, X, **kwargs):
-
-        mapper = {'ols': OLSModel,
-                  'ar' : ARModel}
-
-        return mapper[self.model](X, **kwargs)
-
-
-class SampleResidualTransformer(ResidualTransformer):
+class SampleResidualTransformer(LinearModelMixin):
 
     def __init__(self, name='sample_residual', **kwargs):
-        ResidualTransformer.__init__(self, name=name, **kwargs)
+        super().__init__(name=name, **kwargs)
 
-    def build_design_matrix(self, ds):
-        from sklearn.preprocessing import LabelEncoder
+    def transform(self, ds, **model_kwargs):
 
         if self.design_attr == 'all':
             self.design_attr = [k for k in ds.sa.keys()]
 
+        data = {k: ds.sa[k].value for k in self.design_attr}
+
         X = []
         for k in self.design_attr:
-            values = ds.sa[k].value
-            if values.dtype.kind in ['U', 'S']:
-                values = LabelEncoder().fit_transform(values)
+            x = np.asarray(patsy.dmatrix(k + ' - 1', data))
+            X.append(x)
 
-            X.append(values)
+        X = np.hstack(X)
+        model = self.get_model(X, **model_kwargs)
+        
+        Y = ds.samples
 
-        return np.vstack(X)
+        self.scores = model.fit(Y)
+
+        ds_ = ds.copy()
+        ds_.samples = self.scores.resid
+        logger.info("Residuals from GLM with %s attributes" % (', '.join(self.design_attr)))
+
+        return super().transform(ds_)
 
 
 
 
-class FeatureResidualTransformer(ResidualTransformer):
+class FeatureResidualTransformer(LinearModelMixin):
     
     def __init__(self, name='feature_residual', **kwargs):
-        ResidualTransformer.__init__(self, name=name, **kwargs)
+        super().__init__(name=name, **kwargs)
 
 
-    # TODO: Add fx and values?
-    def build_design_matrix(self, ds):
+
+    def transform(self, ds, **model_kwargs):
 
         if self.design_attr == 'all':
             self.design_attr = [k for k in ds.fa.keys()]
 
+        data = {k: ds.fa[k].value for k in self.design_attr}
+
         X = []
         for k in self.design_attr:
-            mask = ds.fa[k].value != 0
-            values = np.mean(ds[:, mask], axis=1)
+            x = np.asarray(patsy.dmatrix(k + ' - 1', data))
+            X.append(x)
         
-            X.append(values)
+        X = np.hstack(X)
+        model = self.get_model(X, **model_kwargs)
+        
+        Y = ds.samples.T
 
-        return np.vstack(X) 
+        self.scores = model.fit(Y)
+
+        ds_ = ds.copy()
+        ds_.samples = self.scores.resid.T
+        logger.info("Residuals from GLM with %s attributes" % (', '.join(self.design_attr)))
+
+        return super().transform(ds_)
