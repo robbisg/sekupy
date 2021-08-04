@@ -14,6 +14,11 @@ class ConnectivityStateSimulator(Transformer):
                  method='random'):
         """This class is used to simulate the connectivity state dynamics.
 
+        We used a trick to use it in the loader simulator: usually a loader
+        fetches data from files while simulation loader creates a dynamics of the 
+        system and then passes itself to the model which generates a dataset based on
+        the simulated dynamics.
+
         Parameters
         ----------
         n_nodes : int, optional
@@ -63,6 +68,9 @@ class ConnectivityStateSimulator(Transformer):
 
 
     def transform(self, ds):
+        """The state simulator using transform generates the dynamics
+        of the system. 
+        """
         return self.fit()
         
 
@@ -108,13 +116,16 @@ class ConnectivityStateSimulator(Transformer):
     def simulate_dynamics(self, method='random'):
 
         if self._method == 'random':
+
+            # Returns a random array of size `length_dynamics`
+            # with elements bounded between 0 and `n_states`
             return np.random.randint(0, 
                                     self._n_brain_states, 
                                     self._length_dynamics)
 
 
     def generate_duration(self):
-        import matplotlib.pyplot as pl
+
         duration = {}
         if ('max_time' in self._duration.keys()) or \
             ('min_time' in self._duration.keys()):
@@ -133,7 +144,7 @@ class ConnectivityStateSimulator(Transformer):
         while has_zero:
             data = duration['distribution'](**duration['params'])
             data = np.int_(self._fs * np.abs(data))
-            logger.info(data)
+            # logger.info(data)
             if np.count_nonzero(data) == 0:
                 has_zero = False
         
