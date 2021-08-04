@@ -190,7 +190,7 @@ def load_bids_mambo_dataset(path, subj, task, **kwargs):
             derivatives = os.path.join(path, kwargs['bids_derivatives'])
     
     if 'load_fx' in kwargs.keys():
-        load_fx = mambo_mapper[kwargs['load_fx']]
+        load_fx = mambo_mapper(kwargs['load_fx'])
     else:
         load_fx = load_hcp_motor
 
@@ -206,15 +206,13 @@ def load_bids_mambo_dataset(path, subj, task, **kwargs):
     # Raise exception if it is a integer
     if isinstance(subj, str) and subj.find("-") != -1:
         subj = subj.split('-')[1]
-
-    if 'task' not in kwargs_bids.keys():
-        kwargs_bids['task'] = [task]
-
+    
     logger.debug((kwargs_bids, task, subj))
 
     file_list = layout.get(return_type='file', 
                            extension='mat', 
                            subject=subj,
+                           suffix='conn'
                            )
 
     logger.debug(file_list)

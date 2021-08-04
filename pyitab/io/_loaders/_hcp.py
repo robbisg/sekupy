@@ -72,6 +72,25 @@ def load_hcp_blp(filename, **kwargs):
     sa_dict.pop('filename')
     sa = {k: [v for _ in range(data.shape[0])] for k, v in sa_dict.items()}
 
+    mainbands = ['alpha', 'beta', 'gamma']
+    sa['mainband'] = np.zeros_like(sa['band'])
+    for band in mainbands:
+        mask = [band in dsband for dsband in sa['band']]
+        sa['mainband'][mask] = band
+
+    maintask = {'task1':  'LH', 
+                'task2':  'LF',
+                'task4':  'RH',
+                'task5':  'RF',
+                'task14': 'AH',
+                'task25': 'AF',
+                'rest':   'NN'
+                }
+
+    for i, k in enumerate(['side', 'maintask']):
+        sa[k] = [maintask[t][i] for t in sa['task']]
+
+
     sa.update({
                'subject': [subject for _ in range(data.shape[0])],
                'file':   [filename for _ in range(data.shape[0])]
@@ -85,11 +104,15 @@ def load_hcp_blp(filename, **kwargs):
 
     nodes_from = [labels[i]['abbr'].decode().strip() for i in idx_from]
     nodes_to = [labels[i]['abbr'].decode().strip() for i in idx_to]
+    networks = ["%s+%s" %(nodes_from[i], nodes_to[i]) for i in range(len(nodes_to))]
 
     fa = dict(
         nodes_1=nodes_from,
-        nodes_2=nodes_to
+        nodes_2=nodes_to,
+        networks=networks,
+        matrix_values=np.ones(data.shape[1])
     )
+    
     fa = FeatureAttributesCollection(fa)
     a = DatasetAttributesCollection({})
 
