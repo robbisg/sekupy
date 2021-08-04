@@ -6,6 +6,7 @@ from pyitab.utils.time import get_time
 from pyitab.utils import get_id
 from pyitab.io.configuration import save_configuration
 from pyitab.base import Node
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,8 +29,10 @@ class Analyzer(Node):
         
         
     def fit(self, ds, **kwargs):
-        # TODO: Must implement a store_info?
-        return self
+        
+        self._info = self._store_info(ds, **kwargs)
+
+        return
 
 
     def save(self, path=None, **kwargs):
