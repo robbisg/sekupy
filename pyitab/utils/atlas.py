@@ -35,7 +35,7 @@ def find_roi_center(img, roi_value):
     
     affine = img.affine
     
-    mask_ = np.int_(img.get_data()) == roi_value
+    mask_ = np.int_(img.get_fdata()) == roi_value
     ijk_coords = np.array(np.nonzero(mask_)).mean(1)
     
     xyz_coords = ijk_coords * affine.diagonal()[:-1] + affine[:-1,-1]
@@ -83,7 +83,7 @@ def get_findlab_coords():
     f_coords = []
     for img_ in findlab:
 
-        centers = [find_roi_center(img_, roi_value=np.int(i)) for i in np.unique(img_.get_data())[1:]]
+        centers = [find_roi_center(img_, roi_value=int(i)) for i in np.unique(img_.get_fdata())[1:]]
         f_coords.append(np.array(centers))
         
     return np.vstack(f_coords)
@@ -153,7 +153,7 @@ def get_findlab_info(background='black'):
 
     coords = get_findlab_coords()
     roi_file =  os.path.join(atlasdir, 'findlab', 'findlab_rois.txt')
-    roi_list = np.loadtxt(roi_file, delimiter=',', dtype=np.str)
+    roi_list = np.loadtxt(roi_file, delimiter=',', dtype=str)
     networks = roi_list.T[-2]
     names = roi_list.T[2]
     
