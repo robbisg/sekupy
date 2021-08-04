@@ -44,16 +44,15 @@ class Transformer(Node):
 class PreprocessingPipeline(Transformer):
     
     
-    def __init__(self, name='pipeline', nodes=None):
-        from pyitab.preprocessing.mapper import function_mapper
-        
+    def __init__(self, name='pipeline', nodes=None, nodes_kwargs=None):
+                
         self.nodes = []
         
         if nodes is not None:
             self.nodes = nodes
         
             if isinstance(nodes[0], str):
-                self.nodes = [function_mapper(node)() for node in nodes]
+                self.nodes = self._get_nodes(nodes, nodes_kwargs)
 
         self.sliced_nodes = self.nodes
                     
@@ -72,6 +71,27 @@ class PreprocessingPipeline(Transformer):
             ds = node.transform(ds)
 
         return ds
+
+    def _get_nodes(self, nodes, nodes_kwargs):
+
+        from pyitab.preprocessing.mapper import function_mapper
+                
+        node_list = []
+        for key in nodes:
+            class_ = function_mapper(key)
+            
+            arg_dict = nodes_kwargs[key]
+
+            if key == 'sample_slicer' and 'attr' in arg_dict.keys():
+                arg_dict = arg_dict['attr']
+
+            object_ = class_(**arg_dict)
+            node_list.append(object_)
+
+        return node_list
+
+
+
 
 
     def __getitem__(self, ind):

@@ -102,10 +102,48 @@ class SampleAverager(Transformer):
         return Transformer.transform(self, ds)  
 
 
+class SampleAttributeTransformer(Transformer):
 
-class TargetTransformer(Transformer):
     
     def __init__(self, attr=None, fx=None, **kwargs):
+        """[summary]
+
+        Parameters
+        ----------
+        attr : [type], optional
+            [description], by default None
+        fx : [type], optional
+            [description], by default None
+        """
+        self._attribute = attr
+        self._fx = fx
+        Transformer.__init__(self, name='target_transformer', attr=attr)
+    
+    def transform(self, ds):
+        if self._fx is not None:
+            fx = self._fx[1]
+            logger.info("Dataset preprocessing: targets modified using %s" , (self._fx[0]))
+            ds.sa[self._attribute] = fx(ds.sa[self._attribute])
+        
+        return Transformer.transform(self, ds)
+
+
+
+
+class TargetTransformer(Transformer):
+
+    
+    def __init__(self, attr='targets', fx=None, **kwargs):
+        """[summary]
+
+        Parameters
+        ----------
+        attr : [type], optional
+            [description], by default None
+        fx : list or tuple, optional
+            First element is the label of the fx while second is a callable that takes the 
+            target vector and modifies it, by default None
+        """
         self._attribute = attr
         self._fx = fx
         Transformer.__init__(self, name='target_transformer', attr=attr)
@@ -216,11 +254,6 @@ class FeatureStacker(Transformer):
         ds.sa[key] = [value]
         
         return ds
-
-
-
-
-
 
 class SampleTransformer(Transformer):
     """This function is used when we need to lock SampleSlicer with
