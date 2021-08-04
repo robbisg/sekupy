@@ -115,10 +115,10 @@ class DataLoader(object):
             The loaded dataset.
         """
    
-        from pyitab.preprocessing.pipelines import StandardPreprocessingPipeline, \
+        from pyitab.preprocessing.pipelines import Transformer, \
             PreprocessingPipeline
         if prepro is None:
-            prepro = StandardPreprocessingPipeline()
+            prepro = Transformer()
         else:
             prepro = PreprocessingPipeline(nodes=prepro)
             
