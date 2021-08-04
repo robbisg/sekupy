@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import pearsonr
 
 # TODO : Documentation
 def z_fisher(r):
@@ -6,6 +7,32 @@ def z_fisher(r):
     F = 0.5*np.log((1+r)/(1-r))
     
     return F
+
+
+def seed_correlation(seed, targets):
+
+    r = np.zeros((targets.shape[0], 2))
+    for i in np.arange(targets.shape[0]):
+        r[i, 0], r[i, 1] = pearsonr(seed, targets[i])
+
+    return r
+
+
+
+
+
+
+def dot_correlation(X, Z):
+    # Check dimensions?
+    X -= X.mean(1)[:, np.newaxis]
+    Z -= Z.mean(1)[:, np.newaxis]
+
+    nX = np.sqrt(np.diag(np.dot(X, X.T)))[:, np.newaxis]
+    nZ = np.sqrt(np.diag(np.dot(Z, Z.T)))[:, np.newaxis]
+
+    r = np.dot(X / nX, (Z / nZ).T)
+
+    return r
 
 
 def partial_correlation(X, Z):
