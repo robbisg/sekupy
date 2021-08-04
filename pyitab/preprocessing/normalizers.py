@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class FeatureZNormalizer(Transformer):
     
-    def __init__(self, chunks_attr='chunks', param_est=None, **kwargs):
+    def __init__(self, chunks_attr=None, param_est=None, **kwargs):
         
         self.node = ZScoreMapper(chunks_attr=chunks_attr, param_est=param_est)
         Transformer.__init__(self, name='feature_znormalizer', 
@@ -32,12 +32,15 @@ class SampleZNormalizer(Transformer):
 
     def transform(self, ds):
         logger.info('Dataset preprocessing: Zscoring sample-wise...')
-        ds.samples -= np.mean(ds, axis=1)[:, None]
-        ds.samples /= np.std(ds, axis=1)[:, None]
+
+        ds_ = ds.copy()
+
+        ds_.samples -= np.mean(ds_, axis=1)[:, None]
+        ds_.samples /= np.std(ds_, axis=1)[:, None]
         
-        ds.samples[np.isnan(ds.samples)] = 0
+        ds_.samples[np.isnan(ds_.samples)] = 0
         
-        return Transformer.transform(self, ds)
+        return Transformer.transform(self, ds_)
 
 
 class SampleSigmaNormalizer(Transformer):
@@ -47,11 +50,13 @@ class SampleSigmaNormalizer(Transformer):
 
     def transform(self, ds):
         logger.info('Dataset preprocessing: st. dev. normalization sample-wise...')
-        ds.samples /= np.std(ds, axis=1)[:, None]
+
+        ds_ = ds.copy()
         
-        ds.samples[np.isnan(ds.samples)] = 0
+        ds_.samples /= np.std(ds_, axis=1)[:, None]
+        ds_.samples[np.isnan(ds_.samples)] = 0
         
-        return Transformer.transform(self, ds)
+        return Transformer.transform(self, ds_)
 
 
 class FeatureSigmaNormalizer(Transformer):
