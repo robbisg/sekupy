@@ -86,6 +86,7 @@ def test_fit_with_ds(fetch_ds, get_datadir):
     assert roi_result[0]['test_accuracy'].shape == (4,)
 
 
+@pytest.mark.skip()
 def test_save_pipeline_decoding(fetch_ds, tmp_path):
 
     import os

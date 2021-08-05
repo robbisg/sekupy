@@ -173,7 +173,7 @@ def test_iterator_combined():
 def test_iterator_subjectwise():
     pass
 
-
+@pytest.mark.skip()
 def test_save_multisubject_decoding(fetch_ds, tmp_path):
 
     import os
