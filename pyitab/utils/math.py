@@ -9,28 +9,41 @@ def z_fisher(r):
     return F
 
 
-def seed_correlation(seed, targets):
+def seed_correlation(targets, seed):
+    """[summary]
 
-    r = np.zeros((targets.shape[0], 2))
-    for i in np.arange(targets.shape[0]):
-        r[i, 0], r[i, 1] = pearsonr(seed, targets[i])
+    Parameters
+    ----------
+    targets : [type]
+        [description]
+    seed : [type]
+        [description]
 
-    return r
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
+    r = np.zeros(targets.shape[1])
+    p = np.zeros(targets.shape[1])
 
+    for i in np.arange(targets.shape[1]):
+        r[i], p[i] = pearsonr(seed, targets[:, i])
 
+    return r, p
 
 
 
 def dot_correlation(X, Z):
     # Check dimensions?
-    X -= X.mean(1)[:, np.newaxis]
-    Z -= Z.mean(1)[:, np.newaxis]
+    X_ = X - X.mean(1)[:, np.newaxis]
+    Z_ = Z - Z.mean(1)[:, np.newaxis]
 
-    nX = np.sqrt(np.diag(np.dot(X, X.T)))[:, np.newaxis]
-    nZ = np.sqrt(np.diag(np.dot(Z, Z.T)))[:, np.newaxis]
+    nX = np.sqrt(np.diag(np.dot(X_, X_.T)))[:, np.newaxis]
+    nZ = np.sqrt(np.diag(np.dot(Z_, Z_.T)))[:, np.newaxis]
 
-    r = np.dot(X / nX, (Z / nZ).T)
+    r = np.dot(X_ / nX, (Z_ / nZ).T)
 
     return r
 

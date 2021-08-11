@@ -11,6 +11,7 @@ class RoiRegression(RoiDecoding):
                  scoring=['r2'],
                  permutation=0, 
                  verbose=1,
+                 name='roi_regression',
                  **kwargs
                  ):
 
@@ -20,7 +21,7 @@ class RoiRegression(RoiDecoding):
                                     scoring=scoring, 
                                     permutation=permutation, 
                                     verbose=verbose,
-                                    name='roi_regression',
+                                    name=name,
                                     **kwargs
                                     )
 
