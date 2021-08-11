@@ -100,7 +100,9 @@ class Decoding(Analyzer):
     def _get_data(self, ds, cv_attr, **kwargs):
         
         X, y = get_ds_data(ds)
-        y = LabelEncoder().fit_transform(y)
+        
+        # FIX: this is commented since harms regression
+        #y = LabelEncoder().fit_transform(y)
 
         groups = None
         if cv_attr is not None:
@@ -154,7 +156,7 @@ class Decoding(Analyzer):
        
         return self
 
-    
+    # TODO: Should be placed here?
     def _get_rois(self, ds, roi):
         """Gets the roi list if the attribute is all"""
         
@@ -223,6 +225,8 @@ class Decoding(Analyzer):
         path, prefix = Analyzer.save(self, path=path, **kwargs)
         kwargs.update({'prefix': prefix})
 
+        # TODO: This save is for RoiDecoding here we hypothesize that
+        # we have rois
         for roi, scores in self.scores.items():
             for p, score in enumerate(scores):
                     
