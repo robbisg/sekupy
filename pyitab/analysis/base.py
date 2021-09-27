@@ -294,6 +294,29 @@ class Analyzer(Node):
             with open(dataset_desc, 'w') as fp:
                 json.dump(description, fp)
         
+        
+    def _get_prepro_info(self, **kwargs):
 
+        from pyitab.analysis.utils import get_params
+
+        params_ = {}
+
+        if 'prepro' in kwargs.keys():
+    
+            for keyword in ["sample_slicer", "target_transformer", "sample_transformer"]:
+                if keyword in kwargs['prepro']:
+                    params_ = get_params(kwargs, keyword)
+
+                    if 'fx' in params_.keys() and keyword == 'target_transformer':
+                        params_['target_transformer-fx'] = params_['fx'][0]
+
+                    if keyword == "sample_slicer":
+                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
+                    
+                    if keyword == "sample_transformer":
+                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_['attr'].items()}
+
+        
+        return params_
 
 

@@ -186,23 +186,9 @@ class RSA(Analyzer):
         logger.debug(kwargs)
 
         params = {'distance': self.distance}
-       
-        if 'prepro' in kwargs.keys():
 
-            for keyword in ["sample_slicer", "target_transformer", "sample_transformer"]:
-                if keyword in kwargs['prepro']:
-                    params_ = get_params(kwargs, keyword)
-
-                    if 'fx' in params_.keys() and keyword == 'target_transformer':
-                        params_['target_transformer-fx'] = params_['fx'][0]
-
-                    if keyword == "sample_slicer":
-                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
-                    
-                    if keyword == "sample_transformer":
-                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_['attr'].items()}
-
-                    params.update(params_)
+        params_ = self._get_prepro_info(**kwargs)
+        params.update(params_)
 
         logger.debug(params)
 

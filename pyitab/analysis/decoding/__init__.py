@@ -321,29 +321,16 @@ class Decoding(Analyzer):
         logger.debug(kwargs)
        
         params = dict()
-        if 'prepro' in kwargs.keys():
 
-            for keyword in ["sample_slicer", "target_transformer", "sample_transformer"]:
-                if keyword in kwargs['prepro']:
-                    params_ = get_params(kwargs, keyword)
+        params_ = self._get_prepro_info(**kwargs)
+        params.update(params_)
 
-                    if 'fx' in params_.keys() and keyword == 'target_transformer':
-                        params_['transformerfx'] = params_['fx'][0]
-
-                    if keyword == "sample_slicer":
-                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_.items()}
-                    
-                    if keyword == "sample_transformer":
-                        params_ = {k: "+".join([str(v) for v in value]) for k, value in params_['attr'].items()}
-
-                    params.update(params_)
-        else:
+        if params_ == {}:
             targets_list = list(np.unique(self._info['sa']['targets']))
             if len(targets_list) > 4:
                 targets_list = targets_list[:4]
                 
             params['targets'] = "+".join(targets_list)
-
 
         logger.debug(params)
         for k in ['subject', 'fx']:
