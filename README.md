@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/robbisg/pyitab/branch/master/graph/badge.svg)](https://codecov.io/gh/robbisg/pyitab)
 [![Documentation Status](https://readthedocs.org/projects/pyitab/badge/?version=latest)](https://pyitab.readthedocs.io/en/latest/?badge=latest)
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![CodeFactor](https://www.codefactor.io/repository/github/robbisg/pyitab/badge)](https://www.codefactor.io/repository/github/robbisg/pyitab)
 
 Set of utilities for the analysis of neuroimaging data, using python libraries.
 
