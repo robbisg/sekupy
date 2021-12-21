@@ -14,7 +14,7 @@ def array2df(dataframe, key):
     df_keys = pd.DataFrame([row[:-1] for row in dataframe.values.tolist()], 
                                     columns=dataframe.keys()[:-1])
 
-    df_concat = pd.concat(df, df_keys)
+    df_concat = pd.concat([df, df_keys])
 
     return df_concat
 
@@ -129,3 +129,52 @@ def clean_dataframe(dataframe, keys=[]):
             dataframe = dataframe.drop(k, axis=1)
 
     return dataframe
+
+
+
+def dataframe_slicer(data, row=None, col=None, hue=None):
+    """Generator for name indices and data subsets for each unique value
+    of row, col, hue.
+
+    Adaptively stolen from `seaborn`.
+
+    Yields
+    ------
+    (i, j, k), data_ijk : tuple of ints, DataFrame
+        The ints provide an index into the {row, col, hue}_names attribute,
+        and the dataframe contains a subset of the full data corresponding
+        to each facet. The generator yields subsets that correspond with
+        the self.axes.flat iterator, or self.axes[i, j] when `col_wrap`
+        is None.
+
+    """
+    from seaborn._core import categorical_order
+    from itertools import product
+
+    # Construct masks for the row variable
+    if row is not None:
+        row_names = categorical_order(data[row])
+        row_masks = [data[row] == n for n in row_names]
+    else:
+        row_masks = [np.repeat(True, len(data))]
+
+    # Construct masks for the column variable
+    if col is not None:
+        col_names = categorical_order(data[col])
+        col_masks = [data[col] == n for n in col_names]
+    else:
+        col_masks = [np.repeat(True, len(data))]
+
+    # Construct masks for the hue variable
+    if hue is not None:
+        hue_names = categorical_order(data[hue])
+        hue_masks = [data[hue] == n for n in hue_names]
+    else:
+        hue_masks = [np.repeat(True, len(data))]
+
+    # Here is the main generator loop
+    for (i, row), (j, col), (k, hue) in product(enumerate(row_masks),
+                                                enumerate(col_masks),
+                                                enumerate(hue_masks)):
+        data_ijk = data[row & col & hue ] # Check null
+        yield (i, j, k), data_ijk
