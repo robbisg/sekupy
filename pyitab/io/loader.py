@@ -84,10 +84,10 @@ class DataLoader(object):
                  **kwargs):
 
         # TODO: Use a loader mapper?
-        
         self._loader = get_loader(loader)
         self._configuration_file = configuration_file
         self._task = task
+        
         # TODO: Check configuration based on loader
         self._conf = {}
         self._conf.update(**kwargs)

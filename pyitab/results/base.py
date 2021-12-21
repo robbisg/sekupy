@@ -356,15 +356,14 @@ def get_connectivity_results(path, dir_id, field_list=['sample_slicer'], load_cv
 
 
 def filter_dataframe(dataframe, return_mask=False, return_null=False, **selection_dict):
-    # TODO: Documentation
  
     _symbols = ['!', '<', '>']
 
-    selection_mask = np.ones(dataframe.shape[0], dtype=np.bool)
+    selection_mask = np.ones(dataframe.shape[0], dtype=bool)
     for key, values in selection_dict.items():
                 
         ds_values = dataframe[key].values
-        condition_mask = np.zeros_like(ds_values, dtype=np.bool)
+        condition_mask = np.zeros_like(ds_values, dtype=bool)
         
         for value in values:
 
