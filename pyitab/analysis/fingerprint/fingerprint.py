@@ -32,6 +32,7 @@ class Identifiability(Analyzer):
         accuracy_matrix = np.zeros((len(unique), len(unique)))
 
         task_combinations = itertools.combinations_with_replacement(unique, 2)
+        correlation_matrix = dict()
         for j, (t1, t2) in enumerate(task_combinations):
             ds1 = SampleSlicer(**{attr: [t1]}).transform(ds)
             ds2 = SampleSlicer(**{attr: [t2]}).transform(ds)
@@ -58,16 +59,19 @@ class Identifiability(Analyzer):
             accuracy_matrix[row[j], col[j]] = accuracy1
             accuracy_matrix[col[j], row[j]] = accuracy2
 
+            correlation_matrix[t1+'+'+t2] = r
+
         self.scores = dict()
         self.scores['matrix'] = identifiability_matrix
         self.scores['vars'] = unique
         self.scores['accuracy'] = accuracy_matrix
+        self.scores['r'] = correlation_matrix
 
         self._info = self._store_info(ds, attr=attr)
 
         return
 
-    def save(self, path=None, **kwargs):
+    def save(self, path=None, scores=None, **kwargs):
 
         self.name = 'identifiability'
         path, prefix = super().save(path, **kwargs)
@@ -75,7 +79,11 @@ class Identifiability(Analyzer):
 
         filename = self._get_filename(**kwargs)
         logger.info("Saving %s" % (filename))
-        savemat(os.path.join(path, filename), self.scores)
+        
+        if scores is None:
+            scores = self.scores
+
+        savemat(os.path.join(path, filename), scores)
 
 
 class BehaviouralFingerprint(RoiRegression):

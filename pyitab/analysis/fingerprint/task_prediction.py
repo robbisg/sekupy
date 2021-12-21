@@ -1,11 +1,14 @@
 from pyitab.preprocessing.base import PreprocessingPipeline, Transformer
 from pyitab.analysis.base import Analyzer
 from pyitab.preprocessing import SampleSlicer
+from pyitab.analysis.utils import get_params
+from pyitab.utils.scores import correlation
 
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.utils import shuffle
 
 from scipy.io import savemat
 
@@ -29,7 +32,7 @@ class TaskPredictionTavor(Analyzer):
             estimator = Pipeline(steps=[('clf', LinearRegression())])
 
         if not isinstance(estimator, Pipeline):
-            estimator = Pipeline(steps=[('clf', estimator)])
+            estimator = Pipeline(steps=[('clf', LinearRegression())])
 
         self.estimator = estimator
         self.n_jobs = n_jobs
@@ -48,7 +51,7 @@ class TaskPredictionTavor(Analyzer):
         Analyzer.__init__(self, name=name, **kwargs)
 
 
-    def _get_data(self, ds, subj, y_attr, x_attr, prepro):
+    def _get_data(self, ds, subj, y_attr, x_attr, prepro, ):
 
         ds_ = SampleSlicer(subject=[subj]).transform(ds)
 
@@ -65,34 +68,35 @@ class TaskPredictionTavor(Analyzer):
         return X, y
 
 
-    def _fit(self, ds, y_attr, x_attr, prepro):
+    def _fit(self, ds, y_attr, x_attr, prepro, perm_id):
         betas = list()
         intercepts = list()
-
-        self._subjects = np.unique(ds.sa.subject)
-
 
         for subj in self._subjects:
 
             X, y = self._get_data(ds, subj, y_attr, x_attr, prepro)
-            
+
+            if perm_id != 0:
+                y = shuffle(y)
+
             _ = self.estimator.fit(X, y)
             linear = self.estimator.steps[0][1]
 
             betas.append(linear.coef_.squeeze())
             intercepts.append(linear.intercept_.squeeze())
         
-        self._betas = np.array(betas)
-        self._intercepts = np.array(intercepts)
+        betas = np.array(betas)
+        intercepts = np.array(intercepts)
 
+        return betas, intercepts
 
-    def _predict(self, ds, y_attr, x_attr, prepro):
+    def _predict(self, ds, y_attr, x_attr, prepro, perm_id):
         
-        betas = self._betas
-        intercepts = self._intercepts
+        betas = self._betas[perm_id]
+        intercepts = self._intercepts[perm_id]
 
-        self._y = list()
-        self._y_hat = list()
+        y_true = list()
+        y_pred = list()
 
         for s, subj in enumerate(self._subjects):
 
@@ -105,37 +109,63 @@ class TaskPredictionTavor(Analyzer):
 
             y_hat = np.dot(X, average_beta) + average_intercept
 
-            self._y.append(y.squeeze())
-            self._y_hat.append(y_hat.squeeze())
+            y_true.append(y.squeeze())
+            y_pred.append(y_hat.squeeze())
 
-        self._y = np.array(self._y)
-        self._y_hat = np.array(self._y_hat)
+        y_true = np.array(y_true)
+        y_pred = np.array(y_pred)
 
-    def _score(self):
+        return y_true, y_pred
 
-        self.scores = dict()
+
+    def _score(self, y_true, y_pred):
+
+        scores = dict()
 
         errors = {
             'mse': mean_squared_error,
-            'r2': r2_score 
+            'r2': r2_score,
+            'corr': correlation
         }
 
-
         for k, l in errors.items():
-            self.scores[k] = [l(self._y[i], self._y_hat[i]) for i in range(self._y.shape[0])]
+            scores[k] = [l(y_true[i], y_pred[i]) for i in range(y_true.shape[0])]
 
         for k, l in self.scoring.items():
-            self.scores[k] = [l._score_func(self._y[i], self._y_hat[i]) for i in range(self._y.shape[0])]
+            scores[k] = [l._score_func(y_true[i], y_pred[i]) for i in range(y_true.shape[0])]
 
-        self.scores['betas'] = self._betas
+        return scores
+
 
 
     def fit(self, ds, y_attr=dict(), x_attr=dict(), prepro=None):
 
+        self.scores = list()
+        self._subjects = np.unique(ds.sa.subject)
 
-        self._fit(ds, y_attr, x_attr, prepro)
-        self._predict(ds, y_attr, x_attr, prepro)
-        self._score()
+        self._betas = np.zeros((self.permutation + 1 , len(self._subjects)))
+        self._intercepts = np.zeros((self.permutation + 1 , len(self._subjects)))
+
+        for p in range(self.permutation + 1):
+
+            b, i = self._fit(ds, y_attr, x_attr, prepro, p)
+            self._betas[p, :] = b
+            self._intercepts[p, :] = i
+
+            yt, yp = self._predict(ds, y_attr, x_attr, prepro, p)
+
+            scores = self._score(yt, yp)
+
+            scores['betas'] = b
+
+            scores['y_true'] = yt
+            scores['y_pred'] = yp
+
+            self.scores.append(scores)
+
+
+        self._info = self._store_info(ds, x_attr=x_attr, y_attr=y_attr)
+        logger.debug(self._info)
 
         return
 
@@ -143,8 +173,30 @@ class TaskPredictionTavor(Analyzer):
     def save(self, path=None, **kwargs):
 
         path, prefix = super().save(path, **kwargs)
-        kwargs.update({'prefix': prefix})
 
-        filename = self._get_filename(**kwargs)
-        logger.info("Saving %s" % (filename))
-        savemat(os.path.join(path, filename), self.scores)
+        for p, score in enumerate(self.scores):
+            kwargs.update({'prefix': prefix, 'perm': "%04d" % p})
+
+            filename = self._get_filename(**kwargs)
+            logger.info("Saving %s" % (filename))
+            savemat(os.path.join(path, filename), score)
+
+
+    def _get_filename(self, **kwargs):
+        "target-<values>_id-<datetime>_mask-<mask>_value-<roi_value>_data.mat"
+        logger.debug(kwargs)
+        params = {}
+
+        params_ = self._get_prepro_info(**kwargs)
+        params.update(params_)
+       
+        logger.debug(params)
+
+        # TODO: Solve empty prefix
+        prefix = kwargs.pop('prefix')
+        midpart = "_".join(["%s-%s" % (k, str(v).replace("_", "+")) \
+             for k, v in params.items()])
+        trailing = "perm-%s" % (kwargs.pop('perm'))
+        filename = "%s_data.mat" % ("_".join([prefix, midpart, trailing]))
+
+        return filename
