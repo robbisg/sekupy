@@ -13,4 +13,4 @@ xlrd
 tqdm
 h5py
 pymvpa2
-numpy>1.17
+numpy>=1.18.5
