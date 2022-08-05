@@ -1,4 +1,4 @@
-scipy==1.2
+scipy
 matplotlib
 pandas
 seaborn
@@ -13,4 +13,4 @@ xlrd
 tqdm
 h5py
 pymvpa2
-numpy
+numpy>=1.18.5

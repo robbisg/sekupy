@@ -124,19 +124,19 @@ def test_movie():
 
 def test_sherlock():
 
-    data_path = '/home/robbis/mount/permut1/sherlock/bids/'
+    data_path = '/home/robbis/mount/permut1/bids/'
 
     if not os.path.exists(data_path):
         pytest.skip("Local test")
 
 
-    conf_file = "/home/robbis/mount/permut1/sherlock/bids/bids.conf"
+    conf_file = "/home/robbis/mount/permut1/bids/bids.conf"
     loader = DataLoader(configuration_file=conf_file,
                         data_path=data_path,
                         subjects='participants.tsv',
                         loader='bids', 
                         task='preproc',
-                        bids_task=['day1'],
+                        bids_task=['encoding'],
                         bids_run=['01'])
 
     ds = loader.fetch(subject_names=['matsim'],
@@ -183,8 +183,9 @@ def test_viviana_hcp():
                         data_path=data_path,
                         subjects="/media/robbis/DATA/meg/viviana-hcp/participants.tsv",
                         loader='bids-meg',
-                        task='rest',
-                        bids_band='gammamid',
+                        task='blp',
+                        bids_task='rest',
+                        bids_band='alpha',
                         bids_atlas="complete",
                         bids_derivatives='True',
                         load_fx='hcp-blp')

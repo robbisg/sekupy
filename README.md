@@ -1,14 +1,30 @@
 # pyitab
 
-[![example workflow](https://github.com/robbisg/pyitab/actions/workflows/test.yaml/badge.svg)
+![example workflow](https://github.com/robbisg/pyitab/actions/workflows/test.yaml/badge.svg)
 [![codecov](https://codecov.io/gh/robbisg/pyitab/branch/master/graph/badge.svg)](https://codecov.io/gh/robbisg/pyitab)
 [![Documentation Status](https://readthedocs.org/projects/pyitab/badge/?version=latest)](https://pyitab.readthedocs.io/en/latest/?badge=latest)
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![CodeFactor](https://www.codefactor.io/repository/github/robbisg/pyitab/badge)](https://www.codefactor.io/repository/github/robbisg/pyitab)
 
+`pyitab` is a python-package created for easing (multivariate) neuroimaging analysis. The package has been thought for
+decoding analyses but it includes also basic univariate analyses.
 
-Set of utilities for the analysis of neuroimaging data, using python libraries.
+It has some utilities to vary sets of parameters of the analyses without struggling with `for` and `if` statements.
 
-With ```pyitab``` you can perform a vast set of decoding analysis easily! (Documentation hopefully soon!)
+`pyitab` stands for Python at Institute for Advanced Biomedical Technologies (ITAB), which is part of University of Chieti-Pescara "G. D'Annunzio".
 
+# Documentation
+
+The documention can be found [here](https://pyitab.readthedocs.io/).
+
+# Install
+The package isn't yet on `pip`.
+You can install it by using:
+```
+python setup.py install
+```
+
+# Example
 The main idea is to use a dictionary to configure all parameters of your analysis, feed the configuration into an ```AnalysisPipeline``` object, call ```fit``` to obtain results, then ```save``` to store in a ```BIDS```-ish way.
 
 For example if we want to perform a ```RoiDecoding``` analysis using some preprocessing steps we will have a script like this (this is not a complete example):

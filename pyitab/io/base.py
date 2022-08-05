@@ -193,6 +193,10 @@ def load_roi_labels(roi_labels):
     roi_labels_dict = {}
     if roi_labels is not None:
         for label, img in roi_labels.items():
+
+            if img is None:
+                return img
+
             if isinstance(img, str):
                 roi_labels_dict[label] = ni.load(img)
             else:
@@ -236,6 +240,19 @@ def load_fmri(filelist):
 
 
 def load_mask(path, **kwargs):
+    """Loads the mask from the input path
+
+
+    Parameters
+    ----------
+    path : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
     mask_path = path
     for arg in kwargs: 
@@ -282,6 +299,27 @@ def find_roi(path, roi_list):
 
 
 def load_attributes (path, subj, task,  **kwargs):
+    """Loads attribute files from path and selected subject.
+
+    Parameters
+    ----------
+    path : [type]
+        [description]
+    subj : [type]
+        [description]
+    task : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Raises
+    ------
+    FileNotFoundError
+        [description]
+    """
 
     # TODO: Maybe is better to use explicit variables
     # instead of kwargs

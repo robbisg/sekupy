@@ -48,6 +48,8 @@ def load_bids_dataset(path, subj, task, **kwargs):
     if 'bids_derivatives' in kwargs.keys():
         if kwargs['bids_derivatives'] == 'True':
             derivatives = True
+        elif kwargs['bids_derivatives'] == 'False':
+            derivatives = False        
         else:
             derivatives = os.path.join(path, kwargs['bids_derivatives'])
     
@@ -58,13 +60,16 @@ def load_bids_dataset(path, subj, task, **kwargs):
     logger.debug(derivatives)
     layout = BIDSLayout(path, derivatives=derivatives)
 
-    #logger.debug(layout.get())
+    logger.debug(layout.get())
 
     # Load the filename list
     kwargs_bids = get_bids_kwargs(kwargs)
     
     if subj.find("-") != -1:
-        subj = int(subj.split('-')[1])
+        try:
+            subj = int(subj.split('-')[1])
+        except Exception as err:
+            subj = subj.split('-')[1]
 
     if 'task' not in kwargs_bids.keys():
         kwargs_bids['task'] = task
@@ -111,6 +116,8 @@ def load_bids_dataset(path, subj, task, **kwargs):
     
     # Check roi_labels
     roi_labels = load_roi_labels(roi_labels)
+
+    logger.debug(roi_labels)
 
     # Load the pymvpa dataset.    
     logger.info('Loading dataset...')
@@ -334,6 +341,10 @@ def load_bids_mask(path, subject=None, task=None, **kwargs):
                            **kw_bids)
 
     logger.debug(mask_list)
+    
+    if len(mask_list) == 0:
+        return None
+
     logger.info("Mask used: %s" % (mask_list[0]))
 
     return ni.load(mask_list[0])
