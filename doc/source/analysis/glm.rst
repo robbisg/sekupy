@@ -2,7 +2,7 @@ GLM
 ===
 
 
-.. automodule:: pyitab.analysis.glm
+.. automodule:: pyitab.analysis.linear_model
    :members:
    :undoc-members:
    

@@ -11,6 +11,7 @@ neuroimaging analyses
 * :doc:`../connectivity/base` : assess similarity of timecourses in brain data
 * :doc:`glm` : univariate analyses
 * :doc:`rsa` : analyses to understand how the brain represents things.
+* :doc:`fingerprint` : set of analyses that aimed at identifying single subjects and consistencies within-subjects.
 * :doc:`../decoding/searchlight` : move a spatio-(temporal) sphere in brain signals
 * :doc:`../states/base` : data-driven analysis of clusters of activations.
 
