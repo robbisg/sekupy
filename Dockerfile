@@ -39,9 +39,10 @@ RUN pip3 install numpy
 ADD requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
 
-COPY ./* $HOME/pyitab/
+COPY ./ $HOME/pyitab/
 WORKDIR ./pyitab/
 RUN cd pyitab & ls
 RUN python3 setup.py develop
+RUN pytest
 
 ENTRYPOINT ["/usr/local/bin/bash"]
