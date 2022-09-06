@@ -38,7 +38,7 @@ jobs:
         pip install tk cytoolz
     - name: Install package requirements.txt
       run: |
-        if [ -f requirements-min.txt ]; then pip3 install -r requirements-min.txt; fi
+        if [ -f requirements-min.txt ]; then pip install -r requirements-min.txt; fi
         sudo python setup.py develop
     - name: Lint with flake8
       run: |
