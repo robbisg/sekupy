@@ -36,7 +36,6 @@ jobs:
         pip3 install cython wheel
         pip3 install flake8 pytest pytest-cov
         pip3 install tk cytoolz
-        pip3 install numpy
     - name: Install package requirements.txt
       run: |
         if [ -f requirements-min.txt ]; then pip3 install -r requirements-min.txt; fi
