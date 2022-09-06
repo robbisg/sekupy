@@ -33,9 +33,10 @@ jobs:
     - name: Install dependencies with pip
       run: |
         python3 -m pip install --upgrade pip
+        pip3 install -U numpy
         pip3 install cython wheel
         pip3 install flake8 pytest pytest-cov
-        pip3 install tk cytoolz numpy
+        pip3 install tk cytoolz
     - name: Install package requirements.txt
       run: |
         if [ -f requirements-min.txt ]; then pip3 install -r requirements-min.txt; fi
