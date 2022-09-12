@@ -23,7 +23,7 @@ from sklearn.exceptions import ConvergenceWarning
 
 from nilearn import masking
 from nilearn.image.resampling import coord_transform
-from nilearn.input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
+from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 from nilearn._utils import check_niimg_4d
 from pyitab.ext.sklearn._validation import cross_validate
 

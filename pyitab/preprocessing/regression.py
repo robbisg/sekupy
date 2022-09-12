@@ -31,7 +31,7 @@ class SampleResidualTransformer(LinearModelMixin):
         self.scores = model.fit(Y)
 
         ds_ = ds.copy()
-        ds_.samples = self.scores.resid
+        ds_.samples = self.scores.residuals
         logger.info("Residuals from GLM with %s attributes" % (', '.join(self.design_attr)))
 
         return super().transform(ds_)
@@ -66,7 +66,7 @@ class FeatureResidualTransformer(LinearModelMixin):
         self.scores = model.fit(Y)
 
         ds_ = ds.copy()
-        ds_.samples = self.scores.resid.T
+        ds_.samples = self.scores.residuals.T
         logger.info("Residuals from GLM with %s attributes" % (', '.join(self.design_attr)))
 
         return super().transform(ds_)
