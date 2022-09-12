@@ -39,7 +39,7 @@ jobs:
     - name: Install package requirements.txt
       run: |
         if [ -f requirements-min.txt ]; then pip install -r requirements-min.txt; fi
-        sudo python setup.py develop
+        python setup.py develop
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
