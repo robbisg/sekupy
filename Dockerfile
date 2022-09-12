@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     automake \
     gcc \
     swig \
-    python3.6 \
+    python3.8 \
     python-tk \
     build-essential \
     gfortran \
@@ -22,18 +22,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev
 
 
-RUN alias python=python3
-RUN alias pip=pip3
-RUN which pip3
-
-RUN apt install -y python-blosc
-RUN pip3 install setuptools
-
-RUN pip3 install cython wheel
-RUN pip3 install tk cytoolz
-
 RUN pip3 install --upgrade pip
-RUN pip3 install flake8 pytest
+
+RUN pip3 install cython wheel setuptools
+RUN pip3 install flake8 pytest pytest-cov
+RUN pip3 install tk cytoolz
 RUN pip3 install numpy
 
 ADD requirements.txt /tmp/requirements.txt
@@ -42,7 +35,7 @@ RUN pip3 install -r /tmp/requirements.txt
 COPY ./ $HOME/pyitab/
 WORKDIR ./pyitab/
 RUN cd pyitab & ls
-RUN python3 setup.py develop
-RUN pytest
+RUN pip3 install .
+RUN python3 -m pytest --pyargs pyitab
 
 ENTRYPOINT ["/usr/local/bin/bash"]
