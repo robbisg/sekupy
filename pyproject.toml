@@ -1,0 +1,221 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyitab"
+description = "MVPA Pipelines at ITAB"
+dynamic = ["version"]
+authors = [
+    { name = "Roberto Guidotti", email = "roberto.guidotti@unich.it" },
+]
+license = { text = "BSD-3-Clause" }
+readme = { file = "README.md", content-type = "text/x-rst" }
+requires-python = ">=3.7"
+keywords = [
+    "neuroscience",
+    "neuroimaging",
+    "MEG",
+    "EEG",
+    "MVPA",
+    "fMRI",
+    "brain",
+    "machine learning"
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved",
+    "Programming Language :: Python",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+]
+scripts = { mne = "mne.commands.utils:main" }
+dependencies = [
+    "numpy>=1.21.2",
+    "scipy>=1.7.1",
+    "matplotlib>=3.5.0",
+    "tqdm",
+    "scikit-learn",
+    "nibabel",
+    "pandas",
+    "seaborn",
+    "imbalanced-learn",
+    "pymvpa2",
+    "mne",
+    "lazy_loader>=0.3",
+    "pymatreader",
+    "h5py"
+]
+
+[project.optional-dependencies]
+# Variants with dependencies that will get installed on top of those listed unter
+# project.dependencies
+
+# Leave this one here for backward-compat
+data = []
+
+# Dependencies for running the test infrastructure
+test = [
+    "pytest>=8.0.0rc2",
+    "pytest-cov",
+    "pytest-timeout",
+    "pytest-harvest",
+    "pytest-qt",
+    "ruff",
+    "numpydoc",
+    "codespell",
+    "tomli; python_version<'3.11'",
+    "twine",
+    "wheel",
+    "pre-commit",
+    "mypy",
+]
+
+# Dependencies for building the docuemntation
+doc = [
+    "sphinx>=6",
+    "numpydoc",
+    "pydata_sphinx_theme==0.13.3",
+    "sphinx-gallery",
+    "sphinxcontrib-bibtex>=2.5",
+    "sphinxcontrib-towncrier",
+    "memory_profiler",
+    "neo",
+    "seaborn!=0.11.2",
+    "sphinx_copybutton",
+    "sphinx-design",
+    "sphinxcontrib-youtube",
+    "mne-bids",
+    "pyxdf",
+    "mne-connectivity",
+    "mne-gui-addons",
+    "pygments>=2.13",
+    "pytest",
+    "graphviz",
+    "pyzmq!=24.0.0",
+    "ipython!=8.7.0",
+    "selenium",
+]
+
+[project.urls]
+Homepage = "https://github.com/robbisg/pyitab"
+"Bug Tracker" = "https://github.com/robbisg/pyitab/issues/"
+Documentation = "https://pyitab.readthedocs.io/"
+"Source Code" = "https://github.com/robbisg/pyitab"
+
+[tool.hatch.build]
+exclude = [
+    "/.*",
+    "/*.yml",
+    "/*.yaml",
+    "/*.toml",
+    "/*.txt",
+    "/pyitab/**/tests",
+    "/dist",
+    "/doc",
+    "/joss",
+    "/examples",
+    "/Dockerfile"
+] # tracked by git, but we don't want to ship those files
+
+[tool.hatch.version]
+source = "vcs"
+raw-options = { version_scheme = "release-branch-semver" }
+
+[tool.codespell]
+ignore-words = "ignore_words.txt"
+builtin = "clear,rare,informal,names,usage"
+skip = "doc/references.bib"
+
+[tool.ruff]
+select = ["A", "B006", "D", "E", "F", "I", "W", "UP"]
+exclude = ["__init__.py", "constants.py", "resources.py"]
+ignore = [
+    "D100", # Missing docstring in public module
+    "D104", # Missing docstring in public package
+    "D413", # Missing blank line after last section
+    "UP031", # Use format specifiers instead of percent format
+]
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.per-file-ignores]
+"tutorials/time-freq/10_spectrum_class.py" = [
+    "E501", # line too long
+]
+"mne/datasets/*/*.py" = [
+    "D103", # Missing docstring in public function
+]
+"mne/utils/tests/test_docs.py" = [
+    "D101", # Missing docstring in public class
+    "D410", # Missing blank line after section
+    "D411", # Missing blank line before section
+    "D414", # Section has no content
+]
+"examples/*/*.py" = [
+    "D205", # 1 blank line required between summary line and description
+]
+
+[tool.pytest.ini_options]
+# -r f (failed), E (error), s (skipped), x (xfail), X (xpassed), w (warnings)
+# don't put in xfail for pytest 8.0+ because then it prints the tracebacks,
+# which look like real errors
+addopts = """--durations=20 --doctest-modules -rfEXs --cov-report= --tb=short \
+    --cov-branch --doctest-ignore-import-errors --junit-xml=junit-results.xml \
+    --color=yes --capture=sys"""
+junit_family = "xunit2"
+
+[tool.bandit.assert_used]
+skips = ["*/test_*.py"] # assert statements are good practice with pytest
+
+[tool.rstcheck]
+report_level = "WARNING"
+ignore_roles = [
+    "attr",
+    "class",
+    "doc",
+    "eq",
+    "exc",
+    "file",
+    "footcite",
+    "footcite:t",
+    "func",
+    "gh",
+    "kbd",
+    "meth",
+    "mod",
+    "newcontrib",
+    "py:mod",
+    "ref",
+    "samp",
+    "term",
+]
+ignore_directives = [
+    "autoclass",
+    "autofunction",
+    "automodule",
+    "autosummary",
+    "bibliography",
+    "cssclass",
+    "currentmodule",
+    "dropdown",
+    "footbibliography",
+    "glossary",
+    "graphviz",
+    "grid",
+    "highlight",
+    "minigallery",
+    "tabularcolumns",
+    "toctree",
+    "rst-class",
+    "tab-set",
+    "towncrier-draft-entries",
+]
+ignore_messages = "^.*(Unknown target name|Undefined substitution referenced)[^`]*$"
