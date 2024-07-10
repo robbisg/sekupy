@@ -248,7 +248,7 @@ def index_i(X, labels):
     dk = pair_dist.max()
     mk = pair_dist.min()
 
-    i_ = (1./k * np.float(e1)/ek * dk * mk)**2
+    i_ = (1./k * np.float32(e1)/ek * dk * mk)**2
 
     return i_        
 

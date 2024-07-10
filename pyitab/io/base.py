@@ -335,7 +335,7 @@ def load_attributes (path, subj, task,  **kwargs):
             header = kwargs[arg].split(',')
             # If it's one item is a boolean
             if len(header) == 1:
-                header = np.bool(header[0])
+                header = bool(header[0])
 
     directory_list = add_subdirs(path, subj, sub_dirs)
 
