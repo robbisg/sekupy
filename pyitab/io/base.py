@@ -4,25 +4,26 @@
 #     See the file license.txt for copying permission.
 ########################################################
 from __future__ import print_function
+#from mvpa2.misc.io.base import SampleAttributes
+#from mvpa2.datasets.eventrelated import eventrelated_dataset, find_events
 
-import os
-from mvpa2.misc.io.base import SampleAttributes
-from mvpa2.datasets.mri import fmri_dataset
-from mvpa2.datasets.eventrelated import eventrelated_dataset, find_events
-from mvpa2.base.dataset import vstack
-
-import logging
-import numpy as np
-import nibabel as ni
-
+from pyitab.dataset.mri import fmri_dataset
+from pyitab.dataset.dataset import vstack
 from pyitab.utils.files import add_subdirs, build_pathnames
 from pyitab.io.subjects import add_subjectname
 
+import os
+import numpy as np
+import nibabel as ni
+
+import logging
 logger = logging.getLogger(__name__)
 
 
 def load_dataset(path, subj, folder, **kwargs):
-    ''' Load a 2d dataset given the image path, the subject and 
+    """Load a 2d dataset.
+
+    The function needs the image path, the subject and 
     the main folder of the data.
 
     Parameters
@@ -40,8 +41,7 @@ def load_dataset(path, subj, folder, **kwargs):
     -------
     ds : ``Dataset``
        Instance of ``mvpa2.datasets.Dataset``
-    '''
-
+    """
     roi_labels = dict()
     extract_events = False
 
@@ -50,7 +50,7 @@ def load_dataset(path, subj, folder, **kwargs):
 
     if 'extract_events' in kwargs.keys():
         extract_events = bool(kwargs['extract_events'])
-           
+
     # Load the filename list
     file_list = load_filelist(path, subj, folder, **kwargs)
 
@@ -298,7 +298,7 @@ def find_roi(path, roi_list):
     return mask_list
 
 
-def load_attributes (path, subj, task,  **kwargs):
+def load_attributes(path, subj, task,  **kwargs):
     """Loads attribute files from path and selected subject.
 
     Parameters

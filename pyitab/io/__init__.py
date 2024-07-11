@@ -1,13 +1,12 @@
 from pyitab.io.base import load_dataset
 from pyitab.io.configuration import read_configuration
 from pyitab.io.subjects import load_subjects
-from mvpa2.datasets import vstack
+from pyitab.dataset.dataset import vstack
 
 import os
 
 import logging
 logger = logging.getLogger(__name__)
-
 
 
 def load_ds(conf_file, task, 
@@ -103,11 +102,10 @@ def load_ds(conf_file, task,
 
 def dataset_wizard(X, y=None, **kwargs):
 
-    from mvpa2.base.collections import SampleAttributesCollection, \
+    from pyitab.dataset.collections import SampleAttributesCollection, \
         DatasetAttributesCollection, FeatureAttributesCollection
-    from mvpa2.datasets.base import Dataset
+    from pyitab.dataset.base import Dataset
     import numpy as np
-
 
     sa = SampleAttributesCollection({
         'targets': y,
@@ -117,7 +115,7 @@ def dataset_wizard(X, y=None, **kwargs):
 
     fa = FeatureAttributesCollection({'matrix_values':np.ones(X.shape[1])})
     a = DatasetAttributesCollection({'data_path':'/media/robbis/DATA/meg/hcp/', 
-                                    'experiment':'hcp', 
+                                     'experiment':'hcp', 
                                     })
 
     ds = Dataset(X, sa=sa, a=a, fa=fa)

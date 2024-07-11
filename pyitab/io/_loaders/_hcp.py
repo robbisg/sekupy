@@ -1,7 +1,7 @@
 import h5py
 import numpy as np
 
-from mvpa2.base.collections import SampleAttributesCollection, \
+from pyitab.dataset.collections import SampleAttributesCollection, \
      DatasetAttributesCollection, FeatureAttributesCollection
 
 from pyitab.utils.bids import get_dictionary
@@ -17,17 +17,17 @@ def load_hcp_motor(filename, **kwargs):
         5: 'RF',
         6: 'FIX'
     }
-      
+
     mat = h5py.File(filename)
     data = mat['powerbox'][:]
     data /= np.nanmean(data)
     # Trials x Sources x Times
     data = np.float32(data.swapaxes(1, 2))
-    
+
     labels = [targets[t] for t in mat['trialvec'][:][0]]
     limb = [t[1] for t in labels]
     side = [t[0] for t in labels]
-    
+
     times = mat['timevec'][:].squeeze()
     rt = mat['trailinfo'][:][5]
     subject = kwargs['subject']
@@ -36,7 +36,7 @@ def load_hcp_motor(filename, **kwargs):
     sa_dict.pop('extension')
     sa_dict.pop('filename')
     sa = {k: [v for _ in range(rt.shape[0])] for k, v in sa_dict.items()}
-    
+
     sa.update({'targets': labels,
                'chunks': np.arange(rt.shape[0]),
                'limb': limb,
@@ -90,7 +90,6 @@ def load_hcp_blp(filename, **kwargs):
     for i, k in enumerate(['side', 'maintask']):
         sa[k] = [maintask[t][i] for t in sa['task']]
 
-
     sa.update({
                'subject': [subject for _ in range(data.shape[0])],
                'file':   [filename for _ in range(data.shape[0])]
@@ -112,10 +111,9 @@ def load_hcp_blp(filename, **kwargs):
         networks=networks,
         matrix_values=np.ones(data.shape[1])
     )
-    
+
     fa = FeatureAttributesCollection(fa)
     a = DatasetAttributesCollection({})
 
     return data, sa, a, fa
 
-    

@@ -1,6 +1,6 @@
 import nibabel as ni
 import numpy as np
-from mvpa2.base.collections import SampleAttributesCollection
+from pyitab.dataset.collections import SampleAttributesCollection
 from pyitab.io.base import load_roi_labels, load_mask, load_fmri
 
 
