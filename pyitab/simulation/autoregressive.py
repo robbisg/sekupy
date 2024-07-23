@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 from scipy import signal
 from pyitab.dataset.base import Dataset
-from pytiab.dataset.collections import SampleAttributesCollection, \
+from pyitab.dataset.collections import SampleAttributesCollection, \
     FeatureAttributesCollection, DatasetAttributesCollection
 from pyitab.preprocessing.base import Transformer
 

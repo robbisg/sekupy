@@ -7,7 +7,7 @@ from imblearn.under_sampling import RandomUnderSampler
 
 from collections import Counter
 import numpy as np
-from pyitab.base.dataset import vstack
+from pyitab.dataset.dataset import vstack
 
 import logging
 logger = logging.getLogger(__name__)

@@ -907,7 +907,8 @@ def _orthogonal_permutations(a_dict):
         # check the size of the list in the second item of the tuple
         args_with_fun = [(func, arg) for arg in all_args]
         args.append(args_with_fun)
-    for i in product(args):
+        
+    for i in product(*args):
         yield dict(i)
         
 def array_whereequal(a, x):

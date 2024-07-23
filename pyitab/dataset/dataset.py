@@ -911,21 +911,7 @@ class DatasetError(Exception):
 
 
 class DatasetAttributeExtractor:
-    """Extract arbitrary attributes from dataset collections.
-
-    Examples
-    --------
-    >>> ds = AttrDataset(np.arange(12).reshape((4,3)),
-    ...              sa={'targets': range(4)},
-    ...              fa={'foo': [0,0,1]})
-    >>> ext = DAE('sa', 'targets')
-    >>> ext(ds)
-    array([0, 1, 2, 3])
-
-    >>> ext = DAE('fa', 'foo')
-    >>> ext(ds)
-    array([0, 0, 1])
-    """
+    """Extract arbitrary attributes from dataset collections."""
 
     def __init__(self, col, key):
         """Create an extractor for a specific attribute.
