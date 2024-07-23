@@ -60,7 +60,7 @@ def get_aal_coords(fname):
     """
 
     atlas90 = ni.load(fname)
-    coords = [find_roi_center(atlas90, roi_value=i) for i in np.unique(atlas90.get_data())[:]]
+    coords = [find_roi_center(atlas90, roi_value=i) for i in np.unique(atlas90.get_fdata())[:]]
     
     return np.array(coords)
 
@@ -125,7 +125,7 @@ def get_atlas90_info(background='black'):
     coords = get_aal_coords(os.path.join(atlas_dir, "atlas90_mni_2mm.nii.gz"))
     roi_list = np.loadtxt(os.path.join(atlas_dir, "atlas90.cod"),
                             delimiter='=',
-                            dtype=np.str)
+                            dtype=str)
     names = roi_list.T[1]
     names_inv = np.array([n[::-1] for n in names])
     index_ = np.argsort(names_inv)
@@ -216,7 +216,7 @@ def get_aalmeg_info(background='black', grouping='LR'):
     labels_fname = os.path.join(atlasdir, 'aal', 'ROI_MNI_V4.csv')
     coords = get_aal_coords(atlas_fname)
 
-    labels = np.loadtxt(labels_fname, dtype=np.str, delimiter=',')
+    labels = np.loadtxt(labels_fname, dtype=str, delimiter=',')
     node_names = labels.T[1][:99]
 
     if grouping == 'LR':
@@ -355,7 +355,7 @@ def where_am_i(fname):
     logger.info("Looking for ROI names in "+fname)
     img = ni.load(fname)
     center_711 = np.array([-70.5, -105, -60.])
-    data = img.get_data().squeeze()
+    data = img.get_fdata().squeeze()
     table = []
     for f in np.unique(data)[1:]:
         mask_roi = data == f
