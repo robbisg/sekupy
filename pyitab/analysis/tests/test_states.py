@@ -45,7 +45,3 @@ def test_state_analyzer(fetch_ds):
     state_analyzer.fit(ds, n_clusters=range(2, 10), prepro=VarianceSubsampler())
 
     state_analyzer.score()
-    
-
-    
-
