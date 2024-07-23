@@ -9,12 +9,15 @@ from __future__ import print_function
 
 from pyitab.dataset.mri import fmri_dataset
 from pyitab.dataset.dataset import vstack
+from pyitab.dataset.events import find_events
 from pyitab.utils.files import add_subdirs, build_pathnames
 from pyitab.io.subjects import add_subjectname
+from pyitab.dataset.collections import SampleAttributesCollection
 
 import os
 import numpy as np
 import nibabel as ni
+import pandas as pd
 
 import logging
 logger = logging.getLogger(__name__)
@@ -271,7 +274,7 @@ def load_mask(path, **kwargs):
     data = 0
     for m in mask_list:
         img = ni.load(os.path.join(mask_path, m))
-        data = data + img.get_data() 
+        data = data + img.get_fdata() 
         logger.info('Mask used: '+img.get_filename())
 
     mask = ni.Nifti1Image(data.squeeze(), img.affine)
@@ -297,7 +300,8 @@ def find_roi(path, roi_list):
 
     return mask_list
 
-
+# TODO: Avoid using SampleAttributes from mvpa2
+# It's better to read it as text file and use SampleAttributesCollection
 def load_attributes(path, subj, task,  **kwargs):
     """Loads attribute files from path and selected subject.
 
@@ -335,7 +339,7 @@ def load_attributes(path, subj, task,  **kwargs):
             header = kwargs[arg].split(',')
             # If it's one item is a boolean
             if len(header) == 1:
-                header = np.bool(header[0])
+                header = bool(header[0])
 
     directory_list = add_subdirs(path, subj, sub_dirs)
 
@@ -359,6 +363,8 @@ def load_attributes(path, subj, task,  **kwargs):
     logger.debug(header)
 
     attr_fname = attribute_list[0]
+    
+    attr = pd.read_csv(attr_fname, sep=' ').to_dict(orient='list')
+    attr = SampleAttributesCollection(attr)
 
-    attr = SampleAttributes(attr_fname, header=header)
     return attr
