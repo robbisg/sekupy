@@ -214,7 +214,7 @@ class FeatureStacker(Transformer):
         for attr in product(*iterable):
             logger.debug(attr)
 
-            mask = np.ones_like(ds_.targets, dtype=np.bool)
+            mask = np.ones_like(ds_.targets, dtype=bool)
 
             for i, a in enumerate(attr):
                 mask = np.logical_and(mask, ds_.sa[self._attr[i]].value == a)

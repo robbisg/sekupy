@@ -202,7 +202,7 @@ class TimeDelayedModel(DelayedModel):
 
     def __init__(self, name='time_delayed_model', order=5, noise=1, 
                  delay=0.0195, fsample=256, **kwargs):
-        self.delay = np.int(delay * fsample)
+        self.delay = np.int16(delay * fsample)
 
         DelayedModel.__init__(self, name, order, noise, delay, **kwargs)
 

@@ -284,8 +284,8 @@ def add_bids_attributes(event_key, events, length, tr, onset_offset=0, extra_dur
             event_onset = event_onsets[i]
             event_end = event_onset + event_duration[i]
 
-            volume_onset = np.int(np.floor(event_onset / tr))
-            volume_duration = np.int(np.rint(event_end / tr))
+            volume_onset = np.int16(np.floor(event_onset / tr))
+            volume_duration = np.int16(np.rint(event_end / tr))
 
             volume_onset += onset_offset
             volume_duration += extra_duration

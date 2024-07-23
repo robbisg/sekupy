@@ -879,7 +879,7 @@ def plot_cross_correlation(xcorr, t_start, t_end, labels):
         
     def animate(i):
         global l_time
-        j = np.int(np.rint(i/20))
+        j = np.int16(np.rint(i/20))
         #im.set_array(xcorr.at(l_time[j]))
         im.set_array(xcorr[mask][j])
         title.set_text('Cross-correlation at time lag of '+str(l_time[mask][j])+' TR.')

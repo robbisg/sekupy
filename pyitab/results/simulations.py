@@ -18,7 +18,7 @@ def convert_fields(data, key, idx, value):
     if key == 'ds.a.states':
         for s in ['array', '\n', ' ']:
             value = value.replace(s, '')
-        n_state = np.int(data['subject'].values[idx]) - 1
+        n_state = np.int16(data['subject'].values[idx]) - 1
         value = np.array(np.safe_eval(value))[n_state]
     else:
         value = np.safe_eval(value)[0]
@@ -40,7 +40,7 @@ def purge_fields(fields):
         if k == 'ds.a.states':
             for s in ['array', '\n', ' ']:
                 v = v.replace(s, '')
-            n_state = np.int(fields['subject']) - 1
+            n_state = np.int16(fields['subject']) - 1
             v = np.array(np.safe_eval(v))[n_state]
         else:
             v = np.safe_eval(v)[0]
@@ -85,7 +85,7 @@ def purge_dataframe(data, keys=['ds.a.snr',
             if k == 'ds.a.states':
                 for s in ['array', '\n', ' ']:
                     v = v.replace(s, '')
-                n_state = np.int(data['subject'].values[i]) - 1
+                n_state = np.int16(data['subject'].values[i]) - 1
                 v = np.array(np.safe_eval(v))[n_state]
             else:
                 v = np.safe_eval(v)[0]
@@ -430,7 +430,7 @@ def dynamics_errors(dataframe):
         clustering_dynamics = row['dynamics']
         cluster_idx = np.unique(clustering_dynamics)
     
-        cluster_binary = np.zeros((len(cluster_idx), len(clustering_dynamics)), dtype=np.bool)
+        cluster_binary = np.zeros((len(cluster_idx), len(clustering_dynamics)), dtype=bool)
         for i in cluster_idx: 
             cluster_binary[i] = clustering_dynamics == i
 
