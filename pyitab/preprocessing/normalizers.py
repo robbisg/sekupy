@@ -1,6 +1,6 @@
 from pyitab.preprocessing.base import Transformer
 from pyitab.preprocessing.slicers import SampleSlicer
-from pyitab.dataset.mappers import ZScoreMapper
+from pyitab.dataset.zscore import ZScoreMapper
 from pyitab.dataset.dataset import vstack
 
 import numpy as np

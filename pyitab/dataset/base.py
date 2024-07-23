@@ -11,8 +11,7 @@
 import numpy as np
 import copy
 
-from pyitab.dataset.dataset import AttrDataset
-from pyitab.dataset.dataset import _expand_attribute
+from pyitab.dataset.dataset import AttrDataset, _expand_attribute
 from pyitab.dataset.mappers import ChainMapper, FlattenMapper
 from pyitab.dataset.selector import StaticFeatureSelection, mask_mapper
 from pyitab.dataset.utils import table2string, is_sequence_type
@@ -737,8 +736,6 @@ def summary_targets(dataset, targets_attr='targets', chunks_attr='chunks',
     return s
 
 @datasetmethod
-## TODO: make more efficient and more generic (accept >=1 attrs to
-##       operate on)
 def get_samples_per_chunk_target(dataset,
                                  targets_attr='targets', chunks_attr='chunks'):
     """Returns an array with the number of samples per target in each chunk.
