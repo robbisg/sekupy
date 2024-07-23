@@ -55,127 +55,6 @@ class AttrDataset:
     -----
     Any dataset might have a mapper attached that is stored as a dataset
     attribute called `mapper`.
-
-    Examples
-    --------
-    The simplest way to create a dataset is from a 2D array.
-
-    >>> import numpy as np
-    >>> from mvpa2.datasets import *
-    >>> samples = np.arange(12).reshape((4,3))
-    >>> ds = AttrDataset(samples)
-    >>> ds.nsamples
-    4
-    >>> ds.nfeatures
-    3
-    >>> ds.samples
-    array([[ 0,  1,  2],
-           [ 3,  4,  5],
-           [ 6,  7,  8],
-           [ 9, 10, 11]])
-
-    The above dataset can only be used for unsupervised machine-learning
-    algorithms, since it doesn't have any targets associated with its
-    samples. However, creating a labeled dataset is equally simple.
-
-    >>> ds_labeled = dataset_wizard(samples, targets=range(4))
-
-    Both the labeled and the unlabeled dataset share the same samples
-    array. No copying is performed.
-
-    >>> ds.samples is ds_labeled.samples
-    True
-
-    If the data should not be shared the samples array has to be copied
-    beforehand.
-
-    The targets are available from the samples attributes collection, but
-    also via the convenience property `targets`.
-
-    >>> ds_labeled.sa.targets is ds_labeled.targets
-    True
-
-    If desired, it is possible to add an arbitrary amount of additional
-    attributes. Regardless if their original sequence type they will be
-    converted into an array.
-
-    >>> ds_labeled.sa['lovesme'] = [0,0,1,0]
-    >>> ds_labeled.sa.lovesme
-    array([0, 0, 1, 0])
-
-    An alternative method to create datasets with arbitrary attributes
-    is to provide the attribute collections to the constructor itself --
-    which would also test for an appropriate size of the given
-    attributes:
-
-    >>> fancyds = AttrDataset(samples, sa={'targets': range(4),
-    ...                                'lovesme': [0,0,1,0]})
-    >>> fancyds.sa.lovesme
-    array([0, 0, 1, 0])
-
-    Exactly the same logic applies to feature attributes as well.
-
-    Datasets can be sliced (selecting a subset of samples and/or
-    features) similar to arrays. Selection is possible using boolean
-    selection masks, index sequences or slicing arguments. The following
-    calls for samples selection all result in the same dataset:
-
-    >>> sel1 = ds[np.array([False, True, True])]
-    >>> sel2 = ds[[1,2]]
-    >>> sel3 = ds[1:3]
-    >>> np.all(sel1.samples == sel2.samples)
-    True
-    >>> np.all(sel2.samples == sel3.samples)
-    True
-
-    During selection data is only copied if necessary. If the slicing
-    syntax is used the resulting dataset will share the samples with the
-    original dataset (here and below we compare .base against both ds.samples
-    and its .base for compatibility with NumPy < 1.7)
-
-    >>> sel1.samples.base in (ds.samples.base, ds.samples)
-    False
-    >>> sel2.samples.base in (ds.samples.base, ds.samples)
-    False
-    >>> sel3.samples.base in (ds.samples.base, ds.samples)
-    True
-
-    For feature selection the syntax is very similar they are just
-    represented on the second axis of the samples array. Plain feature
-    selection is achieved be keeping all samples and select a subset of
-    features (all syntax variants for samples selection are also
-    supported for feature selection).
-
-    >>> fsel = ds[:, 1:3]
-    >>> fsel.samples
-    array([[ 1,  2],
-           [ 4,  5],
-           [ 7,  8],
-           [10, 11]])
-
-    It is also possible to simultaneously selection a subset of samples
-    *and* features. Using the slicing syntax now copying will be
-    performed.
-
-    >>> fsel = ds[:3, 1:3]
-    >>> fsel.samples
-    array([[1, 2],
-           [4, 5],
-           [7, 8]])
-    >>> fsel.samples.base in (ds.samples.base, ds.samples)
-    True
-
-    Please note that simultaneous selection of samples and features is
-    *not* always congruent to array slicing.
-
-    >>> ds[[0,1,2], [1,2]].samples
-    array([[1, 2],
-           [4, 5],
-           [7, 8]])
-
-    Whereas the call: 'ds.samples[[0,1,2], [1,2]]' would not be
-    possible. In `AttrDatasets` selection of samples and features is always
-    applied individually and independently to each axis.
     """
 
     def __init__(self, samples, sa=None, fa=None, a=None):
@@ -749,8 +628,13 @@ def all_equal(x, y):
     except TypeError:
         return False
 
+    is_equal = all(all_equal(xx, yy) for (xx, yy) in zip(x, y))
+    
+    if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
+        is_equal = np.array_equal(x, y)
+    
     # do a recursive call on all elements
-    return all(all_equal(xx, yy) for (xx, yy) in zip(x, y))
+    return is_equal
 
 
 def _stack_add_equal_dataset_attributes(merged_dataset, datasets, a=None):

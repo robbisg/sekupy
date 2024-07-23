@@ -1,10 +1,13 @@
 
 import numpy as np
 import logging
+import copy
 
 from pyitab.dataset.learner import Learner
 from pyitab.dataset.atoms import ChainAtom
-from pyitab.dataset.utils import is_datasetlike, accepts_dataset_as_samples, _str
+from pyitab.dataset.utils import is_datasetlike, accepts_dataset_as_samples,\
+    _str, _repr_attrs
+
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +20,35 @@ def _assure_consistent_a(ds, oshape):
         ds.sa.set_length_check(shape[0])
     if oshape[1] != shape[1]:
         ds.fa.set_length_check(shape[1])
+
+def _verified_reverse1(mapper, onesample):
+    """Replacement of Mapper.reverse1 with safety net
+
+    This function can be called instead of a direct call to a mapper's
+    ``reverse1()``. It wraps a single sample into a dummy axis and calls
+    ``reverse()``. Afterwards it verifies that the first axis of the
+    returned array has one item only, otherwise it will issue a warning.
+    This function is useful in any context where it is critical to ensure
+    that reverse mapping a single sample, yields exactly one sample -- which
+    isn't guaranteed due to the flexible nature of mappers.
+
+    Parameters
+    ----------
+    mapper : Mapper instance
+    onesample : array-like
+      Single sample (in terms of the supplied mapper).
+
+    Returns
+    -------
+    array
+      Shape matches a single sample in terms of the mappers input space.
+    """
+    dummy_axis_sample = np.asanyarray(onesample)[None]
+    rsample = mapper.reverse(dummy_axis_sample)
+    if not len(rsample) == 1:
+        logger.warning("Reverse mapping single sample yielded multiple -- can lead to unintended behavior!")
+    return rsample[0]
+
 
 
 class Mapper(Learner):
@@ -207,6 +239,91 @@ class Mapper(Learner):
         return self.forward(ds)
 
 
+class SliceMapper(Mapper):
+    """Baseclass of Mapper that slice a Dataset in various ways.
+    """
+    def __init__(self, slicearg, **kwargs):
+        """
+        Parameters
+        ----------
+        slicearg
+          Argument for slicing
+        """
+        Mapper.__init__(self, **kwargs)
+        self._safe_assign_slicearg(slicearg)
+
+
+    def _safe_assign_slicearg(self, slicearg):
+        # convert int sliceargs into lists to prevent getting scalar values when
+        # slicing
+        if isinstance(slicearg, int):
+            slicearg = [slicearg]
+        self._slicearg = slicearg
+        # if we got some sort of slicearg we assume that we are ready to go
+        if slicearg is not None:
+            self._set_trained()
+
+    def __repr__(self, prefixes=None):
+        if prefixes is None:
+            prefixes = []
+        return super(SliceMapper, self).__repr__(
+            prefixes=prefixes
+            + _repr_attrs(self, ['slicearg']))
+
+
+    def __str__(self):
+        # with slicearg it can quickly get very unreadable
+        #return _str(self, str(self._slicearg))
+        return _str(self)
+
+
+    def _untrain(self):
+        self._safe_assign_slicearg(None)
+        super(SliceMapper, self)._untrain()
+
+
+    def __iadd__(self, other):
+        # our slicearg
+        this = self._slicearg
+        # if another slice mapper work on its slicearg
+        if isinstance(other, SliceMapper):
+            other = other._slicearg
+        # catch stupid arg
+        if not (isinstance(other, tuple) or isinstance(other, list) \
+                or isinstance(other, np.ndarray) or isinstance(other, slice)):
+            return NotImplemented
+        if isinstance(this, slice):
+            # we can always merge if the slicing arg can be sliced itself (i.e.
+            # it is not a slice-object... unless it doesn't really slice we do
+            # not want to expand slices into index lists to become mergable,
+            # since that would cause cheap view-based slicing to become
+            # expensive copy-based slicing
+            if this == slice(None):
+                # this one did nothing, just use the other and be done
+                self._safe_assign_slicearg(other)
+                return self
+            else:
+                # see comment above
+                return NotImplemented
+        # list or tuple are alike
+        if isinstance(this, (list, tuple)):
+            # simply convert it into an array and proceed from there
+            this = np.asanyarray(this)
+        if this.dtype.type is np.bool_:
+            # simply convert it into an index array --prevents us from copying a
+            # lot and allows for sliceargs such as [3,3,4,4,5,5]
+            this = this.nonzero()[0]
+        if this.dtype.char in np.typecodes['AllInteger']:
+            self._safe_assign_slicearg(this[other])
+            return self
+
+        # if we get here we got something the isn't supported
+        return NotImplemented
+
+    slicearg = property(fget=lambda self:self._slicearg)
+
+
+
 class FlattenMapper(Mapper):
     """Reshaping mapper that flattens multidimensional arrays into 1D vectors.
 
@@ -240,13 +357,6 @@ class FlattenMapper(Mapper):
         self.__maxdims = maxdims
         if shape is not None:
             self._train_with_shape(shape)
-
-    def __repr__(self, prefixes=None):
-        if prefixes is None:
-            prefixes = []
-        return super(FlattenMapper, self).__repr__(
-            prefixes=prefixes
-            + _repr_attrs(self, ['shape', 'maxdims']))
 
     def __str__(self):
         return _str(self)
@@ -403,8 +513,7 @@ class ChainMapper(ChainAtom):
             try:
                 mp = m.reverse(mp)
             except NotImplementedError:
-                if __debug__:
-                    debug('MAP', "Ignoring %s on reverse mapping." % m)
+                pass
         return mp
 
 
@@ -462,47 +571,3 @@ class ChainMapper(ChainAtom):
 
 
 
-def mask_mapper(mask=None, shape=None, space=None):
-    """Factory method to create a chain of Flatten+StaticFeatureSelection Mappers
-
-    Parameters
-    ----------
-    mask : None or array
-      an array in the original dataspace and its nonzero elements are
-      used to define the features included in the dataset. Alternatively,
-      the `shape` argument can be used to define the array dimensions.
-    shape : None or tuple
-      The shape of the array to be mapped. If `shape` is provided instead
-      of `mask`, a full mask (all True) of the desired shape is
-      constructed. If `shape` is specified in addition to `mask`, the
-      provided mask is extended to have the same number of dimensions.
-    inspace
-      Provided to `FlattenMapper`
-    """
-    if mask is None:
-        if shape is None:
-            raise ValueError("Either `shape` or `mask` have to be specified.")
-        else:
-            # make full dataspace mask if nothing else is provided
-            mask = np.ones(shape, dtype='bool')
-    else:
-        if shape is not None:
-            # expand mask to span all dimensions but first one
-            # necessary e.g. if only one slice from timeseries of volumes is
-            # requested.
-            mask = np.array(mask, copy=False, subok=True, ndmin=len(shape))
-            # check for compatibility
-            if not shape == mask.shape:
-                raise ValueError(\
-                    "The mask dataspace shape %s is not " \
-                    "compatible with the provided shape %s." \
-                    % (mask.shape, shape))
-
-    fm = FlattenMapper(shape=mask.shape, space=space)
-    flatmask = fm.forward1(mask)
-    mapper = ChainMapper([fm,
-                          StaticFeatureSelection(
-                              flatmask,
-                              dshape=flatmask.shape,
-                              oshape=(len(flatmask.nonzero()[0]),))])
-    return mapper

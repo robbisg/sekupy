@@ -16,8 +16,15 @@ import copy, re
 import numpy as np
 import collections
 
+from functools import reduce
 from pyitab.dataset.utils import _str, is_sequence_type
 
+_object_getattribute = dict.__getattribute__
+_object_setattr = dict.__setattr__
+_object_setitem = dict.__setitem__
+
+# To validate fresh
+_dict_api = set(dict.__dict__)
 
 class Collectable:
     """Collection element.
@@ -63,6 +70,13 @@ class Collectable:
     def __str__(self):
         res = "%s" % (self.name)
         return res
+
+    def __copy__(self):
+        # preserve attribute type
+        copied = self.__class__(name=self.name, doc=self.__doc__)
+        # just get a view of the old data!
+        copied.value = copy.copy(self.value)
+        return copied
 
 
     def __reduce__(self):
@@ -254,7 +268,47 @@ class ArrayCollectable(SequenceCollectable):
                                  % (self.__class__.__name__,
                                     str(type(val))))
         SequenceCollectable._set(self, val)
+        
+    def copy(self, deep=True, a=None, memo=None):
+        """Create a copy of a collection.
 
+        By default this is going to return a deep copy of the
+        collection, hence no data would be shared between the original
+        dataset and its copy.
+
+        Parameters
+        ----------
+        deep : boolean, optional
+          If False, a shallow copy of the collection is return instead. The copy
+          contains only views of the values.
+        a : list or None
+          List of attributes to include in the copy of the dataset. If
+          `None` all attributes are considered. If an empty list is
+          given, all attributes are stripped from the copy.
+        memo : dict
+          Developers only: This argument is only useful if copy() is called
+          inside the __deepcopy__() method and refers to the dict-argument
+          `memo` in the Python documentation.
+        """
+
+        # create the new collections of the right type derived classes
+        # might like to assure correct setting of additional
+        # attributes such as self._attr_length
+        anew = self.__class__()
+
+        # filter the attributes if necessary
+        if a is None:
+            aorig = self
+        else:
+            aorig = dict([(k, v) for k, v in self.items() if k in a])
+
+        # XXX copyvalues defaults to None which provides capability to
+        #     just bind values (not even 'copy').  Might it need be
+        #     desirable here?
+        anew.update(aorig, copyvalues=deep and 'deep' or 'shallow',
+                    memo=memo)
+
+        return anew
 
 class SampleAttribute(ArrayCollectable):
     """Per sample attribute in a dataset"""
@@ -318,7 +372,48 @@ class Collection(dict):
                 value.name = key
 
         _object_setitem(self, key, value)
+    
+    
+    def copy(self, deep=True, a=None, memo=None):
+        """Create a copy of a collection.
 
+        By default this is going to return a deep copy of the
+        collection, hence no data would be shared between the original
+        dataset and its copy.
+
+        Parameters
+        ----------
+        deep : boolean, optional
+          If False, a shallow copy of the collection is return instead. The copy
+          contains only views of the values.
+        a : list or None
+          List of attributes to include in the copy of the dataset. If
+          `None` all attributes are considered. If an empty list is
+          given, all attributes are stripped from the copy.
+        memo : dict
+          Developers only: This argument is only useful if copy() is called
+          inside the __deepcopy__() method and refers to the dict-argument
+          `memo` in the Python documentation.
+        """
+
+        # create the new collections of the right type derived classes
+        # might like to assure correct setting of additional
+        # attributes such as self._attr_length
+        anew = self.__class__()
+
+        # filter the attributes if necessary
+        if a is None:
+            aorig = self
+        else:
+            aorig = dict([(k, v) for k, v in self.items() if k in a])
+
+        # XXX copyvalues defaults to None which provides capability to
+        #     just bind values (not even 'copy').  Might it need be
+        #     desirable here?
+        anew.update(aorig, copyvalues=deep and 'deep' or 'shallow',
+                    memo=memo)
+
+        return anew
 
     def update(self, source, copyvalues=None, memo=None):
         """
@@ -334,9 +429,6 @@ class Collection(dict):
           inside the __deepcopy__() method and refers to the dict-argument
           `memo` in the Python documentation.
         """
-        
-        source = list(source)
-
         if isinstance(source, list):
             for a in source:
                 if isinstance(a, tuple):
@@ -358,7 +450,7 @@ class Collection(dict):
                     raise ValueError("Unknown value ('%s') for copy argument."
                                      % copy)
         elif isinstance(source, dict):
-            for k, v in source.values():
+            for k, v in source.items():
                 # expand the docs
                 if isinstance(v, tuple):
                     value = v[0]
@@ -439,7 +531,17 @@ class UniformLengthCollection(Collection):
     def __reduce__(self):
         return (self.__class__,
                 (self.items(), self._uniform_length))
+        
+    def copy(self, *args, **kwargs):
+        # Create a generic copy of the collection
+        anew = super(UniformLengthCollection, self).copy(*args, **kwargs)
 
+        # if it had any attributes assigned, those should have set
+        # attr_length already, otherwise lets assure that we copy the
+        # correct one into the new instance
+        if self.attr_length is not None and anew.attr_length is None:
+            anew.set_length_check(self.attr_length)
+        return anew
 
     def set_length_check(self, value):
         """
