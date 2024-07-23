@@ -15,7 +15,7 @@ from pyitab.dataset.dataset import AttrDataset
 from pyitab.dataset.dataset import _expand_attribute
 from pyitab.dataset.mappers import ChainMapper, FlattenMapper
 from pyitab.dataset.selector import StaticFeatureSelection, mask_mapper
-from pyitab.dataset.utils import table2string
+from pyitab.dataset.utils import table2string, is_sequence_type
 
 import logging
 logger = logging.getLogger(__name__)
@@ -769,3 +769,26 @@ def get_samples_per_chunk_target(dataset,
             count[ic, it] = np.sum(np.logical_and(ts==t, cs==c))
 
     return count
+
+@datasetmethod
+def get_samples_by_attr(dataset, attr, values, sort=True):
+    """Return indices of samples given a list of attributes
+    """
+
+    if not is_sequence_type(values) \
+           or isinstance(values, str):
+        values = [ values ]
+
+    # TODO: compare to plain for loop through the targets
+    #       on a real data example
+    sel = np.array([], dtype=np.int16)
+    sa = dataset.sa
+    for value in values:
+        sel = np.concatenate((
+            sel, np.where(sa[attr].value == value)[0]))
+
+    if sort:
+        # place samples in the right order
+        sel.sort()
+
+    return sel
