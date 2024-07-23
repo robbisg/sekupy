@@ -28,4 +28,3 @@ h5py
 hmmlearn
 pybids
 mne-hcp
-pymvpa2

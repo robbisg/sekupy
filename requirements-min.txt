@@ -13,4 +13,3 @@ joblib
 xlrd
 tqdm
 h5py
-pymvpa2
