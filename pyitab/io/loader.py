@@ -112,7 +112,7 @@ class DataLoader(object):
 
         Returns
         -------
-        ds: :class:`~mvpa2.dataset.Dataset`
+        ds: :class:`~pyitab.dataset.base.Dataset`
             The loaded dataset.
         """
         from pyitab.preprocessing.pipelines import Transformer, \

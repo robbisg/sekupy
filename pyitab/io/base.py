@@ -4,8 +4,6 @@
 #     See the file license.txt for copying permission.
 ########################################################
 from __future__ import print_function
-#from mvpa2.misc.io.base import SampleAttributes
-#from mvpa2.datasets.eventrelated import eventrelated_dataset, find_events
 
 from pyitab.dataset.mri import fmri_dataset
 from pyitab.dataset.dataset import vstack
@@ -43,7 +41,7 @@ def load_dataset(path, subj, folder, **kwargs):
     Returns
     -------
     ds : ``Dataset``
-       Instance of ``mvpa2.datasets.Dataset``
+       Instance of ``pyitab.dataset.base.Dataset``
     """
     roi_labels = dict()
     extract_events = False
@@ -300,7 +298,6 @@ def find_roi(path, roi_list):
 
     return mask_list
 
-# TODO: Avoid using SampleAttributes from mvpa2
 # It's better to read it as text file and use SampleAttributesCollection
 def load_attributes(path, subj, task,  **kwargs):
     """Loads attribute files from path and selected subject.

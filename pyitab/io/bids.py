@@ -34,7 +34,7 @@ def load_bids_dataset(path, subj, task, **kwargs):
     Returns
     -------
     ds : ``Dataset``
-       Instance of ``mvpa2.datasets.Dataset``
+       Instance of ``pyitab.dataset.base.Dataset``
     '''
     
     roi_labels = dict()

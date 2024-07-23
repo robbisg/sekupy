@@ -72,9 +72,6 @@ class Dataset(AttrDataset):
         might be useful whenever non-strict selection (strict=False) is
         required.
 
-        See :meth:`~mvpa2.base.collections.UniformLengthCollection.match()`
-        for more information about specification of selection dictionaries.
-
         Parameters
         ----------
         sadict, fadict : dict, optional
@@ -133,7 +130,7 @@ class Dataset(AttrDataset):
             # functionality between the Dataset.__getitem__ and the mapper.
             # However, __getitem__ is sometimes more efficient, since it can
             # slice samples and feature axis at the same time. Moreover, the
-            # mvpa2.base.dataset.Dataset has no clue about mappers and should
+            # pyitab.dataset.base.Dataset has no clue about mappers and should
             # be fully functional without them.
             subsetmapper = StaticFeatureSelection(
                 args[1],

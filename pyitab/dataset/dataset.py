@@ -14,7 +14,6 @@ from os.path import lexists
 import numpy as np
 import copy
 
-#from mvpa2.base import externals, warning
 from pyitab.dataset.collections import SampleAttributesCollection, \
     FeatureAttributesCollection, DatasetAttributesCollection
 from pyitab.dataset.utils import is_datasetlike, _str

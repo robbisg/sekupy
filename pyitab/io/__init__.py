@@ -41,7 +41,7 @@ def load_ds(conf_file, task,
 
     Returns
     -------
-    ```mvpa2.suite.Dataset```
+    ```pyitab.dataset.base.Dataset```
         The loaded dataset
     """
 

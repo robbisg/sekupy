@@ -2,8 +2,8 @@ from __future__ import print_function
 
 import numpy as np
 
-from mvpa2.mappers.detrend import PolyDetrendMapper
-from mvpa2.mappers.fx import mean_group_sample
+from pyitab.dataset.detrend import PolyDetrendMapper
+from pyitab.dataset.mappers import mean_group_sample
 
 from pyitab.dataset.dataset import vstack, hstack
 
@@ -45,12 +45,12 @@ class Detrender(Transformer):
 
         Parameters
         ----------
-        ds : :class:`~mvpa2.dataset.Dataset`
+        ds : :class:`~pyitab.dataset.base.Dataset`
             The dataset to be detrended.
 
         Returns
         -------
-        ds : :class:`~mvpa2.dataset.Dataset`
+        ds : :class:`~pyitab.dataset.base.Dataset`
             The detrended dataset
         """
         self.node.train(ds)
@@ -85,12 +85,12 @@ class SampleAverager(Transformer):
 
         Parameters
         ----------
-        ds : :class:`~mvpa2.dataset.Dataset`
+        ds : :class:`~pyitab.dataset.base.Dataset`
             The dataset to be transformed.
 
         Returns
         -------
-        ds : :class:`~mvpa2.dataset.Dataset`
+        ds : :class:`~pyitab.dataset.base.Dataset`
             The transformed dataset
         """
         logger.info('Dataset preprocessing: Averaging samples...')

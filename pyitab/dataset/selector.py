@@ -10,23 +10,10 @@ class FeatureSelection(SliceMapper):
     subsequently, and the latter two assume that both slicings operate on the
     set of input features.
 
-    Examples
-    --------
-    >>> from mvpa2.datasets import *
-    >>> ds = Dataset([[1,2,3,4,5]])
-    >>> fs0 = StaticFeatureSelection([0,1,2,3])
-    >>> fs0(ds).samples
-    array([[1, 2, 3, 4]])
-
     Merge two incremental selections: the resulting mapper performs a selection
     that is equivalent to first applying one slicing and subsequently the next
     slicing. In this scenario the slicing argument of the second mapper is
     relative to the output feature space of the first mapper.
-
-    >>> fs1 = StaticFeatureSelection([0,2])
-    >>> fs0 += fs1
-    >>> fs0(ds).samples
-    array([[1, 3]])
     """
 
     __init__doc__exclude__ = ['slicearg']
