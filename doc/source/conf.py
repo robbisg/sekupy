@@ -182,7 +182,7 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
-autodoc_mock_imports = ["pymvpa2", "mvpa2"]
+# autodoc_mock_imports = ["pymvpa2", "mvpa2"]
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
@@ -194,7 +194,7 @@ intersphinx_mapping = {
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'nibabel': ('https://nipy.org/nibabel', None),
     'nilearn': ('https://nilearn.github.io', None),
-    'mvpa2': ('http://www.pymvpa.org', None),
+    #'mvpa2': ('http://www.pymvpa.org', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'nistats': ('https://nistats.github.io', None),
 }

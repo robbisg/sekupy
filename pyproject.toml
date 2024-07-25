@@ -46,7 +46,7 @@ dependencies = [
     "pandas",
     "seaborn",
     "imbalanced-learn",
-    "pymvpa2",
+    #"pymvpa2",
     "mne",
     "lazy_loader>=0.3",
     "pymatreader",
