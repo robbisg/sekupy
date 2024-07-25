@@ -3,8 +3,8 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pyitab"
-description = "MVPA Pipelines at ITAB"
+name = "sekupy"
+description = "Detergent for your dirty neuroimaging pipelines"
 dynamic = ["version"]
 authors = [
     { name = "Roberto Guidotti", email = "roberto.guidotti@unich.it" },
@@ -107,10 +107,10 @@ doc = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/robbisg/pyitab"
-"Bug Tracker" = "https://github.com/robbisg/pyitab/issues/"
-Documentation = "https://pyitab.readthedocs.io/"
-"Source Code" = "https://github.com/robbisg/pyitab"
+Homepage = "https://github.com/robbisg/sekupy"
+"Bug Tracker" = "https://github.com/robbisg/sekupy/issues/"
+Documentation = "https://sekupy.readthedocs.io/"
+"Source Code" = "https://github.com/robbisg/sekupy"
 
 [tool.hatch.build]
 exclude = [
@@ -119,7 +119,7 @@ exclude = [
     "/*.yaml",
     "/*.toml",
     "/*.txt",
-    "/pyitab/**/tests",
+    "/sekupy/**/tests",
     "/dist",
     "/doc",
     "/joss",
