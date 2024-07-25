@@ -46,7 +46,6 @@ dependencies = [
     "pandas",
     "seaborn",
     "imbalanced-learn",
-    #"pymvpa2",
     "mne",
     "lazy_loader",
     "statsmodels",

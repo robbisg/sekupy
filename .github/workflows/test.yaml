@@ -1,4 +1,4 @@
-name: pyitab
+name: sekupy
 
 on: [push]
 
@@ -48,7 +48,7 @@ jobs:
         # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        python -m pytest --pyargs pyitab --cov=pyitab
+        python -m pytest --pyargs sekupy --cov=sekupy
     - uses: codecov/codecov-action@v1
       if: success()
       name: 'Upload coverage to CodeCov'

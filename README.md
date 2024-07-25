@@ -6,12 +6,14 @@
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 [![CodeFactor](https://www.codefactor.io/repository/github/robbisg/sekupy/badge)](https://www.codefactor.io/repository/github/robbisg/sekupy)
 
-`sekupy` is a python-package created for easing (multivariate) neuroimaging analysis. The package has been thought for
+`sekupy` is a python-package created for deterging your (dirty) (and) (multivariate) neuroimaging analyses. The package has been thought for
 decoding analyses but it includes also basic univariate analyses.
 
 It has some utilities to vary sets of parameters of the analyses without struggling with `for` and `if` statements.
 
-`sekupy` stands for Python at Institute for Advanced Biomedical Technologies (ITAB), which is part of University of Chieti-Pescara "G. D'Annunzio".
+It deterges your results, by saving them in a safe manner, by also keeping in mind BIDS.
+
+`sekupy` is the deterged version of `pyitab`.
 
 # Documentation
 
