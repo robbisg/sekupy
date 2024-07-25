@@ -24,7 +24,7 @@ class Imbalancer(Transformer):
         if len(X.shape) > 2:
             X = X[...,0]
 
-        mask = np.zeros_like(y, dtype=np.bool)
+        mask = np.zeros_like(y, dtype=bool)
         logger.debug('Attribute balanced dataset: %s', Counter(ds.targets))
         
         ratio = self.get_ratio(y)

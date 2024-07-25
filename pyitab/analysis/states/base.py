@@ -273,7 +273,7 @@ class Clustering(Analyzer):
                     counter += 1
                 else:
                     counter += 1
-                    state_duration.append([state, np.float(counter)])
+                    state_duration.append([state, float(counter)])
                     counter = 0
         
         return np.array(state_duration)

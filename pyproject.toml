@@ -37,18 +37,21 @@ classifiers = [
 ]
 
 dependencies = [
-    "numpy>=1.21.2",
-    "scipy>=1.7.1",
-    "matplotlib>=3.5.0",
+    "numpy",
+    "scipy",
+    "matplotlib",
     "tqdm",
     "scikit-learn",
     "nibabel",
     "pandas",
     "seaborn",
     "imbalanced-learn",
-    "pymvpa2",
+    #"pymvpa2",
     "mne",
-    "lazy_loader>=0.3",
+    "lazy_loader",
+    "statsmodels",
+    "pybids",
+    "nilearn",
     "pymatreader",
     "h5py"
 ]

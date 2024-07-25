@@ -4,17 +4,18 @@
 #     See the file license.txt for copying permission.
 ########################################################
 from __future__ import print_function
-#from mvpa2.misc.io.base import SampleAttributes
-#from mvpa2.datasets.eventrelated import eventrelated_dataset, find_events
 
 from pyitab.dataset.mri import fmri_dataset
 from pyitab.dataset.dataset import vstack
+from pyitab.dataset.events import find_events
 from pyitab.utils.files import add_subdirs, build_pathnames
 from pyitab.io.subjects import add_subjectname
+from pyitab.dataset.collections import SampleAttributesCollection
 
 import os
 import numpy as np
 import nibabel as ni
+import pandas as pd
 
 import logging
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ def load_dataset(path, subj, folder, **kwargs):
     Returns
     -------
     ds : ``Dataset``
-       Instance of ``mvpa2.datasets.Dataset``
+       Instance of ``pyitab.dataset.base.Dataset``
     """
     roi_labels = dict()
     extract_events = False
@@ -267,7 +268,7 @@ def load_mask(path, **kwargs):
     data = 0
     for m in mask_list:
         img = ni.load(os.path.join(mask_path, m))
-        data = data + img.get_data() 
+        data = data + img.get_fdata() 
         logger.info('Mask used: %s' % img.get_filename())
 
     mask = ni.Nifti1Image(data.squeeze(), img.affine)
@@ -330,7 +331,7 @@ def load_attributes(path, subj, task, **kwargs):
             header = kwargs[arg].split(',')
             # If it's one item is a boolean
             if len(header) == 1:
-                header = np.bool(header[0])
+                header = bool(header[0])
 
     directory_list = add_subdirs(path, subj, sub_dirs)
 
@@ -354,6 +355,8 @@ def load_attributes(path, subj, task, **kwargs):
     logger.debug(header)
 
     attr_fname = attribute_list[0]
+    
+    attr = pd.read_csv(attr_fname, sep=' ').to_dict(orient='list')
+    attr = SampleAttributesCollection(attr)
 
-    attr = SampleAttributes(attr_fname, header=header)
     return attr

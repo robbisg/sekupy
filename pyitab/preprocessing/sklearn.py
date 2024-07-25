@@ -1,6 +1,6 @@
 from .base import Transformer
 from ..utils.dataset import get_ds_data
-from mvpa2.datasets import Dataset
+from pyitab.dataset.base import Dataset
 
 import logging
 logger = logging.getLogger(__name__)

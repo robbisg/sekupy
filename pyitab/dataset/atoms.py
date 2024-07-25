@@ -358,6 +358,33 @@ class ChainAtom(CompoundAtom):
             mp = n(mp)
 
         return mp
+    
+    def append(self, node):
+        """Append a node to the chain."""
+        # XXX and if a node is a ChainMapper itself -- should we just
+        # may be loop and add all the entries?
+        self._nodes.append(node)
+
+    def __len__(self):
+        return len(self._nodes)
+
+    def __iter__(self):
+        for n in self._nodes:
+            yield n
+
+    def __reversed__(self):
+        return reversed(self._nodes)
+
+    def __getitem__(self, key):
+        # if just one is requested return just one, otherwise return a
+        # NodeChain again
+        if isinstance(key, int):
+            return self._nodes[key]
+        else:
+            # operate on shallow copy of self
+            sliced = copy.copy(self)
+            sliced._nodes = self._nodes[key]
+            return sliced
 
 
 class CombinedAtom(CompoundAtom):

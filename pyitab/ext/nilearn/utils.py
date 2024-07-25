@@ -76,7 +76,7 @@ def _get_affinity(seeds,
 def check_proximity(ds, radius):
     
     logger.info("Checking proximity matrix...")
-    radius = np.float(radius)
+    radius = float(radius)
     fname = os.path.join(ds.a.data_path, 
                          "proximity_radius_%s_%s.npz" % (str(radius), 
                                                          ds.a.brain_mask))
@@ -86,7 +86,7 @@ def check_proximity(ds, radius):
 def load_proximity(ds, radius):
     
     logger.info("Loading proximity matrix...")
-    radius = np.float(radius)
+    radius = float(radius)
     fname = os.path.join(ds.a.data_path, 
                          "proximity_radius_%s_%s.npz" % (str(radius),
                                                          ds.a.brain_mask))
@@ -97,7 +97,7 @@ def load_proximity(ds, radius):
 def save_proximity(ds, radius, A):
 
     logger.info("Saving proximity matrix...")
-    radius = np.float(radius)
+    radius = float(radius)
     fname = os.path.join(ds.a.data_path, 
                          "proximity_radius_%s_%s.npz" % (str(radius), 
                                                          ds.a.brain_mask))

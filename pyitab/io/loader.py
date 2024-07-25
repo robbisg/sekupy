@@ -5,7 +5,7 @@ from pyitab.io import load_ds
 from pyitab.io.bids import load_bids_dataset
 from pyitab.io.connectivity import load_mat_ds
 from pyitab.io.base import load_dataset
-from pyitab.simulation.loader import load_simulations
+#from pyitab.simulation.loader import load_simulations
 from pyitab.io.mambo import load_bids_mambo_dataset
 
 import logging
@@ -18,7 +18,7 @@ def get_loader(name):
         'bids': load_bids_dataset,
         'base': load_dataset,
         'mat': load_mat_ds,
-        'simulations': load_simulations,
+        #'simulations': load_simulations,
         'bids-meg': load_bids_mambo_dataset
     }
 
@@ -112,7 +112,7 @@ class DataLoader(object):
 
         Returns
         -------
-        ds: :class:`~mvpa2.dataset.Dataset`
+        ds: :class:`~pyitab.dataset.base.Dataset`
             The loaded dataset.
         """
         from pyitab.preprocessing.pipelines import Transformer, \

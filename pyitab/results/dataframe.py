@@ -45,7 +45,7 @@ def query_rows(dataframe, keys, attr, fx=np.max):
     queried_df = []
 
     for i, row in df_values.iterrows():
-        mask = np.ones(dataframe.shape[0], dtype=np.bool)
+        mask = np.ones(dataframe.shape[0], dtype=bool)
         for k in df_values.keys():
             mask = np.logical_and(mask, dataframe[k].values == row[k])
 

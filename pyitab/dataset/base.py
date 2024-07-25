@@ -11,9 +11,10 @@
 import numpy as np
 import copy
 
-from pyitab.dataset.dataset import AttrDataset
-from pyitab.dataset.dataset import _expand_attribute
-from pyitab.dataset.mappers import ChainMapper
+from pyitab.dataset.dataset import AttrDataset, _expand_attribute
+from pyitab.dataset.mappers import ChainMapper, FlattenMapper
+from pyitab.dataset.selector import StaticFeatureSelection, mask_mapper
+from pyitab.dataset.utils import table2string, is_sequence_type
 
 import logging
 logger = logging.getLogger(__name__)
@@ -45,6 +46,7 @@ class Dataset(AttrDataset):
         mds = mapper.forward(self)
         mds._append_mapper(mapper)
         return mds
+    
 
     def _append_mapper(self, mapper):
         if not 'mapper' in self.a:
@@ -68,9 +70,6 @@ class Dataset(AttrDataset):
         Generally __getitem__ (i.e. []) should be used, but this function
         might be useful whenever non-strict selection (strict=False) is
         required.
-
-        See :meth:`~mvpa2.base.collections.UniformLengthCollection.match()`
-        for more information about specification of selection dictionaries.
 
         Parameters
         ----------
@@ -130,7 +129,7 @@ class Dataset(AttrDataset):
             # functionality between the Dataset.__getitem__ and the mapper.
             # However, __getitem__ is sometimes more efficient, since it can
             # slice samples and feature axis at the same time. Moreover, the
-            # mvpa2.base.dataset.Dataset has no clue about mappers and should
+            # pyitab.dataset.base.Dataset has no clue about mappers and should
             # be fully functional without them.
             subsetmapper = StaticFeatureSelection(
                 args[1],
@@ -181,6 +180,8 @@ class Dataset(AttrDataset):
             raise LookupError("Cannot find '%s' attribute in any dataset "
                               "collection.", attr)
         return col
+    
+
 
     def _collection_id2obj(self, col):
         if col == 'sa':
@@ -514,6 +515,16 @@ class HollowSamples(object):
         return self
 
 
+def datasetmethod(func):
+    """Decorator to easily bind functions to an AttrDataset class
+    """
+    # Bind the function
+    setattr(AttrDataset, func.__name__, func)
+
+    # return the original one
+    return func
+
+
 def preprocessed_dataset(
         src, raw_loader, ds_converter, preproc_raw=None,
         preproc_ds=None, add_sa=None, **kwargs):
@@ -570,17 +581,6 @@ def preprocessed_dataset(
     -------
     Dataset
 
-    Examples
-    --------
-    Load 4D BOLD fMRI data
-
-    >>> import nibabel as nb
-    >>> from mvpa2.datasets.mri import fmri_dataset
-    >>> from mvpa2.mappers.detrend import PolyDetrendMapper
-    >>> ds = preprocessed_dataset(
-    ...         'mvpa2/data/bold.nii.gz', nb.load, fmri_dataset,
-    ...         mask='mvpa2/data/mask.nii.gz',
-    ...         preproc_ds=PolyDetrendMapper(polyord=2, auto_train=True))
     """
     raw = raw_loader(src)
 
@@ -602,3 +602,190 @@ def preprocessed_dataset(
     if preproc_ds is not None:
         ds = preproc_ds(ds)
     return ds
+
+
+@datasetmethod
+def summary(dataset, stats=True, lstats='auto', sstats='auto', idhash=False,
+            targets_attr='targets', chunks_attr='chunks',
+            maxc=30, maxt=20):
+    """String summary over the object
+
+    Parameters
+    ----------
+    stats : bool
+      Include some basic statistics (mean, std, var) over dataset samples
+    lstats : 'auto' or bool
+      Include statistics on chunks/targets.  If 'auto', includes only if both
+      targets_attr and chunks_attr are present.
+    sstats : 'auto' or bool
+      Sequence (order) statistics. If 'auto', includes only if
+      targets_attr is present.
+    idhash : bool
+      Include idhash value for dataset and samples
+    targets_attr : str, optional
+      Name of sample attributes of targets
+    chunks_attr : str, optional
+      Name of sample attributes of chunks -- independent groups of samples
+    maxt : int
+      Maximal number of targets when provide details on targets/chunks
+    maxc : int
+      Maximal number of chunks when provide details on targets/chunks
+    """
+    # local bindings
+    samples = dataset.samples
+    sa = dataset.sa
+    s = str(dataset)[1:-1]
+
+    if idhash:
+        s += '\nID-Hashes: %s' % dataset.idhash
+
+    # Deduce if necessary lstats and sstats
+    if lstats == 'auto':
+        lstats = (targets_attr in sa) and (chunks_attr in sa)
+    if sstats == 'auto':
+        sstats = (targets_attr in sa)
+
+    ssep = (' ', '\n')[lstats]
+
+    ## Possibly summarize attributes listed as having unique
+    if stats:
+        if np.issctype(samples.dtype):
+            # TODO -- avg per chunk?
+            # XXX We might like to use scipy.stats.describe to get
+            # quick summary statistics (mean/range/skewness/kurtosis)
+            if dataset.nfeatures:
+                s += "%sstats: mean=%g std=%g var=%g min=%g max=%g\n" % \
+                     (ssep, np.mean(samples), np.std(samples),
+                      np.var(samples), np.min(samples), np.max(samples))
+            else:
+                s += "%sstats: dataset has no features\n" % ssep
+        else:
+            s += "%sstats: no stats for dataset of '%s' dtype" % (ssep, samples.dtype)
+    if lstats:
+        try:
+            s += dataset.summary_targets(
+                targets_attr=targets_attr, chunks_attr=chunks_attr,
+                maxc=maxc, maxt=maxt)
+        except KeyError as e:
+            s += 'No per %s/%s due to %r' % (targets_attr, chunks_attr, e)
+
+    return s
+
+@datasetmethod
+def summary_targets(dataset, targets_attr='targets', chunks_attr='chunks',
+                    maxc=30, maxt=20):
+    """Provide summary statistics over the targets and chunks
+
+    Parameters
+    ----------
+    dataset : `Dataset`
+      Dataset to operate on
+    targets_attr : str, optional
+      Name of sample attributes of targets
+    chunks_attr : str, optional
+      Name of sample attributes of chunks -- independent groups of samples
+    maxc : int
+      Maximal number of chunks when provide details
+    maxt : int
+      Maximal number of targets when provide details
+    """
+    # We better avoid bound function since if people only
+    # imported Dataset without miscfx it would fail
+    spcl = get_samples_per_chunk_target(
+        dataset, targets_attr=targets_attr, chunks_attr=chunks_attr)
+    # XXX couldn't they be unordered?
+    ul = dataset.sa[targets_attr].unique.tolist()
+    uc = dataset.sa[chunks_attr].unique.tolist()
+    s = ""
+    if len(ul) < maxt and len(uc) < maxc:
+        s += "\nCounts of targets in each chunk:"
+        # only in a reasonable case do printing
+        table = [['  %s\\%s' % (chunks_attr, targets_attr)] + ul]
+        table += [[''] + ['---'] * len(ul)]
+        for c, counts in zip(uc, spcl):
+            table.append([ str(c) ] + counts.tolist())
+        s += '\n' + table2string(table)
+    else:
+        s += "No details due to large number of targets or chunks. " \
+             "Increase maxc and maxt if desired"
+
+
+    def cl_stats(axis, u, name1, name2):
+        """Compute statistics per target
+        """
+        stats = {'min': np.min(spcl, axis=axis),
+                 'max': np.max(spcl, axis=axis),
+                 'mean': np.mean(spcl, axis=axis),
+                 'std': np.std(spcl, axis=axis),
+                 '#%s' % name2: np.sum(spcl>0, axis=axis)}
+        entries = ['  ' + name1, 'mean', 'std', 'min', 'max', '#%s' % name2]
+        table = [ entries ]
+        for i, l in enumerate(u):
+            d = {'  ' + name1 : l}
+            d.update(dict([ (k, stats[k][i]) for k in stats.keys()]))
+            table.append( [ ('%.3g', '%s')[isinstance(d[e], str)
+                                           or d[e] is None]
+                            % d[e] for e in entries] )
+        return '\nSummary for %s across %s\n' % (name1, name2) \
+               + table2string(table)
+
+    if len(ul) < maxt:
+        s += cl_stats(0, ul, targets_attr, chunks_attr)
+    if len(uc) < maxc:
+        s += cl_stats(1, uc, chunks_attr, targets_attr)
+    return s
+
+@datasetmethod
+def get_samples_per_chunk_target(dataset,
+                                 targets_attr='targets', chunks_attr='chunks'):
+    """Returns an array with the number of samples per target in each chunk.
+
+    Array shape is (chunks x targets).
+
+    Parameters
+    ----------
+    dataset : Dataset
+      Source dataset.
+    """
+    # shortcuts/local bindings
+    ta = dataset.sa[targets_attr]
+    ca = dataset.sa[chunks_attr]
+
+    # unique
+    ut = ta.unique
+    uc = ca.unique
+
+    # all
+    ts = ta.value
+    cs = ca.value
+
+    count = np.zeros((len(uc), len(ut)), dtype='uint')
+
+    for ic, c in enumerate(uc):
+        for it, t in enumerate(ut):
+            count[ic, it] = np.sum(np.logical_and(ts==t, cs==c))
+
+    return count
+
+@datasetmethod
+def get_samples_by_attr(dataset, attr, values, sort=True):
+    """Return indices of samples given a list of attributes
+    """
+
+    if not is_sequence_type(values) \
+           or isinstance(values, str):
+        values = [ values ]
+
+    # TODO: compare to plain for loop through the targets
+    #       on a real data example
+    sel = np.array([], dtype=np.int16)
+    sa = dataset.sa
+    for value in values:
+        sel = np.concatenate((
+            sel, np.where(sa[attr].value == value)[0]))
+
+    if sort:
+        # place samples in the right order
+        sel.sort()
+
+    return sel

@@ -38,7 +38,7 @@ class TrajectoryConnectivity(Analyzer):
         Parameters
         -----------
     
-        ds : :class:`~mvpa2.dataset.Dataset`
+        ds : :class:`~pyitab.dataset.base.Dataset`
             The dataset to be used to fit the data
     
         cv_attr : string. Default is 'chunks'.
