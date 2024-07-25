@@ -26,5 +26,3 @@ pytest-cov
 tqdm
 h5py
 hmmlearn
-pybids
-mne-hcp
