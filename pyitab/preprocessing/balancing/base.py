@@ -2,12 +2,12 @@ from pyitab.preprocessing.base import Transformer
 from pyitab.preprocessing.slicers import SampleSlicer
 from pyitab.utils.dataset import get_ds_data
 from pyitab.preprocessing.balancing.utils import sample_generator
-from mvpa2.datasets.base import Dataset
+from pyitab.dataset.base import Dataset
 from imblearn.under_sampling import RandomUnderSampler
 
 from collections import Counter
 import numpy as np
-from mvpa2.base.dataset import vstack
+from pyitab.dataset.dataset import vstack
 
 import logging
 logger = logging.getLogger(__name__)
@@ -91,7 +91,7 @@ class SamplingBalancer(Transformer):
 
 
     def _balance(self, ds):
-        return
+        return ds
 
 
     def _balance_attr(self, ds):

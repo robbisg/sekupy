@@ -66,10 +66,10 @@ def remove_value_nifti(img_fname, value, output_fname, mask_fname=None):
     img = ni.load(img_fname)
     
     if mask_fname is not None:
-        mask = ni.load(mask_fname).get_data()
+        mask = ni.load(mask_fname).get_fdata()
         
     
-    out_img = remove_value(img.get_data(), value, mask)
+    out_img = remove_value(img.get_fdata(), value, mask)
     
     out_img = ni.save(ni.Nifti1Image(out_img, img.affine), output_fname)
     
@@ -101,13 +101,13 @@ def remove_mean_nifti(img_fname, output_fname, mask_fname=None):
     
     img = ni.load(img_fname)
     
-    data = img.get_data()
+    data = img.get_fdata()
     
     value = data.mean()
     
     mask_data = None
     if mask_fname is not None:
-        mask_data = ni.load(mask_fname).get_data().squeeze()
+        mask_data = ni.load(mask_fname).get_fdata().squeeze()
         value = data[np.bool_(mask_data)].mean()
        
     out_img = remove_value(data, value, mask_data)
@@ -141,9 +141,9 @@ def conjunction_map(a_map, b_map, output_fname, output='mask'):
     a_img = ni.load(a_map)
     b_img = ni.load(b_map)
     
-    mask_int = np.int_(b_img.get_data() != 0)
+    mask_int = np.int_(b_img.get_fdata() != 0)
     
-    data = a_img.get_data()
+    data = a_img.get_fdata()
     if output == 'mask':
         data /= data
     
@@ -178,7 +178,7 @@ def afni_converter(afni_fname, output_fname, brick=None):
     os.system(command)
     
     img = ni.load(output_fname)
-    output = img.get_data().squeeze()
+    output = img.get_fdata().squeeze()
     
     save_map(output_fname, output, affine=img.affine)
     

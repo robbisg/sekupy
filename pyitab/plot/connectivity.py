@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def plot_connectivity_matrix(matrix, networks, roi_names=None, threshold=None, **kwargs):
+def plot_connectivity_matrix(matrix, networks, roi_names=None, a=None, threshold=None, **kwargs):
     """
     This function is used to plot connections in square matrix form.
     
@@ -75,9 +75,9 @@ def plot_connectivity_matrix(matrix, networks, roi_names=None, threshold=None, *
         networks[-1] = networks[-2]
     
     max_value = np.max(np.abs(matrix))
-
-    f = plt.figure()
-    a = f.add_subplot(111)
+    if a is None:
+        f = plt.figure(figsize=(12, 8))
+        a = f.add_subplot(111)
 
     if threshold is None:
         ax = a.imshow(matrix, 
@@ -140,7 +140,7 @@ def plot_connectivity_matrix(matrix, networks, roi_names=None, threshold=None, *
     a.set_yticklabels(ticks_labels)
     
     a.set_xticks(network_ticks)
-    a.set_xticklabels(ticks_labels, rotation=80)
+    a.set_xticklabels(ticks_labels)
     
     cbar = f.colorbar(ax)
     
@@ -879,7 +879,7 @@ def plot_cross_correlation(xcorr, t_start, t_end, labels):
         
     def animate(i):
         global l_time
-        j = np.int(np.rint(i/20))
+        j = np.int16(np.rint(i/20))
         #im.set_array(xcorr.at(l_time[j]))
         im.set_array(xcorr[mask][j])
         title.set_text('Cross-correlation at time lag of '+str(l_time[mask][j])+' TR.')

@@ -176,7 +176,7 @@ class _GSBS(Analyzer):
         """
 
         if kmax is None:
-            kmax = np.int(X.shape[0] * .5)
+            kmax = np.int16(X.shape[0] * .5)
 
         ind = np.triu(np.ones(X.shape[0], bool), self.dmin)
         Z = zscore(X, axis=1, ddof=1)
@@ -246,7 +246,7 @@ class _GSBS(Analyzer):
     def assign_states(self, X, deltas):
         states = np.zeros(len(deltas), int)
         for i, delta in enumerate(deltas[1:]):
-            states[i + 1] = states[i] + np.int(delta)
+            states[i + 1] = states[i] + np.int16(delta)
 
         return states
 

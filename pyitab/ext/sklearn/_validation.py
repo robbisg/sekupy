@@ -197,37 +197,6 @@ def cross_validate(estimator, X, y=None, *, groups=None, scoring=None, cv=None,
                 This is available only if ``return_estimator`` parameter
                 is set to ``True``.
 
-    Examples
-    --------
-    >>> from sklearn import datasets, linear_model
-    >>> from sklearn.model_selection import cross_validate
-    >>> from sklearn.metrics import make_scorer
-    >>> from sklearn.metrics import confusion_matrix
-    >>> from sklearn.svm import LinearSVC
-    >>> diabetes = datasets.load_diabetes()
-    >>> X = diabetes.data[:150]
-    >>> y = diabetes.target[:150]
-    >>> lasso = linear_model.Lasso()
-
-    Single metric evaluation using ``cross_validate``
-
-    >>> cv_results = cross_validate(lasso, X, y, cv=3)
-    >>> sorted(cv_results.keys())
-    ['fit_time', 'score_time', 'test_score']
-    >>> cv_results['test_score']
-    array([0.33150734, 0.08022311, 0.03531764])
-
-    Multiple metric evaluation using ``cross_validate``
-    (please refer the ``scoring`` parameter doc for more information)
-
-    >>> scores = cross_validate(lasso, X, y, cv=3,
-    ...                         scoring=('r2', 'neg_mean_squared_error'),
-    ...                         return_train_score=True)
-    >>> print(scores['test_neg_mean_squared_error'])
-    [-3635.5... -3573.3... -6114.7...]
-    >>> print(scores['train_r2'])
-    [0.28010158 0.39088426 0.22784852]
-
     See Also
     ---------
     cross_val_score : Run cross-validation for single metric evaluation.
@@ -434,16 +403,6 @@ def cross_val_score(estimator, X, y=None, *, groups=None, scoring=None,
     scores : ndarray of float of shape=(len(list(cv)),)
         Array of scores of the estimator for each run of the cross validation.
 
-    Examples
-    --------
-    >>> from sklearn import datasets, linear_model
-    >>> from sklearn.model_selection import cross_val_score
-    >>> diabetes = datasets.load_diabetes()
-    >>> X = diabetes.data[:150]
-    >>> y = diabetes.target[:150]
-    >>> lasso = linear_model.Lasso()
-    >>> print(cross_val_score(lasso, X, y, cv=3))
-    [0.33150734 0.08022311 0.03531764]
 
     See Also
     ---------
@@ -701,7 +660,7 @@ def _score(estimator, X_test, y_test, scorer, error_score="raise"):
     """
     if isinstance(scorer, dict):
         # will cache method calls if needed. scorer() returns a dict
-        scorer = _MultimetricScorer(**scorer)
+        scorer = _MultimetricScorer(scorers=scorer)
 
     try:
         if y_test is None:
@@ -862,15 +821,6 @@ def cross_val_predict(estimator, X, y=None, *, groups=None, cv=None,
     0.  In order to ensure finite output, we approximate negative infinity by
     the minimum finite float value for the dtype in other cases.
 
-    Examples
-    --------
-    >>> from sklearn import datasets, linear_model
-    >>> from sklearn.model_selection import cross_val_predict
-    >>> diabetes = datasets.load_diabetes()
-    >>> X = diabetes.data[:150]
-    >>> y = diabetes.target[:150]
-    >>> lasso = linear_model.Lasso()
-    >>> y_pred = cross_val_predict(lasso, X, y, cv=3)
     """
     X, y, groups = indexable(X, y, groups)
 

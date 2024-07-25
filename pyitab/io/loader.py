@@ -5,7 +5,7 @@ from pyitab.io import load_ds
 from pyitab.io.bids import load_bids_dataset
 from pyitab.io.connectivity import load_mat_ds
 from pyitab.io.base import load_dataset
-from pyitab.simulation.loader import load_simulations
+#from pyitab.simulation.loader import load_simulations
 from pyitab.io.mambo import load_bids_mambo_dataset
 
 import logging
@@ -18,7 +18,7 @@ def get_loader(name):
         'bids': load_bids_dataset,
         'base': load_dataset,
         'mat': load_mat_ds,
-        'simulations': load_simulations,
+        #'simulations': load_simulations,
         'bids-meg': load_bids_mambo_dataset
     }
 
@@ -26,12 +26,13 @@ def get_loader(name):
 
 # TODO : Documentation
 class DataLoader(object):
-    """
+    """Class to load data from a configuration file.
+
     This class sets up the loading, a configuration file and a task is needed
     the task should be a section in the configuration file.
 
     Configuration file should be like this example below:
-    
+
     ```
     [path]
     data_path=/
@@ -53,7 +54,7 @@ class DataLoader(object):
     [roi_labels]
     lateral_ips=/media/robbis/DATA/fmri/carlo_ofp/1_single_ROIs/lateral_ips.nii.gz
     ```
-    
+
     Parameters
     ----------
     configuration_file : str
@@ -74,9 +75,9 @@ class DataLoader(object):
         mask_dir : str, path of mask/ROIs directories
         brain_mask : str, name of the mask/ROI to use for reduce voxels
         roi_labels : dict, a dictionary with ROI name as key and path to ROI as value.
-        
-    """      
-    
+
+    """
+
     def __init__(self,
                  configuration_file,
                  task,
@@ -87,17 +88,17 @@ class DataLoader(object):
         self._loader = get_loader(loader)
         self._configuration_file = configuration_file
         self._task = task
-        
+
         # TODO: Check configuration based on loader
         self._conf = {}
         self._conf.update(**kwargs)
-        
-        
-        
+
     def fetch(self, prepro=None, n_subjects=None, subject_names=None):
-        """This function starts to load data given the information provided
+        """Fetch data from disk.
+
+        This function starts to load data given the information provided
         in the constructor.
-        
+
         Parameters
         ----------
         prepro : :class:`~pyitab.preprocessing.pipelines.PreprocessingPipeline`
@@ -108,22 +109,21 @@ class DataLoader(object):
              (the default is None)
         subject_names : list of strings, optional
             The list of subject names to be loaded (the default is None)
-        
+
         Returns
         -------
-        ds: :class:`~mvpa2.dataset.Dataset`
+        ds: :class:`~pyitab.dataset.base.Dataset`
             The loaded dataset.
         """
-   
         from pyitab.preprocessing.pipelines import Transformer, \
             PreprocessingPipeline
         if prepro is None:
             prepro = Transformer()
         else:
             prepro = PreprocessingPipeline(nodes=prepro)
-            
+
         logger.debug(prepro)
-            
+
         ds = load_ds(self._configuration_file,
                      self._task,
                      loader=self._loader,
@@ -132,24 +132,21 @@ class DataLoader(object):
                      selected_subjects=subject_names,
                      **self._conf
                      )
-        
+
         return ds
-    
 
     def get_subjects(self):
-        """Returns the subject list
+        """Return the subject list.
 
         Returns
         -------
         subjects : list of strings
             The subject list provided by participants.csv
         """
-
         conf = read_configuration(self._configuration_file, 
                                   self._task)
-        
+
         subjects, _ = load_subjects(conf)
 
         return subjects
 
-    

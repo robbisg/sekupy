@@ -58,7 +58,7 @@ def interpolate_tms_pulse(inst, tmin=-0.002, tmax=0.01, order=3, points=1):
     mask_interp = np.logical_and(np.logical_not(mask_artifact), 
                                  mask_interp)
 
-    epoch_data = inst.get_data()
+    epoch_data = inst.get_fdata()
     inst._data = epoch_data
 
     for epoch in epoch_data:

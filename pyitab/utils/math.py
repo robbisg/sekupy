@@ -59,7 +59,7 @@ def partial_correlation(X, Z):
     Z = np.asarray(Z).transpose()
     n = X.shape[1]
  
-    partial_corr = np.zeros((n, n), dtype=np.float16)
+    partial_corr = np.zeros((n, n), dtype=float)
     
     for i in range(n):
         partial_corr[i, i] = 0
@@ -85,7 +85,7 @@ def similiarity(seed, target, measure, **kwargs):
 
         # Preallocate results
         Cxy = np.empty((seed.shape[0],
-                        target.shape[0]), dtype=np.float16)
+                        target.shape[0]), dtype=float)
 
         for seed_idx, this_seed in enumerate(seed):
             res = []

@@ -1,10 +1,10 @@
 from bids import BIDSLayout
 from pyitab.io.bids import get_bids_kwargs
 from pyitab.utils.bids import filter_bids, filter_files, get_dictionary
-from mvpa2.base.collections import SampleAttributesCollection, \
+from pyitab.dataset.collections import SampleAttributesCollection, \
      DatasetAttributesCollection, FeatureAttributesCollection
-from mvpa2.datasets.base import Dataset
-from mvpa2.datasets import vstack
+from pyitab.dataset.base import Dataset
+from pyitab.dataset.dataset import vstack
 
 from pyitab.io._loaders import mambo_mapper
 
@@ -172,7 +172,7 @@ def load_bids_mambo_dataset(path, subj, task, **kwargs):
     Returns
     -------
     ds : ``Dataset``
-       Instance of ``mvpa2.datasets.Dataset``
+       Instance of ``pyitab.dataset.base.Dataset``
     '''
     
     roi_labels = dict()

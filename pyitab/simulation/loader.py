@@ -1,10 +1,9 @@
-from mvpa2.base.hdf5 import h5load
 from pyitab.preprocessing.base import PreprocessingPipeline, Transformer
 from pyitab.preprocessing.mapper import function_mapper
 from pyitab.analysis.utils import get_params
 from pyitab.io.configuration import read_configuration
 import os
-from mvpa2.datasets import vstack
+from pyitab.dataset.dataset import vstack
 
 import logging
 logger = logging.getLogger(__name__)
@@ -79,10 +78,11 @@ class SimulationLoader(object):
 
         return
 
-
+"""
 def load_simulations(path, subj, folder, **kwargs):
     
     ds = h5load(os.path.join(path, subj+'.gzip'))
     ds.sa['file'] = [subj for _ in range(ds.shape[0])]
 
     return ds
+"""
