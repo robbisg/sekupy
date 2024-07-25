@@ -2,32 +2,32 @@ Brain States package
 ==============================
 
 
-pyitab.analysis.states.base module
+sekupy.analysis.states.base module
 ----------------------------------
 
-.. automodule:: pyitab.analysis.states.base
+.. automodule:: sekupy.analysis.states.base
    :members:
    :undoc-members:
 
 GSBS algorithm
 ----------------------------------
 
-.. automodule:: pyitab.analysis.states.gsbs
+.. automodule:: sekupy.analysis.states.gsbs
    :members:
    :undoc-members:
 
 
-pyitab.analysis.states.pipeline module
+sekupy.analysis.states.pipeline module
 --------------------------------------
 
-.. automodule:: pyitab.analysis.states.pipeline
+.. automodule:: sekupy.analysis.states.pipeline
    :members:
    :undoc-members:
 
-pyitab.analysis.states.plot module
+sekupy.analysis.states.plot module
 ----------------------------------
 
-.. automodule:: pyitab.analysis.states.plot
+.. automodule:: sekupy.analysis.states.plot
    :members:
    :undoc-members:
 
@@ -36,6 +36,6 @@ pyitab.analysis.states.plot module
 Module contents
 ---------------
 
-.. automodule:: pyitab.analysis.states
+.. automodule:: sekupy.analysis.states
    :members:
    :undoc-members:

@@ -18,7 +18,7 @@ Utilities modules
 Module contents
 ---------------
 
-.. automodule:: pyitab.utils
+.. automodule:: sekupy.utils
    :members:
    :undoc-members:
    

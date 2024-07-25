@@ -2,34 +2,34 @@ Decoding
 ========
 
 
-pyitab.analysis.decoding.cross\_decoding module
+sekupy.analysis.decoding.cross\_decoding module
 -----------------------------------------------
 
-.. automodule:: pyitab.analysis.decoding.cross_decoding
+.. automodule:: sekupy.analysis.decoding.cross_decoding
    :members:
    :undoc-members:
    
 
-pyitab.analysis.decoding.regression module
+sekupy.analysis.decoding.regression module
 ------------------------------------------
 
-.. automodule:: pyitab.analysis.decoding.regression
+.. automodule:: sekupy.analysis.decoding.regression
    :members:
    :undoc-members:
    
 
-pyitab.analysis.decoding.roi\_decoding module
+sekupy.analysis.decoding.roi\_decoding module
 ---------------------------------------------
 
-.. automodule:: pyitab.analysis.decoding.roi_decoding
+.. automodule:: sekupy.analysis.decoding.roi_decoding
    :members:
    :undoc-members:
    
 
-pyitab.analysis.decoding.temporal\_decoding module
+sekupy.analysis.decoding.temporal\_decoding module
 --------------------------------------------------
 
-.. automodule:: pyitab.analysis.decoding.temporal_decoding
+.. automodule:: sekupy.analysis.decoding.temporal_decoding
    :members:
    :undoc-members:
    
@@ -37,7 +37,7 @@ pyitab.analysis.decoding.temporal\_decoding module
 Module contents
 ---------------
 
-.. automodule:: pyitab.analysis.decoding
+.. automodule:: sekupy.analysis.decoding
    :members:
    :undoc-members:
    

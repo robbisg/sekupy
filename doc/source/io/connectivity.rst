@@ -1,6 +1,6 @@
-pyitab.io.connectivity module
+sekupy.io.connectivity module
 -----------------------------
 
-.. automodule:: pyitab.io.connectivity
+.. automodule:: sekupy.io.connectivity
    :members:
    :undoc-members:

@@ -1,6 +1,6 @@
 Pipelines
 ---------
 
-.. automodule:: pyitab.preprocessing.pipelines
+.. automodule:: sekupy.preprocessing.pipelines
    :members:
    :undoc-members:

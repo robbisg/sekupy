@@ -7,7 +7,7 @@ Clustering
 This is used to implement clustering algorithms
 not included in ```scikit-learn```
 
-.. automodule:: pyitab.ext.sklearn.cluster
+.. automodule:: sekupy.ext.sklearn.cluster
    :members:
    :undoc-members:
    
@@ -15,7 +15,7 @@ not included in ```scikit-learn```
 Feature Selection
 -----------------
 
-.. automodule:: pyitab.ext.sklearn.feature_selection
+.. automodule:: sekupy.ext.sklearn.feature_selection
    :members:
    :undoc-members:
      

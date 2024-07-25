@@ -22,10 +22,10 @@ experiment_folder/
 
 
 
-pyitab.io.base module
+sekupy.io.base module
 ---------------------
 
-.. automodule:: pyitab.io.base
+.. automodule:: sekupy.io.base
    :members:
    :undoc-members:
    
@@ -35,7 +35,7 @@ pyitab.io.base module
 Module contents
 ---------------
 
-.. automodule:: pyitab.io
+.. automodule:: sekupy.io
    :members:
    :undoc-members:
    

@@ -1,7 +1,7 @@
 States subsamplers module
 -----------------------------------------
 
-.. automodule:: pyitab.analysis.states.subsamplers
+.. automodule:: sekupy.analysis.states.subsamplers
    :members:
    :undoc-members:
    

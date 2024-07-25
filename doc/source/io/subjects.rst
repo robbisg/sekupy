@@ -1,6 +1,6 @@
-pyitab.io.subjects module
+sekupy.io.subjects module
 -------------------------
 
-.. automodule:: pyitab.io.subjects
+.. automodule:: sekupy.io.subjects
    :members:
    :undoc-members:

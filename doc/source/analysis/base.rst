@@ -16,48 +16,48 @@ neuroimaging analyses
 * :doc:`../states/base` : data-driven analysis of clusters of activations.
 
 
-pyitab.analysis.base module
+sekupy.analysis.base module
 ---------------------------
 
-.. automodule:: pyitab.analysis.base
+.. automodule:: sekupy.analysis.base
    :members:
    :undoc-members:
 
-pyitab.analysis.configurator module
+sekupy.analysis.configurator module
 -----------------------------------
 
-.. automodule:: pyitab.analysis.configurator
+.. automodule:: sekupy.analysis.configurator
    :members:
    :undoc-members:
 
-pyitab.analysis.iterator module
+sekupy.analysis.iterator module
 -------------------------------
 
-.. automodule:: pyitab.analysis.iterator
+.. automodule:: sekupy.analysis.iterator
    :members:
    :undoc-members:
    
 
-pyitab.analysis.pipeline module
+sekupy.analysis.pipeline module
 -------------------------------
 
-.. automodule:: pyitab.analysis.pipeline
+.. automodule:: sekupy.analysis.pipeline
    :members:
    :undoc-members:
    
 
-pyitab.analysis.roi module
+sekupy.analysis.roi module
 --------------------------
 
-.. automodule:: pyitab.analysis.roi
+.. automodule:: sekupy.analysis.roi
    :members:
    :undoc-members:
    
 
-pyitab.analysis.utils module
+sekupy.analysis.utils module
 ----------------------------
 
-.. automodule:: pyitab.analysis.utils
+.. automodule:: sekupy.analysis.utils
    :members:
    :undoc-members:
    
@@ -65,7 +65,7 @@ pyitab.analysis.utils module
 Module contents
 ---------------
 
-.. automodule:: pyitab.analysis
+.. automodule:: sekupy.analysis
    :members:
    :undoc-members:
    

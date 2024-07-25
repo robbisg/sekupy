@@ -2,34 +2,34 @@ Plotting functions
 ==================
 
 
-pyitab.plot.connectivity module
+sekupy.plot.connectivity module
 -------------------------------
 
-.. automodule:: pyitab.plot.connectivity
+.. automodule:: sekupy.plot.connectivity
    :members:
    :undoc-members:
    
 
-pyitab.plot.nodes module
+sekupy.plot.nodes module
 ------------------------
 
-.. automodule:: pyitab.plot.nodes
+.. automodule:: sekupy.plot.nodes
    :members:
    :undoc-members:
    
 
-pyitab.plot.palette module
+sekupy.plot.palette module
 --------------------------
 
-.. automodule:: pyitab.plot.palette
+.. automodule:: sekupy.plot.palette
    :members:
    :undoc-members:
    
 
-pyitab.plot.rsa module
+sekupy.plot.rsa module
 ----------------------
 
-.. automodule:: pyitab.plot.rsa
+.. automodule:: sekupy.plot.rsa
    :members:
    :undoc-members:
    
@@ -37,7 +37,7 @@ pyitab.plot.rsa module
 Module contents
 ---------------
 
-.. automodule:: pyitab.plot
+.. automodule:: sekupy.plot
    :members:
    :undoc-members:
    

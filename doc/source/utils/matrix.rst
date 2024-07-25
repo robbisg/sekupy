@@ -1,7 +1,7 @@
 Matrix
 --------------------------
 
-.. automodule:: pyitab.utils.matrix
+.. automodule:: sekupy.utils.matrix
    :members:
    :undoc-members:
    

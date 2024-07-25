@@ -1,6 +1,6 @@
 Basic Functions
 ---------------
 
-.. automodule:: pyitab.preprocessing.functions
+.. automodule:: sekupy.preprocessing.functions
    :members:
    :undoc-members:

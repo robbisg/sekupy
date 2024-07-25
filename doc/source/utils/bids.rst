@@ -1,7 +1,7 @@
 BIDS
 ------------------------
 
-.. automodule:: pyitab.utils.bids
+.. automodule:: sekupy.utils.bids
    :members:
    :undoc-members:
    

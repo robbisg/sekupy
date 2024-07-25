@@ -5,21 +5,21 @@ Decoding
 Decoding analyses are performed basically on a set of ROIs,
 contained in the dataset.
 
-.. autoclass:: pyitab.analysis.decoding.Decoding
+.. autoclass:: sekupy.analysis.decoding.Decoding
 
 Spatial decoding
 ^^^^^^^^^^^^^^^^
-.. currentmodule: pyitab.analysis.decoding
-.. autoclass:: pyitab.analysis.decoding.roi_decoding.RoiDecoding
+.. currentmodule: sekupy.analysis.decoding
+.. autoclass:: sekupy.analysis.decoding.roi_decoding.RoiDecoding
    :members:
    :inherited-members:
 
 Temporal decoding
 ^^^^^^^^^^^^^^^^^
-.. autoclass:: pyitab.analysis.decoding.temporal_decoding.TemporalDecoding
+.. autoclass:: sekupy.analysis.decoding.temporal_decoding.TemporalDecoding
    :members:
 
 Spatiotemporal regression
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: pyitab.analysis.decoding.regression.RoiRegression
+.. autoclass:: sekupy.analysis.decoding.regression.RoiRegression
    :members:

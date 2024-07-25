@@ -1,6 +1,6 @@
 Filtering in time
 -----------------
 
-.. automodule:: pyitab.preprocessing.filter
+.. automodule:: sekupy.preprocessing.filter
    :members:
    :undoc-members:

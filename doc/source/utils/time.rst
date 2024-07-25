@@ -1,7 +1,7 @@
 Time
 ------------------------
 
-.. automodule:: pyitab.utils.time
+.. automodule:: sekupy.utils.time
    :members:
    :undoc-members:
    

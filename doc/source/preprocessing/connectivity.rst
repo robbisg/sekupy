@@ -1,6 +1,6 @@
 Connectivity transformers
 -------------------------
 
-.. automodule:: pyitab.preprocessing.connectivity
+.. automodule:: sekupy.preprocessing.connectivity
    :members:
    :undoc-members:

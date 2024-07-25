@@ -1,4 +1,4 @@
-pyitab package
+sekupy package
 ==============
 
 Yet another neuroimaging package!

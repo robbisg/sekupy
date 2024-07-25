@@ -1,6 +1,6 @@
-pyitab.io.configuration module
+sekupy.io.configuration module
 ------------------------------
 
-.. automodule:: pyitab.io.configuration
+.. automodule:: sekupy.io.configuration
    :members:
    :undoc-members:

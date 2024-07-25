@@ -7,10 +7,10 @@ The work by `Finn et al., 2015
 <https://www.nature.com/articles/nn.4135>`_
 
 
-pyitab.analysis.fingerprint.fingerprint module
+sekupy.analysis.fingerprint.fingerprint module
 ----------------------------------------------
 
-.. automodule:: pyitab.analysis.fingerprint.fingerprint
+.. automodule:: sekupy.analysis.fingerprint.fingerprint
    :members:
    :undoc-members:
    
@@ -18,7 +18,7 @@ pyitab.analysis.fingerprint.fingerprint module
 Module contents
 ---------------
 
-.. automodule:: pyitab.analysis.fingerprint
+.. automodule:: sekupy.analysis.fingerprint
    :members:
    :undoc-members:
    

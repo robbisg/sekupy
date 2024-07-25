@@ -1,6 +1,6 @@
-pyitab.io.bids module
+sekupy.io.bids module
 ---------------------
 
-.. automodule:: pyitab.io.bids
+.. automodule:: sekupy.io.bids
    :members:
    :undoc-members:
