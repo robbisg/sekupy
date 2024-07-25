@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_subjects(configuration, selected_subjects=None, n_subjects=None):
-    """[summary]
+    """Load subject list.
     
     Parameters
     ----------
@@ -16,13 +16,12 @@ def load_subjects(configuration, selected_subjects=None, n_subjects=None):
         [description]
     conf : [type]
         [description]
-    
+
     Returns
     -------
     [type]
         [description]
     """
-
     delimiter = ','
     data_path = configuration['data_path']
     subject_file = configuration['subjects']
@@ -38,7 +37,7 @@ def load_subjects(configuration, selected_subjects=None, n_subjects=None):
             delimiter = "\t"
 
         logger.debug(subject_file)
-        
+
         subjects, extra_sa = load_subject_file(subject_file,
                                                delimiter=delimiter,
                                                n_subjects=n_subjects)
@@ -46,8 +45,6 @@ def load_subjects(configuration, selected_subjects=None, n_subjects=None):
         logger.debug(subjects, extra_sa)
         subjects = subjects[:n_subjects]
         extra_sa = {k: extra_sa[k][:n_subjects] for k in extra_sa.keys()}
-
-
     else:
         subjects = os.listdir(data_path)
         j = os.path.join
@@ -62,27 +59,24 @@ def load_subjects(configuration, selected_subjects=None, n_subjects=None):
         subjects = subjects[subject_mask]
         extra_sa = {k : v[subject_mask] for k, v in extra_sa.items()}
 
-
     return subjects, extra_sa
 
 
-
 def load_subject_file(fname, n_subjects=None, delimiter=","):
-    ''' Load information about subjects from a file.
-
+    """Load information about subjects from a file.
 
     Parameters
     ----------
     fname : string
        The file of subjects information (.csv) 
         An example of subjects file is this:
-        
+
         >> subjects.csv
         subject,group,group_split,age
         s01_160112alefor,1,1,21
         s02_160216micbra,1,1,30
         >>
-    
+
     n_subjects : integer
         The number of subjects to include.
 
@@ -97,10 +91,9 @@ def load_subject_file(fname, n_subjects=None, delimiter=","):
         In the example above the dictionary will be:
         {'group':[1,1], 'group_split':[1,1], 'age':[21,30]}
 
-    '''
-
+    """
     subject_array = np.recfromcsv(fname, delimiter=delimiter, encoding='utf-8')
-    
+
     fields = subject_array.dtype.names
     subjects = subject_array[fields[0]]
     extra_sa = {k: subject_array[k] for k in fields}
@@ -108,29 +101,26 @@ def load_subject_file(fname, n_subjects=None, delimiter=","):
     return subjects, extra_sa
 
 
-
 def add_subjectname(ds, subj):
-    """
+    """Add the name of the subject to the dataset.
+
     This function takes a string (the name of the subject) 
     and add it to the dataset for each element of the dataset
-    
+
     Parameters
     ----------
-    
     ds : pymvpa dataset
         the dataset where attribute should be added
-        
+
     subj : string
         the name of the subject
-        
-    
+
     Returns
     -------
     ds : pymvpa dataset modified
     """
-    
     ds.sa['name'] = [subj for _ in range(len(ds.sa.targets))]
-    
+
     return ds
 
 

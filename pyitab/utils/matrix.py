@@ -10,7 +10,7 @@ def array_to_matrix(array, nan_mask=None, copy=True, **kwargs):
         a = 1
         b = -1
         det = b*b - 4*a*c
-        rows = np.int((-b + np.sqrt(det))/(2*a))
+        rows = np.int16((-b + np.sqrt(det))/(2*a))
         
         matrix = np.ones((rows, rows))
     else:

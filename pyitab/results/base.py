@@ -7,13 +7,13 @@ import numpy as np
 from itertools import product
 from joblib import Parallel, delayed
 import logging
+import warnings
 
 logger = logging.getLogger(__name__)
 
 
 
 def get_values(path, directory, field_list, result_keys):
-
 
     dir_path = os.path.join(path, directory)
 
@@ -376,7 +376,7 @@ def filter_dataframe(dataframe, return_mask=False, return_null=False, **selectio
         selection_mask = np.logical_and(selection_mask, condition_mask)
 
     if np.count_nonzero(selection_mask) == 0 and return_null == False:
-        raise Exception("No rows in filtered dataframe. Check selection field spelling or datatype.")
+        warnings.warn("No rows in filtered dataframe. Check selection field spelling or datatype.")
 
     if return_mask:
         return dataframe.loc[selection_mask], selection_mask

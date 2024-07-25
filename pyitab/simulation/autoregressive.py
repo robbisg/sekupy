@@ -1,8 +1,8 @@
 import numpy as np
 import scipy as sp
 from scipy import signal
-from mvpa2.datasets.base import Dataset
-from mvpa2.base.collections import SampleAttributesCollection, \
+from pyitab.dataset.base import Dataset
+from pyitab.dataset.collections import SampleAttributesCollection, \
     FeatureAttributesCollection, DatasetAttributesCollection
 from pyitab.preprocessing.base import Transformer
 
@@ -202,7 +202,7 @@ class TimeDelayedModel(DelayedModel):
 
     def __init__(self, name='time_delayed_model', order=5, noise=1, 
                  delay=0.0195, fsample=256, **kwargs):
-        self.delay = np.int(delay * fsample)
+        self.delay = np.int16(delay * fsample)
 
         DelayedModel.__init__(self, name, order, noise, delay, **kwargs)
 

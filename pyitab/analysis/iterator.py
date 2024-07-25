@@ -227,9 +227,10 @@ class AnalysisIterator(object):
             configurator.set_params(id=self._id)
 
             num = self.i
-            if self.n_subjects > 1:
-                num = np.floor((self.i-1) / self.n_subjects) + 1
-                logger.debug(num)
+            
+            #if self.n_subjects > 1:
+            #    num = np.floor((self.i-1) / self.n_subjects) + 1
+            #    logger.debug(num)
             configurator.set_params(num=int(num))
         
         else:

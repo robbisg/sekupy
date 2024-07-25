@@ -1,119 +1,112 @@
 import seaborn as sns
 import matplotlib.pyplot as pl
 
+PAINTERS = dict(
+        austria=list(["#a40000", "#16317d", "#007e2f",
+                      "#ffcd12", "#b86092", "#721b3e",
+                      "#00b7a7"]),
 
-def get_painter_palette(artist, n_colors=None):
-    palette = dict(
-        austria=list("#a40000", "#16317d", "#007e2f",
-                     "#ffcd12", "#b86092", "#721b3e",
-                     "#00b7a7"),
+        cassatt=list(["#b1615c", "#d88782", "#e3aba7",
+                      "#edd7d9", "#c9c9dd", "#9d9dc7",
+                      "#8282aa", "#5a5a83"]),
 
-        cassatt=list("#b1615c", "#d88782", "#e3aba7",
-                     "#edd7d9", "#c9c9dd", "#9d9dc7",
-                     "#8282aa", "#5a5a83"),
+        cross=list(["#c969a1", "#ce4441", "#ee8577",
+                    "#eb7926", "#ffbb44", "#859b6c",
+                    "#62929a", "#004f63", "#122451"]),
 
-        cross=list("#c969a1", "#ce4441", "#ee8577",
-                   "#eb7926", "#ffbb44", "#859b6c",
-                   "#62929a", "#004f63", "#122451"),
+        degas=list(["#591d06", "#96410e", "#e5a335", "#556219",
+                    "#418979", "#2b614e", "#053c29"]),
 
-        degas=list("#591d06", "#96410e", "#e5a335", "#556219",
-                   "#418979", "#2b614e", "#053c29"),
+        egypt=list(["#dd5129", "#0f7ba2", "#43b284", "#fab255"]),
 
-        egypt=list("#dd5129", "#0f7ba2", "#43b284", "#fab255"),
+        gauguin=list(["#b04948", "#811e18", "#9e4013", "#c88a2c",
+                      "#4c6216", "#1a472a"]),
 
-        gauguin=list("#b04948", "#811e18", "#9e4013", "#c88a2c",
-                     "#4c6216", "#1a472a"),
+        greek=list(["#3c0d03", "#8d1c06", "#e67424",
+                    "#ed9b49", "#f5c34d"]),
 
-        greek=list("#3c0d03", "#8d1c06", "#e67424",
-                   "#ed9b49", "#f5c34d"),
+        hokusai=list(["#6d2f20", "#b75347", "#df7e66", "#e09351",
+                      "#edc775", "#94b594", "#224b5e"]),
 
-        hokusai=list("#6d2f20", "#b75347", "#df7e66", "#e09351",
-                     "#edc775", "#94b594", "#224b5e"),
+        ingres=list(["#041d2c", "#06314e", "#18527e", "#2e77ab",
+                     "#d1b252", "#a97f2f", "#7e5522", "#472c0b"]),
 
-        ingres=list("#041d2c", "#06314e", "#18527e", "#2e77ab",
-                    "#d1b252", "#a97f2f", "#7e5522", "#472c0b"),
+        isfahan1=list(["#4e3910", "#845d29", "#d8c29d", "#4fb6ca",
+                       "#178f92", "#175f5d", "#1d1f54"]),
 
-        isfahan1=list("#4e3910", "#845d29", "#d8c29d", "#4fb6ca",
-                      "#178f92", "#175f5d", "#1d1f54"),
+        isfahan2=list(["#d7aca1", "#ddc000", "#79ad41",
+                       "#34b6c6", "#4063a3"]),
 
-        isfahan2=list("#d7aca1", "#ddc000", "#79ad41",
-                      "#34b6c6", "#4063a3"),
+        juarez=list(["#a82203", "#208cc0", "#f1af3a",
+                     "#cf5e4e", "#637b31", "#003967"]),
 
-        juarez=list("#a82203", "#208cc0", "#f1af3a",
-                    "#cf5e4e", "#637b31", "#003967"),
+        klimt=list(["#df9ed4", "#c93f55", "#eacc62",
+                    "#469d76", "#3c4b99", "#924099"]),
 
-        klimt=list("#df9ed4", "#c93f55", "#eacc62",
-                   "#469d76", "#3c4b99", "#924099"),
+        manet=list(["#3b2319", "#80521c", "#d29c44", "#ebc174",
+                    "#ede2cc", "#7ec5f4", "#4585b7", "#225e92",
+                    "#183571", "#43429b", "#5e65be"]),
 
-        manet=list("#3b2319", "#80521c", "#d29c44", "#ebc174",
-                   "#ede2cc", "#7ec5f4", "#4585b7", "#225e92",
-                   "#183571", "#43429b", "#5e65be"),
+        monet=list(["#4e6d58", "#749e89", "#abccbe", "#e3cacf",
+                    "#c399a2", "#9f6e71", "#41507b", "#7d87b2",
+                    "#c2cae3"]),
 
-        monet=list("#4e6d58", "#749e89", "#abccbe", "#e3cacf",
-                   "#c399a2", "#9f6e71", "#41507b", "#7d87b2",
-                   "#c2cae3"),
+        moreau=list(["#421600", "#792504", "#bc7524", "#8dadca",
+                     "#527baa", "#104839", "#082844"]),
 
-        moreau=list("#421600", "#792504", "#bc7524", "#8dadca",
-                    "#527baa", "#104839", "#082844"),
+        morgenstern=list(["#7c668c", "#b08ba5", "#dfbbc8", "#ffc680",
+                          "#ffb178", "#db8872", "#a56457"]),
 
-        morgenstern=list("#7c668c", "#b08ba5", "#dfbbc8", "#ffc680",
-                         "#ffb178", "#db8872", "#a56457"),
+        nattier=list(["#52271c", "#944839", "#c08e39", "#7f793c",
+                      "#565c33", "#184948", "#022a2a"]),
 
-        nattier=list("#52271c", "#944839", "#c08e39", "#7f793c",
-                     "#565c33", "#184948", "#022a2a"),
+        new_kingdom=list(["#e1846c", "#9eb4e0", "#e6bb9e",
+                          "#9c6849", "#735852"]),
 
-        new_kingdom=list("#e1846c", "#9eb4e0", "#e6bb9e",
-                         "#9c6849", "#735852"),
+        pillement=list(["#a9845b", "#697852", "#738e8e", "#44636f",
+                        "#2b4655", "#0f252f"]),
 
-        pillement=list("#a9845b", "#697852", "#738e8e", "#44636f",
-                       "#2b4655", "#0f252f"),
+        pissaro=list(["#134130", "#4c825d", "#8cae9e", "#8dc7dc",
+                      "#508ca7", "#1a5270", "#0e2a4d"]),
 
-        pissaro=list("#134130", "#4c825d", "#8cae9e", "#8dc7dc",
-                     "#508ca7", "#1a5270", "#0e2a4d"),
+        redon=list(["#5b859e", "#1e395f", "#75884b", "#1e5a46",
+                    "#df8d71", "#af4f2f", "#d48f90", "#732f30",
+                    "#ab84a5", "#59385c", "#d8b847", "#b38711"]),
 
-        redon=list("#5b859e", "#1e395f", "#75884b", "#1e5a46",
-                   "#df8d71", "#af4f2f", "#d48f90", "#732f30",
-                   "#ab84a5", "#59385c", "#d8b847", "#b38711"),
+        renoir=list(["#17154f", "#2f357c", "#6c5d9e", "#9d9cd5",
+                     "#b0799a", "#f6b3b0", "#e48171", "#bf3729",
+                     "#e69b00", "#f5bb50", "#ada43b", "#355828"]),
 
-        renoir=list("#17154f", "#2f357c", "#6c5d9e", "#9d9cd5",
-                    "#b0799a", "#f6b3b0", "#e48171", "#bf3729",
-                    "#e69b00", "#f5bb50", "#ada43b", "#355828"),
+        robert=list(["#11341a", "#375624", "#6ca4a0",
+                     "#487a7c", "#18505f", "#062e3d"]),
 
-        robert=list("#11341a", "#375624", "#6ca4a0",
-                    "#487a7c", "#18505f", "#062e3d"),
+        stevens=list(["#042e4e", "#307d7f", "#598c4c",
+                      "#ba5c3f", "#a13213", "#470c00"]),
 
-        stevens=list("#042e4e", "#307d7f", "#598c4c",
-                     "#ba5c3f", "#a13213", "#470c00"),
+        tara=list(["#eab1c6", "#d35e17", "#e18a1f", "#e9b109", "#829d44"]),
 
-        tara=list("#eab1c6", "#d35e17", "#e18a1f", "#e9b109", "#829d44"),
+        thomas=list(["#b24422", "#c44d76", "#4457a5", "#13315f", "#b1a1cc",
+                     "#59386c", "#447861", "#7caf5c"]),
 
-        thomas=list("#b24422", "#c44d76", "#4457a5", "#13315f", "#b1a1cc",
-                    "#59386c", "#447861", "#7caf5c"),
+        tiepolo=list(["#802417", "#c06636", "#ce9344", "#e8b960",
+                      "#646e3b", "#2b5851", "#508ea2", "#17486f"]),
 
-        tiepolo=list("#802417", "#c06636", "#ce9344", "#e8b960",
-                     "#646e3b", "#2b5851", "#508ea2", "#17486f"),
+        troy=list(["#421401", "#6c1d0e", "#8b3a2b", "#c27668",
+                   "#7ba0b4", "#44728c", "#235070", "#0a2d46"]),
 
-        troy=list("#421401", "#6c1d0e", "#8b3a2b", "#c27668",
-                  "#7ba0b4", "#44728c", "#235070", "#0a2d46"),
+        van_gogh1=list(["#2c2d54", "#434475", "#6b6ca3", "#969bc7",
+                        "#87bcbd", "#89ab7c", "#6f9954"]),
 
-        van_gogh1=list("#2c2d54", "#434475", "#6b6ca3", "#969bc7",
-                       "#87bcbd", "#89ab7c", "#6f9954"),
+        van_gogh2=list(["#bd3106", "#d9700e", "#e9a00e", "#eebe04",
+                        "#5b7314", "#c3d6ce", "#89a6bb", "#454b87"]),
 
-        van_gogh2=list("#bd3106", "#d9700e", "#e9a00e", "#eebe04",
-                       "#5b7314", "#c3d6ce", "#89a6bb", "#454b87"),
+        veronese=list(["#67322e", "#99610a", "#c38f16", "#6e948c",
+                       "#2c6b67", "#175449", "#122c43"]),
 
-        veronese=list("#67322e", "#99610a", "#c38f16", "#6e948c",
-                      "#2c6b67", "#175449", "#122c43"),
-
-        wissing=list("#4b1d0d", "#7c291e", "#ba7233", "#3a4421", "#2d5380")
+        wissing=list(["#4b1d0d", "#7c291e", "#ba7233", "#3a4421", "#2d5380"])
     )
 
-    return sns.color_palette(palette[artist], n_colors=n_colors)
-
-
-def get_wes_palette(film="rushmore", n_colors=None):
-
-    palette = {
+FILMS = {
         "surora": ["#BF616A", "#D08770", "#EBCB8B", "#A3BE8C","#B48EAD"],
         "bottle_rocket_all": ['#A42820', '#5F5647', '#9B110E', '#3F5151',
                              '#4E2A1E', '#550307', '#0C1707', '#FAD510',
@@ -184,6 +177,14 @@ def get_wes_palette(film="rushmore", n_colors=None):
         "french_dispatch3": ['#eba2b6', '#e7ccaf', '#292176', '#e0bd59'],
     }
 
+
+def get_painter_palette(artist, n_colors=None):
+    palette = PAINTERS
+    return sns.color_palette(palette[artist], n_colors=n_colors)
+
+
+def get_wes_palette(film="rushmore", n_colors=None):
+    palette = FILMS
     return sns.color_palette(palette[film], n_colors=n_colors)
 
 
@@ -197,7 +198,7 @@ def plot_colortable(colors, title, sort_colors=True, emptycols=0):
     topmargin = 40
 
     # Sort colors by hue, saturation, value and name.
-    colors = {v:v for v in colors}
+    colors = {v: v for v in colors}
 
 
     if sort_colors is True:

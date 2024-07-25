@@ -53,7 +53,7 @@ def get_ds_data(ds, target_attribute='targets'):
     
     Parameters
     ----------
-    ds : dataset ``mvpa2.dataset.base.Dataset``
+    ds : dataset ``pyitab.dataset.base.Dataset``
         The dataset in pymvpa format
     target_attribute : str, optional
         The sample attribute to be used to extract labels

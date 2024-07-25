@@ -38,7 +38,7 @@ def test_datasetmasker(fetch_ds):
     ds = fetch_ds
     assert ds.shape == (120, 843)
 
-    mask = np.zeros_like(ds.samples[:, 0], dtype=np.bool)
+    mask = np.zeros_like(ds.samples[:, 0], dtype=bool)
     mask[np.arange(10)] = True
 
     ds = DatasetMasker(mask=mask).transform(ds)

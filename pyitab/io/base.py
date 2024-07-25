@@ -5,24 +5,26 @@
 ########################################################
 from __future__ import print_function
 
-import os
-from mvpa2.misc.io.base import SampleAttributes
-from mvpa2.datasets.mri import fmri_dataset
-from mvpa2.datasets.eventrelated import eventrelated_dataset, find_events
-from mvpa2.base.dataset import vstack
-
-import logging
-import numpy as np
-import nibabel as ni
-
+from pyitab.dataset.mri import fmri_dataset
+from pyitab.dataset.dataset import vstack
+from pyitab.dataset.events import find_events
 from pyitab.utils.files import add_subdirs, build_pathnames
 from pyitab.io.subjects import add_subjectname
+from pyitab.dataset.collections import SampleAttributesCollection
 
+import os
+import numpy as np
+import nibabel as ni
+import pandas as pd
+
+import logging
 logger = logging.getLogger(__name__)
 
 
 def load_dataset(path, subj, folder, **kwargs):
-    ''' Load a 2d dataset given the image path, the subject and 
+    """Load a 2d dataset.
+
+    The function needs the image path, the subject and 
     the main folder of the data.
 
     Parameters
@@ -39,9 +41,8 @@ def load_dataset(path, subj, folder, **kwargs):
     Returns
     -------
     ds : ``Dataset``
-       Instance of ``mvpa2.datasets.Dataset``
-    '''
-
+       Instance of ``pyitab.dataset.base.Dataset``
+    """
     roi_labels = dict()
     extract_events = False
 
@@ -50,7 +51,7 @@ def load_dataset(path, subj, folder, **kwargs):
 
     if 'extract_events' in kwargs.keys():
         extract_events = bool(kwargs['extract_events'])
-           
+
     # Load the filename list
     file_list = load_filelist(path, subj, folder, **kwargs)
 
@@ -143,7 +144,7 @@ def add_events(ds):
 
 
 def load_filelist(path, name, folder, **kwargs):
-    ''' Load file given the filename
+    """Load file given the filename.
 
     Parameters
     ----------
@@ -160,9 +161,9 @@ def load_filelist(path, name, folder, **kwargs):
     -------
     file_list : string list
        list of strings indicating the file pathname
-    '''
-
+    """
     img_pattern = '.nii.gz'
+    sub_dirs = ['fmri']
 
     if 'img_pattern' in kwargs.keys():
         img_pattern = kwargs['img_pattern']
@@ -189,7 +190,7 @@ def load_filelist(path, name, folder, **kwargs):
 
 
 def load_roi_labels(roi_labels):
-    
+
     roi_labels_dict = {}
     if roi_labels is not None:
         for label, img in roi_labels.items():
@@ -220,12 +221,11 @@ def load_fmri(filelist):
     fmri_list:
         List of nibabel images.
     """
-
     image_list = []
 
     for file_ in filelist:
 
-        logger.info('Now loading '+file_)     
+        logger.info('Now loading '+file_)
 
         img = ni.load(file_)
         image_list.append(img)
@@ -238,10 +238,8 @@ def load_fmri(filelist):
     return image_list
 
 
-
 def load_mask(path, **kwargs):
-    """Loads the mask from the input path
-
+    """Load the mask from the input path.
 
     Parameters
     ----------
@@ -253,16 +251,15 @@ def load_mask(path, **kwargs):
     [type]
         [description]
     """
-
     mask_path = path
-    for arg in kwargs: 
+    for arg, value in kwargs.items(): 
         if (arg == 'mask_dir'):
             mask_path = kwargs[arg]
             if mask_path[0] != '/':
                 mask_path = os.path.join(path, mask_path)
         if (arg == 'brain_mask'):
             rois = kwargs[arg].split(',')
-                  
+
     mask_list = find_roi(mask_path, rois)
 
     logger.debug(mask_list)
@@ -271,11 +268,11 @@ def load_mask(path, **kwargs):
     data = 0
     for m in mask_list:
         img = ni.load(os.path.join(mask_path, m))
-        data = data + img.get_data() 
-        logger.info('Mask used: '+img.get_filename())
+        data = data + img.get_fdata() 
+        logger.info('Mask used: %s' % img.get_filename())
 
     mask = ni.Nifti1Image(data.squeeze(), img.affine)
-    logger.debug("Mask shape: "+str(mask.shape))
+    logger.debug("Mask shape: %s" % str(mask.shape))
 
     return mask
 
@@ -298,7 +295,7 @@ def find_roi(path, roi_list):
     return mask_list
 
 
-def load_attributes (path, subj, task,  **kwargs):
+def load_attributes(path, subj, task, **kwargs):
     """Loads attribute files from path and selected subject.
 
     Parameters
@@ -320,7 +317,6 @@ def load_attributes (path, subj, task,  **kwargs):
     FileNotFoundError
         [description]
     """
-
     # TODO: Maybe is better to use explicit variables
     # instead of kwargs
 
@@ -359,6 +355,8 @@ def load_attributes (path, subj, task,  **kwargs):
     logger.debug(header)
 
     attr_fname = attribute_list[0]
+    
+    attr = pd.read_csv(attr_fname, sep=' ').to_dict(orient='list')
+    attr = SampleAttributesCollection(attr)
 
-    attr = SampleAttributes(attr_fname, header=header)
     return attr
