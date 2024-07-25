@@ -21,7 +21,8 @@ class TrajectoryConnectivity(Analyzer):
     """
     
 
-    def __init__(self, name='mvfc', **kwargs):        
+    def __init__(self, name='mvfc', **kwargs):
+        
         Analyzer.__init__(self, name, **kwargs)
 
 

@@ -143,7 +143,7 @@ def add_events(ds):
 
 
 def load_filelist(path, name, folder, **kwargs):
-    ''' Load file given the filename
+    """Load file given the filename.
 
     Parameters
     ----------
@@ -160,9 +160,9 @@ def load_filelist(path, name, folder, **kwargs):
     -------
     file_list : string list
        list of strings indicating the file pathname
-    '''
-
+    """
     img_pattern = '.nii.gz'
+    sub_dirs = ['fmri']
 
     if 'img_pattern' in kwargs.keys():
         img_pattern = kwargs['img_pattern']
@@ -189,7 +189,7 @@ def load_filelist(path, name, folder, **kwargs):
 
 
 def load_roi_labels(roi_labels):
-    
+
     roi_labels_dict = {}
     if roi_labels is not None:
         for label, img in roi_labels.items():
@@ -220,12 +220,11 @@ def load_fmri(filelist):
     fmri_list:
         List of nibabel images.
     """
-
     image_list = []
 
     for file_ in filelist:
 
-        logger.info('Now loading '+file_)     
+        logger.info('Now loading '+file_)
 
         img = ni.load(file_)
         image_list.append(img)
@@ -238,10 +237,8 @@ def load_fmri(filelist):
     return image_list
 
 
-
 def load_mask(path, **kwargs):
-    """Loads the mask from the input path
-
+    """Load the mask from the input path.
 
     Parameters
     ----------
@@ -253,16 +250,15 @@ def load_mask(path, **kwargs):
     [type]
         [description]
     """
-
     mask_path = path
-    for arg in kwargs: 
+    for arg, value in kwargs.items(): 
         if (arg == 'mask_dir'):
             mask_path = kwargs[arg]
             if mask_path[0] != '/':
                 mask_path = os.path.join(path, mask_path)
         if (arg == 'brain_mask'):
             rois = kwargs[arg].split(',')
-                  
+
     mask_list = find_roi(mask_path, rois)
 
     logger.debug(mask_list)
@@ -272,10 +268,10 @@ def load_mask(path, **kwargs):
     for m in mask_list:
         img = ni.load(os.path.join(mask_path, m))
         data = data + img.get_data() 
-        logger.info('Mask used: '+img.get_filename())
+        logger.info('Mask used: %s' % img.get_filename())
 
     mask = ni.Nifti1Image(data.squeeze(), img.affine)
-    logger.debug("Mask shape: "+str(mask.shape))
+    logger.debug("Mask shape: %s" % str(mask.shape))
 
     return mask
 
@@ -298,7 +294,7 @@ def find_roi(path, roi_list):
     return mask_list
 
 
-def load_attributes(path, subj, task,  **kwargs):
+def load_attributes(path, subj, task, **kwargs):
     """Loads attribute files from path and selected subject.
 
     Parameters
@@ -320,7 +316,6 @@ def load_attributes(path, subj, task,  **kwargs):
     FileNotFoundError
         [description]
     """
-
     # TODO: Maybe is better to use explicit variables
     # instead of kwargs
 

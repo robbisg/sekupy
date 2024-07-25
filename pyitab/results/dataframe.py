@@ -58,8 +58,8 @@ def query_rows(dataframe, keys, attr, fx=np.max):
 
 
 def apply_function(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).sum(0), **fx_kwargs):
-    """This function perform a function on the dataframe, it groups the dataframe
-    by using the key parameter and applies a function to values indicated.
+    """This function executes an operation on the dataframe, it groups the dataframe
+    by using the `keys` parameter and applies a function to values indicated by `attr`.
     
     Parameters
     ----------
@@ -72,7 +72,9 @@ def apply_function(dataframe, keys, attr='features', fx=lambda x:np.vstack(x).su
         The key were values should be found (the default is 'features')
     fx : function, optional
         The function that is applied to values. (the default is lambda x:np.vstack(x).sum(0))
-    
+    fx_kwargs : dictionary, optional
+        Arguments passed to the fx function.
+            
     Returns
     -------
     dataframe : The processed dataframe.
@@ -89,7 +91,7 @@ def get_weights(dataframe):
 
     df_weights = []
     for i, row in dataframe.iterrows():
-        matrix = np.zeros_like(row['features'], dtype=np.float)
+        matrix = np.zeros_like(row['features'], dtype=np.float16)
         mask = np.equal(row['features'], 1)
 
         matrix[mask] = zscore(row['weights'])
@@ -178,3 +180,32 @@ def dataframe_slicer(data, row=None, col=None, hue=None):
                                                 enumerate(hue_masks)):
         data_ijk = data[row & col & hue ] # Check null
         yield (i, j, k), data_ijk
+        
+        
+def dataframe_dummy_columns(dataframe, keyword, mapping):
+    # Assuming your data is in a DataFrame called 'dataframe' and the column is named keyword
+    dataframe[keyword] = dataframe[keyword].astype(str)  # Convert everything to strings for consistency
+    dataframe[keyword] = dataframe[keyword].replace('nan', np.nan)  # Replace 'nan' strings with NaN values
+
+    # Split combined categories and create a list of all unique categories
+    all_categories = set()
+    for categories in dataframe[keyword]:
+        if pd.notna(categories):  # Skip NaN values
+            for category in categories.split(','):
+                all_categories.add(category.strip())  # Strip leading/trailing spaces
+
+    # Create a new DataFrame with dummy variables
+    columns = list(mapping.values())
+    dataframe_dummies = pd.DataFrame(0, index=dataframe.index, 
+                                     columns=columns)
+
+    # Fill in the dummy variables
+    for i, categories in enumerate(dataframe[keyword]):
+        if pd.notna(categories):
+            for category in categories.split(','):
+                dataframe_dummies.at[i, mapping[category.strip()]] = 1
+
+    # Combine the original DataFrame with the dummy variables
+    dataframe_final = pd.concat([dataframe, dataframe_dummies], axis=1)
+    
+    return dataframe_final
