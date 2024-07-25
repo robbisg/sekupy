@@ -2,6 +2,7 @@ from pyitab.analysis.base import Analyzer
 
 
 class Connectivity(Analyzer):
+    
     def __init__(self, name='analyzer', **kwargs):
         return Analyzer.__init__(name, **kwargs)()
 

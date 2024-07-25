@@ -27,7 +27,7 @@ class TaskPredictionTavor(Analyzer):
                  verbose=1,
                  name='tavor',
                  **kwargs):
-        
+
         if estimator is None:
             estimator = Pipeline(steps=[('clf', LinearRegression())])
 
@@ -37,7 +37,7 @@ class TaskPredictionTavor(Analyzer):
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.permutation = permutation
-        
+
         self.verbose = verbose
 
         if isinstance(scoring, str):
@@ -84,14 +84,14 @@ class TaskPredictionTavor(Analyzer):
 
             betas.append(linear.coef_.squeeze())
             intercepts.append(linear.intercept_.squeeze())
-        
+
         betas = np.array(betas)
         intercepts = np.array(intercepts)
 
         return betas, intercepts
 
     def _predict(self, ds, y_attr, x_attr, prepro, perm_id):
-        
+
         betas = self._betas[perm_id]
         intercepts = self._intercepts[perm_id]
 

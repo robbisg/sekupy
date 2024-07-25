@@ -124,14 +124,14 @@ class Decoding(Analyzer):
             **kwargs):
         """General method to fit data"""
         
-
         X, y_, groups = self._get_data(ds, cv_attr, **kwargs)
 
         indices = self._get_permutation_indices(len(y_))
-                
+             
         self.scores = []
+       
         for p, idx in enumerate(indices):
-            
+
             y = y_[idx]
 
             if p != 0:
@@ -140,20 +140,21 @@ class Decoding(Analyzer):
                 return_splits = False
                 return_estimator = False
 
-
             scores = cross_validate(self.estimator, X, y, groups=groups,
-                                    scoring=self.scoring, cv=self.cv, n_jobs=self.n_jobs,
-                                    verbose=self.verbose, return_estimator=return_estimator, 
-                                    return_splits=return_splits, 
+                                    scoring=self.scoring, cv=self.cv,
+                                    n_jobs=self.n_jobs,
+                                    verbose=self.verbose,
+                                    return_estimator=return_estimator,
+                                    return_splits=return_splits,
                                     return_decisions=return_decisions,
                                     return_predictions=return_predictions)
-            
+
             self.scores.append(scores)
             if cv_attr is not None and return_splits:
-                scores['split_name'] = self._split_name(scores['splits'], 
+                scores['split_name'] = self._split_name(scores['splits'],
                                                         cv_attr,
                                                         groups)
-       
+   
         return self
 
     # TODO: Should be placed here?
@@ -308,7 +309,6 @@ class Decoding(Analyzer):
         mat_['test'] = []
         
         for spl in splits:
-            
             for set_ in mat_.keys():
                 mat_[set_].append(spl[set_])
                 

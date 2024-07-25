@@ -53,8 +53,8 @@ class Identifiability(Analyzer):
             prediction1 = np.argmax(r, axis=0)
             prediction2 = np.argmax(r, axis=1)
 
-            accuracy1 = np.count_nonzero(prediction1 == np.arange(r.shape[0]))/r.shape[0]
-            accuracy2 = np.count_nonzero(prediction2 == np.arange(r.shape[0]))/r.shape[0]
+            accuracy1 = np.count_nonzero(prediction1 == np.arange(r.shape[0])) / r.shape[0]
+            accuracy2 = np.count_nonzero(prediction2 == np.arange(r.shape[0])) / r.shape[0]
             
             accuracy_matrix[row[j], col[j]] = accuracy1
             accuracy_matrix[col[j], row[j]] = accuracy2
@@ -62,9 +62,9 @@ class Identifiability(Analyzer):
             correlation_matrix[t1+'+'+t2] = r
 
         self.scores = dict()
-        self.scores['matrix'] = identifiability_matrix
+        self.scores['matrix'] = identifiability_matrix  # idrate
         self.scores['vars'] = unique
-        self.scores['accuracy'] = accuracy_matrix
+        self.scores['accuracy'] = accuracy_matrix  # pscore
         self.scores['r'] = correlation_matrix
 
         self._info = self._store_info(ds, attr=attr)
