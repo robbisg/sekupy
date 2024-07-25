@@ -10,6 +10,7 @@ from bids import BIDSLayout
 import nibabel as ni
 import os
 import numpy as np
+import pandas as pd
 
 import logging
 logger = logging.getLogger(__name__)
@@ -17,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_bids_dataset(path, subj, task, **kwargs):
-    ''' Load a 2d dataset given the image path, the subject and the main folder of 
-    the data.
+    """Load a 2d dataset.
 
     Parameters
     ----------
@@ -35,8 +35,7 @@ def load_bids_dataset(path, subj, task, **kwargs):
     -------
     ds : ``Dataset``
        Instance of ``sekupy.dataset.base.Dataset``
-    '''
-    
+    """
     roi_labels = dict()
     derivatives = False
 
@@ -44,15 +43,15 @@ def load_bids_dataset(path, subj, task, **kwargs):
 
     if 'roi_labels' in kwargs.keys():
         roi_labels = kwargs['roi_labels']
-    
+
     if 'bids_derivatives' in kwargs.keys():
         if kwargs['bids_derivatives'] == 'True':
             derivatives = True
         elif kwargs['bids_derivatives'] == 'False':
-            derivatives = False        
+            derivatives = False
         else:
             derivatives = os.path.join(path, kwargs['bids_derivatives'])
-    
+
     tr = None
     if 'tr' in kwargs.keys():
         tr = kwargs['tr']
@@ -64,7 +63,7 @@ def load_bids_dataset(path, subj, task, **kwargs):
 
     # Load the filename list
     kwargs_bids = get_bids_kwargs(kwargs)
-    
+
     if subj.find("-") != -1:
         try:
             subj = int(subj.split('-')[1])
@@ -166,7 +165,6 @@ def load_bids_attributes(path, subj, **kwargs):
     Exception
         [description]
     """
-    
     # TODO: parameters are for compatibility
     # TODO: Test with different bids datasets
     
@@ -208,13 +206,13 @@ def load_bids_attributes(path, subj, **kwargs):
         #logger.info(eventfile)
 
         attributes = dict()
-        events = np.recfromcsv(eventfile, delimiter='\t', encoding='utf-8')
+        events = pd.read_csv(eventfile, delimiter='\t')
 
         length = run_lengths[i]
 
         attributes['chunks'] = np.ones(length) * i
 
-        events_names = list(events.dtype.names)
+        events_names = list(events.columns)
         events_names.remove('onset')
         events_names.remove('duration')
 
@@ -260,19 +258,19 @@ def add_bids_attributes(event_key, events, length, tr, onset_offset=0, extra_dur
     # TODO: Add frame field
     from itertools import groupby
 
-    labels = events[event_key]
+    labels = events[event_key].values
 
     # This is to avoid 0-shaped event
     labels = labels.reshape(labels.size)
-    dtype = events.dtype[event_key]
+    dtype = events.dtypes[event_key]
 
     targets = np.zeros(length, dtype=dtype)
     if dtype.kind is "U":
         targets[:] = 'rest'
 
-    event_onsets = events['onset']
+    event_onsets = events['onset'].values
     event_onsets = np.hstack((event_onsets, [length * tr]))
-    event_duration = events['duration']
+    event_duration = events['duration'].values
     event_duration = event_duration.reshape(event_duration.size)
 
     group_events = [[key, len(list(group))] for key, group in groupby(labels)]

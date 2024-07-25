@@ -357,7 +357,7 @@ def cross_validate(
     cv = check_cv(cv, y, classifier=is_classifier(estimator))
 
     scorers = check_scoring(
-        estimator, scoring=scoring, raise_exc=(error_score == "raise")
+        estimator, scoring=scoring, #raise_exc=(error_score == "raise")
     )
 
     if _routing_enabled():

@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 
 import logging
 logger = logging.getLogger(__name__)
@@ -92,9 +93,10 @@ def load_subject_file(fname, n_subjects=None, delimiter=","):
         {'group':[1,1], 'group_split':[1,1], 'age':[21,30]}
 
     """
-    subject_array = np.recfromcsv(fname, delimiter=delimiter, encoding='utf-8')
+    #subject_array = np.genfromtxt(fname, delimiter=delimiter, encoding='utf-8')
+    subject_array = pd.read_csv(fname, delimiter=delimiter)
 
-    fields = subject_array.dtype.names
+    fields = list(subject_array.columns)
     subjects = subject_array[fields[0]]
     extra_sa = {k: subject_array[k] for k in fields}
 

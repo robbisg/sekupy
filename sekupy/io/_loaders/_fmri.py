@@ -1,5 +1,7 @@
 import nibabel as ni
 import numpy as np
+import pandas as pd
+
 from sekupy.dataset.collections import SampleAttributesCollection
 from sekupy.io.base import load_roi_labels, load_mask, load_fmri
 
@@ -145,7 +147,8 @@ def load_bids_attributes(subject, **kwargs):
         # logger.info(eventfile)
 
         attributes = dict()
-        events = np.recfromcsv(eventfile, delimiter='\t', encoding='utf-8')
+        # events = np.genfromtxt(eventfile, delimiter='\t', encoding='utf-8')
+        events = pd.read_csv(eventfile, delimiter='\t')
 
         length = run_lengths[i]
 

@@ -1,9 +1,8 @@
 import h5py
 import numpy as np
-
+import pandas as pd
 from sekupy.dataset.collections import SampleAttributesCollection, \
      DatasetAttributesCollection, FeatureAttributesCollection
-
 from sekupy.utils.bids import get_dictionary
 from scipy.io import loadmat
 
@@ -97,9 +96,9 @@ def load_hcp_blp(filename, **kwargs):
 
     idx_from, idx_to = np.triu_indices(parcels, k=1)
 
-    labels = np.recfromcsv("/media/robbis/DATA/meg/viviana-hcp/atlas.csv")
-    args = np.argsort(labels['node'])
-    labels = labels[args]
+    labels = pd.read_csv("/media/robbis/DATA/meg/viviana-hcp/atlas.csv")
+    args = np.argsort(labels['node'].values)
+    labels = labels[args].values
 
     nodes_from = [labels[i]['abbr'].decode().strip() for i in idx_from]
     nodes_to = [labels[i]['abbr'].decode().strip() for i in idx_to]

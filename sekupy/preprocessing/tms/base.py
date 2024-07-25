@@ -1,10 +1,11 @@
 from scipy.stats import kurtosis, entropy
+from mne.utils import _check_preload
+
 
 import mne
-from mne.utils import _check_preload
 import numpy as np
 import matplotlib.pyplot as pl
-
+import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ def interpolate_tms_pulse(inst, tmin=-0.002, tmax=0.01, order=3, points=1):
 
 def read_bids_events(fname):
 
-    events_file = np.recfromcsv(fname, delimiter='\t')
+    events_file = pd.read_csv(fname, delimiter='\t')
 
     events_name = np.unique(events_file['trial_type'])
     events_id = {k: j for j, k in enumerate(events_name)}
@@ -86,9 +87,8 @@ def read_bids_events(fname):
         else:
             arr = [events_id[k] for k in events_file[field]]
             events.append(np.array(arr))
-    
+
     events = np.int_(np.vstack(events).T)
-    
 
     return events, events_id
 
