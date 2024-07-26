@@ -20,10 +20,9 @@ It deterges your results, by saving them in a safe manner, by also keeping in mi
 The documention can be found [here](https://sekupy.readthedocs.io/).
 
 # Install
-The package isn't yet on `pip`.
 You can install it by using:
 ```
-python setup.py install
+pip install sekupy
 ```
 
 # Example
