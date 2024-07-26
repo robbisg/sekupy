@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "sekupy"
 description = "Detergent for your dirty neuroimaging pipelines"
-dynamic = ["version"]
+version = "0.0.1"
 authors = [
     { name = "Roberto Guidotti", email = "roberto.guidotti@unich.it" },
 ]
-license = { text = "BSD-3-Clause" }
-readme = { file = "README.md", content-type = "text/x-rst" }
+license = {file = "LICENSE"}
+readme = "README.md"
 requires-python = ">=3.9"
 keywords = [
     "neuroscience",
@@ -121,6 +121,7 @@ exclude = [
     "/sekupy/**/tests",
     "/dist",
     "/doc",
+    "/sekupy/io/data/*",
     "/joss",
     "/examples",
     "/Dockerfile"
