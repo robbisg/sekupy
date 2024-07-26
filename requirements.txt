@@ -1,5 +1,5 @@
-scipy==1.10.0
-numpy>=1.18.5
+scipy
+numpy
 matplotlib
 pandas
 seaborn
@@ -21,7 +21,7 @@ xlrd
 nistats
 coverage
 codecov
-pytest>=3.6.0
+pytest
 pytest-cov
 tqdm
 h5py

@@ -1,12 +1,12 @@
-name: neuropy
+name: sekupy
 dependencies:
-  - python=3.7
+  - python=3.9
   - pip
   - numpy
   - nomkl
   - python-blosc
   - cytoolz
-  - scipy=1.2
+  - scipy
   - matplotlib
   - cython
   - tk
