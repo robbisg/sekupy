@@ -357,7 +357,7 @@ def cross_validate(
     cv = check_cv(cv, y, classifier=is_classifier(estimator))
 
     scorers = check_scoring(
-        estimator, scoring=scoring, #raise_exc=(error_score == "raise")
+        estimator, scoring=scoring, allow_none=(error_score == "raise")
     )
 
     if _routing_enabled():
@@ -1048,8 +1048,7 @@ def _score(estimator, X_test, y_test, scorer, score_params, error_score="raise")
             with suppress(ValueError):
                 # e.g. unwrap memmapped scalars
                 scores = scores.item()
-        if not isinstance(scores, numbers.Number):
-            raise ValueError(error_msg % (scores, type(scores), scorer))
+
     return scores
 
 

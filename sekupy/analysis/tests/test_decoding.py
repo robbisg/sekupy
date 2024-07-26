@@ -34,7 +34,9 @@ def test_temporal_decoding(fetch_ds):
     
     roi_result = scores['mask-brain_value-2.0']
     assert len(roi_result) == n_permutation + 1
-    assert roi_result[0]['test_score'].shape == (n_splits, 3, 3)
+    
+    test_results = np.array(roi_result[0]['test_score'])
+    assert test_results.shape == (n_splits, 3, 3)
     assert np.max(roi_result[0]['test_score']) <= 1.
    
 
