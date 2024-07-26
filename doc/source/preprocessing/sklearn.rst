@@ -1,6 +1,6 @@
 Scikit-Learn Wrapper
 --------------------
 
-.. automodule:: pyitab.preprocessing.sklearn
+.. automodule:: sekupy.preprocessing.sklearn
    :members:
    :undoc-members:

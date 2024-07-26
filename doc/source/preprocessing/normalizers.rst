@@ -1,6 +1,6 @@
 Normalizer
 ----------
 
-.. automodule:: pyitab.preprocessing.normalizers
+.. automodule:: sekupy.preprocessing.normalizers
    :members:
    :undoc-members:

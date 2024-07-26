@@ -7,7 +7,7 @@ Custom implementation of Searchlight analysis,
 for using multiple scores or saving all cross-validation
 folds.
 
-.. automodule:: pyitab.ext.nilearn.searchlight
+.. automodule:: sekupy.ext.nilearn.searchlight
    :members:
    :undoc-members:
    
@@ -15,7 +15,7 @@ folds.
 Nilearn utils
 -------------------------------
 
-.. automodule:: pyitab.ext.nilearn.utils
+.. automodule:: sekupy.ext.nilearn.utils
    :members:
    :undoc-members:
    

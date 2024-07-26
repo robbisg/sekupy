@@ -1,0 +1,11 @@
+imbalanced-learn
+mne
+nibabel
+nipy
+nitime
+pandas
+pymvpa2
+scikit-learn
+seaborn
+sentry-sdk
+tqdm

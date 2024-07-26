@@ -1,6 +1,6 @@
 Slicers
 -------
 
-.. automodule:: pyitab.preprocessing.slicers
+.. automodule:: sekupy.preprocessing.slicers
    :members:
    :undoc-members:

@@ -1,6 +1,6 @@
-pyitab.io.loader module
+sekupy.io.loader module
 -----------------------
 
-.. automodule:: pyitab.io.loader
+.. automodule:: sekupy.io.loader
    :members:
    :undoc-members:

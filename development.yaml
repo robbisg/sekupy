@@ -1,0 +1,36 @@
+name: sekupy
+dependencies:
+  - python=3.9
+  - pip
+  - numpy
+  - nomkl
+  - python-blosc
+  - cytoolz
+  - scipy
+  - matplotlib
+  - cython
+  - tk
+  - pip:
+     - mne
+     - jupyter
+     - seaborn
+     - nibabel
+     - nitime
+     - imbalanced-learn
+     - pandas
+     - bokeh
+     - dask
+     - dask-jobqueue
+     - dask-kubernetes
+     - distributed
+     - joblib
+     - nilearn
+     - pybids
+     - scikit-learn
+     - nistats
+     - hmmlearn
+     - statsmodels
+     - h5py
+     - pybids
+     - pytest
+     - mne-hcp

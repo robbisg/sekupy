@@ -1,7 +1,7 @@
 Math
 ------------------------
 
-.. automodule:: pyitab.utils.math
+.. automodule:: sekupy.utils.math
    :members:
    :undoc-members:
    

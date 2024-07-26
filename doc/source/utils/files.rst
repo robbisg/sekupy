@@ -1,7 +1,7 @@
 Files
 -------------------------
 
-.. automodule:: pyitab.utils.files
+.. automodule:: sekupy.utils.files
    :members:
    :undoc-members:
    

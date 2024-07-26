@@ -31,7 +31,6 @@ dependencies:
      - hmmlearn
      - statsmodels
      - h5py
-     - pymvpa2
      - pybids
      - pytest
      - mne-hcp

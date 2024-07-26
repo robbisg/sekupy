@@ -1,7 +1,7 @@
 Dataset
 ---------------------------
 
-.. automodule:: pyitab.utils.dataset
+.. automodule:: sekupy.utils.dataset
    :members:
    :undoc-members:
    

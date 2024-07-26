@@ -1,21 +1,23 @@
-# pyitab
+# sekupy
 
-![example workflow](https://github.com/robbisg/pyitab/actions/workflows/test.yaml/badge.svg)
-[![codecov](https://codecov.io/gh/robbisg/pyitab/branch/master/graph/badge.svg)](https://codecov.io/gh/robbisg/pyitab)
-[![Documentation Status](https://readthedocs.org/projects/pyitab/badge/?version=latest)](https://pyitab.readthedocs.io/en/latest/?badge=latest)
+![example workflow](https://github.com/robbisg/sekupy/actions/workflows/test.yaml/badge.svg)
+[![codecov](https://codecov.io/gh/robbisg/sekupy/branch/master/graph/badge.svg)](https://codecov.io/gh/robbisg/sekupy)
+[![Documentation Status](https://readthedocs.org/projects/sekupy/badge/?version=latest)](https://sekupy.readthedocs.io/en/latest/?badge=latest)
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-[![CodeFactor](https://www.codefactor.io/repository/github/robbisg/pyitab/badge)](https://www.codefactor.io/repository/github/robbisg/pyitab)
+[![CodeFactor](https://www.codefactor.io/repository/github/robbisg/sekupy/badge)](https://www.codefactor.io/repository/github/robbisg/sekupy)
 
-`pyitab` is a python-package created for easing (multivariate) neuroimaging analysis. The package has been thought for
+`sekupy` is a python-package created for deterging your (dirty) (and) (multivariate) neuroimaging analyses. The package has been thought for
 decoding analyses but it includes also basic univariate analyses.
 
 It has some utilities to vary sets of parameters of the analyses without struggling with `for` and `if` statements.
 
-`pyitab` stands for Python at Institute for Advanced Biomedical Technologies (ITAB), which is part of University of Chieti-Pescara "G. D'Annunzio".
+It deterges your results, by saving them in a safe manner, by also keeping in mind BIDS.
+
+`sekupy` is the deterged version of `pyitab`.
 
 # Documentation
 
-The documention can be found [here](https://pyitab.readthedocs.io/).
+The documention can be found [here](https://sekupy.readthedocs.io/).
 
 # Install
 The package isn't yet on `pip`.
@@ -29,9 +31,9 @@ The main idea is to use a dictionary to configure all parameters of your analysi
 
 For example if we want to perform a ```RoiDecoding``` analysis using some preprocessing steps we will have a script like this (this is not a complete example):
 ```python
-from pyitab.analysis.configurator import AnalysisConfigurator
-from pyitab.analysis.pipeline import AnalysisPipeline
-from pyitab.analysis.decoding.roi_decoding import RoiDecoding
+from sekupy.analysis.configurator import AnalysisConfigurator
+from sekupy.analysis.pipeline import AnalysisPipeline
+from sekupy.analysis.decoding.roi_decoding import RoiDecoding
 
 _default_config = {
                     # Here we specifiy that we have to transform the dataset labels

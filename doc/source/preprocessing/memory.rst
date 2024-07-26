@@ -1,6 +1,6 @@
 Memory savers
 -------------
 
-.. automodule:: pyitab.preprocessing.memory
+.. automodule:: sekupy.preprocessing.memory
    :members:
    :undoc-members:

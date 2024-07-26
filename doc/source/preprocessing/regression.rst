@@ -1,6 +1,6 @@
 Regression
 ----------
 
-.. automodule:: pyitab.preprocessing.regression
+.. automodule:: sekupy.preprocessing.regression
    :members:
    :undoc-members:

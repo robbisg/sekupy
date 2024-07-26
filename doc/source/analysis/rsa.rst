@@ -7,10 +7,10 @@ You can cite `Kriegeskorte et al., 2008
 <https://doi.org/10.3389/neuro.06.004.2008>`_
 
 
-pyitab.analysis.rsa.rsa module
+sekupy.analysis.rsa.rsa module
 ------------------------------
 
-.. automodule:: pyitab.analysis.rsa.rsa
+.. automodule:: sekupy.analysis.rsa.rsa
    :members:
    :undoc-members:
    
@@ -18,7 +18,7 @@ pyitab.analysis.rsa.rsa module
 Module contents
 ---------------
 
-.. automodule:: pyitab.analysis.rsa
+.. automodule:: sekupy.analysis.rsa
    :members:
    :undoc-members:
    

@@ -1,0 +1,16 @@
+Metadata-Version: 1.1
+Name: pyitab
+Version: 0.0.1
+Summary: Neuroimaging pipelines with python @ITAB
+Home-page: https://github.com/robbisg/pyitab/
+Author: Roberto Guidotti
+Author-email: rob.guidotti@gmail.com
+License: MIT
+Description: UNKNOWN
+Keywords: mvpa fmri neuroimaging
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.6

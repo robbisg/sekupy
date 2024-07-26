@@ -1,7 +1,7 @@
 State metrics module
 -------------------------------------
 
-.. automodule:: pyitab.analysis.states.metrics
+.. automodule:: sekupy.analysis.states.metrics
    :members:
    :undoc-members:
    

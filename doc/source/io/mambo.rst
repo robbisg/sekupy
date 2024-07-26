@@ -1,6 +1,6 @@
-pyitab.io.mambo module
+sekupy.io.mambo module
 ----------------------
 
-.. automodule:: pyitab.io.mambo
+.. automodule:: sekupy.io.mambo
    :members:
    :undoc-members:

@@ -5,14 +5,14 @@ Synthetic data
 Autoregressive model
 --------------------
 
-.. automodule:: pyitab.simulation.autoregressive
+.. automodule:: sekupy.simulation.autoregressive
    :members:
    :undoc-members:
 
 Kuramoto model
 --------------
 
-.. automodule:: pyitab.simulation.kuramoto
+.. automodule:: sekupy.simulation.kuramoto
     :members:
     :undoc-members:
    
@@ -20,7 +20,7 @@ Kuramoto model
 Connectivity simulator
 ----------------------
 
-.. automodule:: pyitab.simulation.connectivity
+.. automodule:: sekupy.simulation.connectivity
    :members:
    :undoc-members:
  
@@ -28,7 +28,7 @@ Connectivity simulator
 Loader
 ------
 
-.. automodule:: pyitab.simulation.loader
+.. automodule:: sekupy.simulation.loader
    :members:
    :undoc-members:
     

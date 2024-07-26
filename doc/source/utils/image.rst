@@ -1,7 +1,7 @@
 Image
 -------------------------
 
-.. automodule:: pyitab.utils.image
+.. automodule:: sekupy.utils.image
    :members:
    :undoc-members:
    

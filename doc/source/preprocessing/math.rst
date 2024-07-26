@@ -1,6 +1,6 @@
 Math Transformer
 ----------------
 
-.. automodule:: pyitab.preprocessing.math
+.. automodule:: sekupy.preprocessing.math
    :members:
    :undoc-members:

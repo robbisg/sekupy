@@ -32,10 +32,10 @@ RUN pip3 install numpy
 ADD requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
 
-COPY ./ $HOME/pyitab/
-WORKDIR ./pyitab/
-RUN cd pyitab & ls
+COPY ./ $HOME/sekupy/
+WORKDIR ./sekupy/
+RUN cd sekupy & ls
 RUN pip3 install .
-RUN python3 -m pytest --pyargs pyitab
+RUN python3 -m pytest --pyargs sekupy
 
 ENTRYPOINT ["/usr/local/bin/bash"]

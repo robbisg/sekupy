@@ -1,6 +1,6 @@
-pyitab.io.mapper module
+sekupy.io.mapper module
 -----------------------
 
-.. automodule:: pyitab.io.mapper
+.. automodule:: sekupy.io.mapper
    :members:
    :undoc-members:

@@ -1,5 +1,5 @@
 ---
-title: 'pyitab: a python package for multivariate pipelines of neuroimaging analyses'
+title: 'sekupy: a python package for multivariate pipelines of neuroimaging analyses'
 tags:
   - Python
   - Pipelines
@@ -28,7 +28,7 @@ bibliography: paper.bib
 
 ## Documentation
 
-The package is accompanied by documentation (https://pyitab.readthedocs.io/en/latest/index.html) and a number of tutorial notebooks which serve as both guides to the package as well as educational resources.
+The package is accompanied by documentation (https://sekupy.readthedocs.io/en/latest/index.html) and a number of tutorial notebooks which serve as both guides to the package as well as educational resources.
 
 # Conclusion
 
