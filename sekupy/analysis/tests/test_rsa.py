@@ -82,7 +82,7 @@ def test_rsa_estimator():
     
     # Check that distance matrix was computed
     assert hasattr(estimator, 'distance_matrix_')
-    expected_size = 10 * 9 / 2  # n * (n-1) / 2 for condensed distance matrix
+    expected_size = 10 * 9 // 2  # n * (n-1) / 2 for condensed distance matrix
     assert estimator.distance_matrix_.shape[0] == expected_size
     
     # Test score method

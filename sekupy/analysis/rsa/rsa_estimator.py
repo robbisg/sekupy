@@ -2,8 +2,27 @@
 
 import numpy as np
 from sklearn.base import BaseEstimator
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import pdist
 from sklearn.metrics import make_scorer
+
+
+def _compute_rsa_score(X, metric='euclidean'):
+    """Helper function to compute RSA score from data.
+    
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Data to compute score for.
+    metric : str, default='euclidean'
+        Distance metric to use.
+        
+    Returns
+    -------
+    score : float
+        Negative mean distance.
+    """
+    distance = pdist(X, metric=metric)
+    return -np.mean(distance)
 
 
 class RSAEstimator(BaseEstimator):
@@ -127,11 +146,7 @@ class RSAEstimator(BaseEstimator):
         score : float
             Negative mean distance (higher is better for more similar representations).
         """
-        # Compute distance for test data
-        distance = pdist(X, metric=self.metric)
-        # Return negative mean distance (so higher score = more similar)
-        # Scale to a more reasonable range for comparison with other metrics
-        return -np.mean(distance)
+        return _compute_rsa_score(X, metric=self.metric)
     
     def transform(self, X):
         """Transform data to distance matrix representation.
@@ -164,8 +179,6 @@ def rsa_scorer(metric='euclidean'):
     """
     def _score(estimator, X, y=None):
         """Score function for RSA."""
-        distance = pdist(X, metric=metric)
-        # Return negative mean distance
-        return -np.mean(distance)
+        return _compute_rsa_score(X, metric=metric)
     
     return make_scorer(_score, greater_is_better=True)
