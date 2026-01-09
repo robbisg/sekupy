@@ -18,11 +18,46 @@ class RSAEstimator(BaseEstimator):
     metric : str, default='euclidean'
         The distance metric to use for computing dissimilarities.
         Any metric supported by scipy.spatial.distance.pdist can be used.
+        Common options include: 'euclidean', 'correlation', 'cosine', 
+        'cityblock', 'hamming'.
         
     Attributes
     ----------
     distance_matrix_ : ndarray
         The computed distance matrix after fitting.
+        
+    Examples
+    --------
+    >>> from sekupy.analysis.rsa import RSAEstimator
+    >>> from sekupy.analysis.searchlight import SearchLight
+    >>> from sklearn.model_selection import StratifiedShuffleSplit
+    >>> 
+    >>> # Create RSA estimator
+    >>> rsa_estimator = RSAEstimator(metric='euclidean')
+    >>> 
+    >>> # Define a custom scorer for RSA
+    >>> class RSAScorer:
+    ...     def __call__(self, estimator, X, y=None):
+    ...         return estimator.score(X, y)
+    >>> 
+    >>> # Use RSA within SearchLight
+    >>> analysis = SearchLight(
+    ...     estimator=rsa_estimator,
+    ...     radius=9.0,
+    ...     scoring={'rsa': RSAScorer()},
+    ...     cv=StratifiedShuffleSplit(n_splits=2, test_size=0.2),
+    ...     verbose=0
+    ... )
+    >>> 
+    >>> # Fit on your dataset
+    >>> # analysis.fit(ds)
+    
+    Notes
+    -----
+    The RSAEstimator computes pairwise distances between samples, making it 
+    suitable for representational similarity analysis. When used with 
+    SearchLight, it analyzes the representational structure in local 
+    neighborhoods of voxels/features.
     """
     
     def __init__(self, metric='euclidean'):
