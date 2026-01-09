@@ -1,7 +1,9 @@
 from sekupy.tests import fetch_ds
 from sekupy.preprocessing import SampleSlicer
 from sekupy.preprocessing import TargetTransformer
-from sekupy.analysis.rsa import RSA
+from sekupy.analysis.rsa import RSA, RSAEstimator, rsa_scorer
+from sekupy.analysis.searchlight import SearchLight
+from sklearn.model_selection import StratifiedShuffleSplit
 
 import numpy as np
 import os
@@ -68,6 +70,69 @@ def test_rsa_save(fetch_ds):
     # Cleanup if not using with statement
     shutil.rmtree(tmpdirname, ignore_errors=True)
 
-    
-    
 
+def test_rsa_estimator():
+    """Test RSAEstimator basic functionality."""
+    # Create simple test data
+    X = np.random.randn(10, 5)
+    
+    # Create and fit RSA estimator
+    estimator = RSAEstimator(metric='euclidean')
+    estimator.fit(X)
+    
+    # Check that distance matrix was computed
+    assert hasattr(estimator, 'distance_matrix_')
+    expected_size = 10 * 9 / 2  # n * (n-1) / 2 for condensed distance matrix
+    assert estimator.distance_matrix_.shape[0] == expected_size
+    
+    # Test score method
+    score = estimator.score(X)
+    assert isinstance(score, (float, np.floating))
+    assert score < 0  # negative mean distance
+    
+    # Test transform method
+    distances = estimator.transform(X)
+    assert distances.shape[0] == expected_size
+
+
+def test_rsa_with_searchlight(fetch_ds):
+    """Test RSA as an estimator within SearchLight."""
+    ds = fetch_ds
+    
+    # Preprocess data
+    ds = SampleSlicer(subject=['subj01'], evidence=[1, 2, 3]).transform(ds)
+    ds = TargetTransformer(attr='evidence').transform(ds)
+    
+    np.testing.assert_array_equal(ds.targets, ds.sa.evidence)
+    
+    # Create RSA estimator
+    rsa_estimator = RSAEstimator(metric='euclidean')
+    
+    # Use RSA within SearchLight
+    n_splits = 2
+    analysis = SearchLight(
+        estimator=rsa_estimator,
+        radius=9.0,
+        scoring=rsa_scorer(metric='euclidean'),
+        cv=StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2),
+        verbose=0,
+        permutation=0
+    )
+    
+    # Fit the searchlight with RSA
+    analysis.fit(ds)
+    
+    # Check that analysis completed successfully
+    assert hasattr(analysis, 'scores')
+    assert len(analysis.scores) == 1  # No permutations, so just 1 result
+    
+    # Check the structure of results
+    scores = analysis.scores[0]
+    assert isinstance(scores, dict)
+    
+    # The scores should contain the test scores
+    for key in scores.keys():
+        assert 'test_' in key
+        # Check shape: (n_voxels, n_splits)
+        assert scores[key].shape[0] == ds.shape[1]  # n_voxels/features
+        assert scores[key].shape[1] == n_splits
