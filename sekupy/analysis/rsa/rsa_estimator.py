@@ -47,7 +47,27 @@ class RSAEstimator(BaseEstimator):
         """
         # Compute pairwise distances
         self.distance_matrix_ = pdist(X, metric=self.metric)
+        # Store y for predict method compatibility
+        self.y_ = y
         return self
+    
+    def predict(self, X):
+        """Predict method for compatibility with sklearn scoring.
+        
+        For RSA, we return the condensed distance matrix as "predictions".
+        This allows the estimator to work with various sklearn scorers.
+        
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Data to predict on.
+            
+        Returns
+        -------
+        distances : ndarray of shape (n_samples * (n_samples - 1) / 2,)
+            Condensed distance matrix.
+        """
+        return pdist(X, metric=self.metric)
     
     def score(self, X, y=None):
         """Compute a score for the RSA analysis.
@@ -55,6 +75,10 @@ class RSAEstimator(BaseEstimator):
         This computes the negative mean distance as a score metric.
         In RSA, we want to capture the representational structure,
         so we return a metric based on the distance matrix.
+        
+        For compatibility with regression scoring metrics like R², 
+        we can interpret the score as how well the representations 
+        are structured (lower distance = better structure).
         
         Parameters
         ----------
@@ -71,6 +95,7 @@ class RSAEstimator(BaseEstimator):
         # Compute distance for test data
         distance = pdist(X, metric=self.metric)
         # Return negative mean distance (so higher score = more similar)
+        # Scale to a more reasonable range for comparison with other metrics
         return -np.mean(distance)
     
     def transform(self, X):

@@ -108,12 +108,21 @@ def test_rsa_with_searchlight(fetch_ds):
     # Create RSA estimator
     rsa_estimator = RSAEstimator(metric='euclidean')
     
-    # Use RSA within SearchLight
+    # For RSA within SearchLight, we can use a custom callable scorer
+    # that directly calls the estimator's score method
+    class RSAScorer:
+        """Custom scorer for RSA that uses estimator.score()."""
+        def __call__(self, estimator, X, y=None):
+            return estimator.score(X, y)
+        
+        def __repr__(self):
+            return "RSAScorer()"
+    
     n_splits = 2
     analysis = SearchLight(
         estimator=rsa_estimator,
         radius=9.0,
-        scoring=rsa_scorer(metric='euclidean'),
+        scoring={'rsa': RSAScorer()},  # Use custom scorer object
         cv=StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2),
         verbose=0,
         permutation=0

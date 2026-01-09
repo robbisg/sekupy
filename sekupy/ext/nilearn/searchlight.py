@@ -23,8 +23,16 @@ from sklearn.exceptions import ConvergenceWarning
 
 from nilearn import masking
 from nilearn.image.resampling import coord_transform
-from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
-from nilearn._utils import check_niimg_4d
+try:
+    # Try the newer API first (nilearn >= 0.9)
+    from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity as _apply_mask_and_get_affinity
+except ImportError:
+    # Fall back to older API
+    from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
+try:
+    from nilearn._utils import check_niimg_4d
+except ImportError:
+    from nilearn.image import check_niimg_4d
 from sekupy.ext.sklearn._validation import cross_validate
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
