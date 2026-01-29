@@ -103,6 +103,23 @@ def load_dataset(path, subj, folder, **kwargs):
 
 
 def add_filename(ds, fmri_list):
+    """Add filename information to dataset sample attributes.
+    
+    This function adds file provenance information to each sample
+    in the dataset, tracking which file each volume came from.
+    
+    Parameters
+    ----------
+    ds : Dataset
+        The dataset to add filename information to
+    fmri_list : list
+        List of neuroimaging files (nibabel images)
+        
+    Returns
+    -------
+    Dataset
+        Dataset with filename sample attribute added
+    """
 
     filenames = []
     for i, img in enumerate(fmri_list):
@@ -116,6 +133,24 @@ def add_filename(ds, fmri_list):
 
 
 def add_attributes(ds, attr):
+    """Add sample attributes to the dataset.
+    
+    This function adds additional sample attributes from a dictionary
+    to the dataset's sample attribute collection.
+    
+    Parameters
+    ----------
+    ds : Dataset
+        The dataset to add attributes to
+    attr : dict
+        Dictionary containing attribute names as keys and attribute
+        values as values
+        
+    Returns
+    -------
+    Dataset
+        Dataset with additional sample attributes added
+    """
 
     logger.debug(attr.keys())
 
@@ -129,6 +164,21 @@ def add_attributes(ds, attr):
 
 
 def add_events(ds):
+    """Add event information to the dataset.
+    
+    This function extracts event information from the dataset's
+    targets and chunks attributes and adds event-related attributes.
+    
+    Parameters
+    ----------
+    ds : Dataset
+        The dataset to add event information to
+        
+    Returns
+    -------
+    Dataset
+        Dataset with event information added to attributes
+    """
 
     ev_list = []
     events = find_events(targets=ds.sa.targets, chunks=ds.sa.chunks)

@@ -11,9 +11,45 @@ logger = logging.getLogger(__name__)
 
 
 class Analyzer(Node):
+    """Base class for neuroimaging analysis components.
+    
+    The Analyzer class extends Node to provide core functionality for
+    neuroimaging analyses in the sekupy framework. It handles analysis
+    configuration, execution, and result storage following BIDS conventions.
+    
+    Parameters
+    ----------
+    name : str, optional
+        Name identifier for the analyzer, by default 'analyzer'
+    **kwargs : dict
+        Additional configuration parameters including:
+        - id : str, optional
+            Unique identifier for the analysis instance
+        - num : int, optional
+            Number identifier for the analysis, by default 1
+    
+    Attributes
+    ----------
+    id : str
+        Unique identifier for the analysis instance
+    num : int
+        Number identifier for the analysis
+    """
     
     def __init__(self, name='analyzer', **kwargs):
-
+        """Initialize an Analyzer instance.
+        
+        Parameters
+        ----------
+        name : str, optional
+            Name identifier for the analyzer, by default 'analyzer'
+        **kwargs : dict
+            Additional configuration parameters including:
+            - id : str, optional
+                Unique identifier for the analysis instance
+            - num : int, optional
+                Number identifier for the analysis, by default 1
+        """
 
         self.id = get_id()
         if 'id' in kwargs.keys():
@@ -29,6 +65,22 @@ class Analyzer(Node):
         
         
     def fit(self, ds, **kwargs):
+        """Fit the analyzer to the provided dataset.
+        
+        This method stores information about the dataset and analysis
+        configuration for later use in saving results.
+        
+        Parameters
+        ----------
+        ds : Dataset
+            The dataset to analyze
+        **kwargs : dict
+            Additional parameters for the analysis
+            
+        Returns
+        -------
+        None
+        """
         
         self._info = self._store_info(ds, **kwargs)
 

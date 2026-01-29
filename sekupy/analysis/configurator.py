@@ -15,6 +15,13 @@ logger = logging.getLogger(__name__)
 
 
 class AnalysisConfigurator(object):
+    """Configuration manager for neuroimaging analysis pipelines.
+    
+    The AnalysisConfigurator class manages all parameters and settings for
+    neuroimaging analyses in the sekupy framework. It handles preprocessing
+    steps, estimator configurations, analysis types, cross-validation
+    settings, and evaluation metrics.
+    """
     
   
     def __init__(self, 
