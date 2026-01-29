@@ -6,6 +6,63 @@ from scipy.spatial.distance import pdist
 from sklearn.metrics import make_scorer
 
 
+def _compute_condition_averages(X, y):
+    """Helper function to compute condition-averaged representations.
+    
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Data to average by condition.
+    y : array-like of shape (n_samples,)
+        Condition labels for each sample.
+        
+    Returns
+    -------
+    condition_averages : ndarray of shape (n_conditions, n_features)
+        Averaged representations for each condition.
+    unique_conditions : ndarray of shape (n_conditions,)
+        Unique condition labels.
+        
+    Raises
+    ------
+    ValueError
+        If y is None, or if fewer than 2 unique conditions are present,
+        or if any condition has no samples.
+    """
+    if y is None:
+        raise ValueError("y cannot be None for RSA. Condition labels are required.")
+    
+    X = np.asarray(X)
+    y = np.asarray(y)
+    
+    # Get unique conditions
+    unique_conditions = np.unique(y)
+    
+    # Validate that we have at least 2 conditions
+    if len(unique_conditions) < 2:
+        raise ValueError(
+            f"RSA requires at least 2 unique conditions, but only {len(unique_conditions)} found. "
+            "Cannot compute pairwise distances with fewer than 2 conditions."
+        )
+    
+    # Compute condition averages
+    condition_averages = []
+    for condition in unique_conditions:
+        mask = y == condition
+        n_samples = np.sum(mask)
+        
+        # Validate that condition has at least one sample
+        if n_samples == 0:
+            raise ValueError(f"Condition {condition} has no samples.")
+        
+        avg = X[mask].mean(axis=0)
+        condition_averages.append(avg)
+    
+    condition_averages = np.array(condition_averages)
+    
+    return condition_averages, unique_conditions
+
+
 def _compute_rsa_score(X, y, metric='euclidean'):
     """Helper function to compute RSA score from data.
     
@@ -27,22 +84,7 @@ def _compute_rsa_score(X, y, metric='euclidean'):
     score : float
         Negative mean distance between conditions.
     """
-    if y is None:
-        raise ValueError("y cannot be None for RSA. Condition labels are required.")
-    
-    X = np.asarray(X)
-    y = np.asarray(y)
-    
-    # Get unique conditions and compute condition averages
-    unique_conditions = np.unique(y)
-    condition_averages = []
-    
-    for condition in unique_conditions:
-        mask = y == condition
-        avg = X[mask].mean(axis=0)
-        condition_averages.append(avg)
-    
-    condition_averages = np.array(condition_averages)
+    condition_averages, _ = _compute_condition_averages(X, y)
     
     # Compute pairwise distances between condition averages
     distance = pdist(condition_averages, metric=metric)
@@ -142,29 +184,19 @@ class RSAEstimator(BaseEstimator):
             Training data.
         y : array-like of shape (n_samples,)
             Condition labels for each sample. Required for RSA.
+            Must contain at least 2 unique conditions.
             
         Returns
         -------
         self : RSAEstimator
             Fitted estimator.
+            
+        Raises
+        ------
+        ValueError
+            If y is None, or if fewer than 2 unique conditions are present.
         """
-        if y is None:
-            raise ValueError("y cannot be None for RSA. Condition labels are required.")
-        
-        X = np.asarray(X)
-        y = np.asarray(y)
-        
-        # Get unique conditions and compute condition averages
-        unique_conditions = np.unique(y)
-        condition_averages = []
-        
-        for condition in unique_conditions:
-            mask = y == condition
-            avg = X[mask].mean(axis=0)
-            condition_averages.append(avg)
-        
-        self.condition_averages_ = np.array(condition_averages)
-        self.unique_conditions_ = unique_conditions
+        self.condition_averages_, self.unique_conditions_ = _compute_condition_averages(X, y)
         
         # Compute pairwise distances between condition averages
         self.distance_matrix_ = pdist(self.condition_averages_, metric=self.metric)
@@ -181,30 +213,20 @@ class RSAEstimator(BaseEstimator):
         X : array-like of shape (n_samples, n_features)
             Data to predict on.
         y : array-like of shape (n_samples,)
-            Condition labels for each sample.
+            Condition labels for each sample. Required for RSA.
+            Must contain at least 2 unique conditions.
             
         Returns
         -------
         distances : ndarray of shape (n_conditions * (n_conditions - 1) / 2,)
             Condensed distance matrix between condition averages.
+            
+        Raises
+        ------
+        ValueError
+            If y is None, or if fewer than 2 unique conditions are present.
         """
-        if y is None:
-            raise ValueError("y cannot be None for RSA. Condition labels are required.")
-        
-        X = np.asarray(X)
-        y = np.asarray(y)
-        
-        # Get unique conditions and compute condition averages
-        unique_conditions = np.unique(y)
-        condition_averages = []
-        
-        for condition in unique_conditions:
-            mask = y == condition
-            avg = X[mask].mean(axis=0)
-            condition_averages.append(avg)
-        
-        condition_averages = np.array(condition_averages)
-        
+        condition_averages, _ = _compute_condition_averages(X, y)
         return pdist(condition_averages, metric=self.metric)
     
     def score(self, X, y=None):
@@ -220,11 +242,17 @@ class RSAEstimator(BaseEstimator):
             Test data.
         y : array-like of shape (n_samples,)
             Condition labels. Required for RSA.
+            Must contain at least 2 unique conditions.
             
         Returns
         -------
         score : float
             Negative mean distance between conditions (higher is better).
+            
+        Raises
+        ------
+        ValueError
+            If y is None, or if fewer than 2 unique conditions are present.
         """
         return _compute_rsa_score(X, y, metric=self.metric)
     
@@ -238,30 +266,20 @@ class RSAEstimator(BaseEstimator):
         X : array-like of shape (n_samples, n_features)
             Data to transform.
         y : array-like of shape (n_samples,)
-            Condition labels for each sample.
+            Condition labels for each sample. Required for RSA.
+            Must contain at least 2 unique conditions.
             
         Returns
         -------
         distances : ndarray of shape (n_conditions * (n_conditions - 1) / 2,)
             Condensed distance matrix between condition averages.
+            
+        Raises
+        ------
+        ValueError
+            If y is None, or if fewer than 2 unique conditions are present.
         """
-        if y is None:
-            raise ValueError("y cannot be None for RSA. Condition labels are required.")
-        
-        X = np.asarray(X)
-        y = np.asarray(y)
-        
-        # Get unique conditions and compute condition averages
-        unique_conditions = np.unique(y)
-        condition_averages = []
-        
-        for condition in unique_conditions:
-            mask = y == condition
-            avg = X[mask].mean(axis=0)
-            condition_averages.append(avg)
-        
-        condition_averages = np.array(condition_averages)
-        
+        condition_averages, _ = _compute_condition_averages(X, y)
         return pdist(condition_averages, metric=self.metric)
 
 

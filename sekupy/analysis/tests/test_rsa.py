@@ -96,16 +96,24 @@ def test_rsa_estimator():
     assert isinstance(score, (float, np.floating))
     assert score < 0  # negative mean distance
     
+    # Test predict method
+    predictions = estimator.predict(X, y)
+    assert predictions.shape[0] == expected_size
+    assert isinstance(predictions, np.ndarray)
+    
     # Test transform method
     distances = estimator.transform(X, y)
     assert distances.shape[0] == expected_size
     
     # Test that y is required
-    try:
+    with pytest.raises(ValueError, match="y cannot be None"):
         estimator.fit(X, None)
-        assert False, "Should raise ValueError when y is None"
-    except ValueError as e:
-        assert "y cannot be None" in str(e)
+    
+    # Test that at least 2 conditions are required
+    X_single = np.random.randn(5, 5)
+    y_single = np.array([0, 0, 0, 0, 0])  # Only 1 condition
+    with pytest.raises(ValueError, match="at least 2 unique conditions"):
+        estimator.fit(X_single, y_single)
 
 
 def test_rsa_with_searchlight(fetch_ds):
