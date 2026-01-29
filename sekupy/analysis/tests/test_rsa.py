@@ -73,26 +73,39 @@ def test_rsa_save(fetch_ds):
 
 def test_rsa_estimator():
     """Test RSAEstimator basic functionality."""
-    # Create simple test data
+    # Create simple test data with condition labels
     X = np.random.randn(10, 5)
+    y = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2, 2])  # 3 conditions
     
     # Create and fit RSA estimator
     estimator = RSAEstimator(metric='euclidean')
-    estimator.fit(X)
+    estimator.fit(X, y)
     
     # Check that distance matrix was computed
     assert hasattr(estimator, 'distance_matrix_')
-    expected_size = 10 * 9 // 2  # n * (n-1) / 2 for condensed distance matrix
+    # 3 conditions -> 3 * 2 / 2 = 3 pairwise distances
+    expected_size = 3 * 2 // 2
     assert estimator.distance_matrix_.shape[0] == expected_size
     
+    # Check that condition averages were computed
+    assert hasattr(estimator, 'condition_averages_')
+    assert estimator.condition_averages_.shape[0] == 3  # 3 conditions
+    
     # Test score method
-    score = estimator.score(X)
+    score = estimator.score(X, y)
     assert isinstance(score, (float, np.floating))
     assert score < 0  # negative mean distance
     
     # Test transform method
-    distances = estimator.transform(X)
+    distances = estimator.transform(X, y)
     assert distances.shape[0] == expected_size
+    
+    # Test that y is required
+    try:
+        estimator.fit(X, None)
+        assert False, "Should raise ValueError when y is None"
+    except ValueError as e:
+        assert "y cannot be None" in str(e)
 
 
 def test_rsa_with_searchlight(fetch_ds):
@@ -109,10 +122,10 @@ def test_rsa_with_searchlight(fetch_ds):
     rsa_estimator = RSAEstimator(metric='euclidean')
     
     # For RSA within SearchLight, we can use a custom callable scorer
-    # that directly calls the estimator's score method
+    # that directly calls the estimator's score method with y
     class RSAScorer:
-        """Custom scorer for RSA that uses estimator.score()."""
-        def __call__(self, estimator, X, y=None):
+        """Custom scorer for RSA that uses estimator.score() with y."""
+        def __call__(self, estimator, X, y):
             return estimator.score(X, y)
         
         def __repr__(self):

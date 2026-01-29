@@ -6,31 +6,60 @@ from scipy.spatial.distance import pdist
 from sklearn.metrics import make_scorer
 
 
-def _compute_rsa_score(X, metric='euclidean'):
+def _compute_rsa_score(X, y, metric='euclidean'):
     """Helper function to compute RSA score from data.
+    
+    RSA computes distances between condition-averaged representations.
+    This function groups samples by condition (y), averages within each
+    condition, then computes pairwise distances between conditions.
     
     Parameters
     ----------
     X : array-like of shape (n_samples, n_features)
         Data to compute score for.
+    y : array-like of shape (n_samples,)
+        Condition labels for each sample.
     metric : str, default='euclidean'
         Distance metric to use.
         
     Returns
     -------
     score : float
-        Negative mean distance.
+        Negative mean distance between conditions.
     """
-    distance = pdist(X, metric=metric)
+    if y is None:
+        raise ValueError("y cannot be None for RSA. Condition labels are required.")
+    
+    X = np.asarray(X)
+    y = np.asarray(y)
+    
+    # Get unique conditions and compute condition averages
+    unique_conditions = np.unique(y)
+    condition_averages = []
+    
+    for condition in unique_conditions:
+        mask = y == condition
+        avg = X[mask].mean(axis=0)
+        condition_averages.append(avg)
+    
+    condition_averages = np.array(condition_averages)
+    
+    # Compute pairwise distances between condition averages
+    distance = pdist(condition_averages, metric=metric)
     return -np.mean(distance)
 
 
 class RSAEstimator(BaseEstimator):
     """Estimator wrapper for RSA that can be used within SearchLight.
     
-    This class wraps RSA functionality to make it compatible with 
-    scikit-learn's estimator interface, allowing it to be used as 
-    an estimator parameter in SearchLight analysis.
+    This class wraps RSA (Representational Similarity Analysis) functionality 
+    to make it compatible with scikit-learn's estimator interface. RSA computes
+    distances between condition-averaged representations, making it suitable for
+    analyzing how different experimental conditions are represented.
+    
+    The estimator groups samples by their condition labels (y), averages samples
+    within each condition, then computes pairwise distances between these
+    condition averages.
     
     Parameters
     ----------
@@ -43,20 +72,30 @@ class RSAEstimator(BaseEstimator):
     Attributes
     ----------
     distance_matrix_ : ndarray
-        The computed distance matrix after fitting.
+        The computed distance matrix between condition averages after fitting.
+    condition_averages_ : ndarray
+        The averaged representations for each condition.
+    unique_conditions_ : ndarray
+        The unique condition labels.
         
     Examples
     --------
     >>> from sekupy.analysis.rsa import RSAEstimator
     >>> from sekupy.analysis.searchlight import SearchLight
     >>> from sklearn.model_selection import StratifiedShuffleSplit
+    >>> import numpy as np
     >>> 
     >>> # Create RSA estimator
     >>> rsa_estimator = RSAEstimator(metric='euclidean')
     >>> 
+    >>> # Fit with condition labels (y is required)
+    >>> X = np.random.randn(10, 5)  # 10 samples, 5 features
+    >>> y = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2, 2])  # 3 conditions
+    >>> rsa_estimator.fit(X, y)
+    >>> 
     >>> # Define a custom scorer for RSA
     >>> class RSAScorer:
-    ...     def __call__(self, estimator, X, y=None):
+    ...     def __call__(self, estimator, X, y):
     ...         return estimator.score(X, y)
     >>> 
     >>> # Use RSA within SearchLight
@@ -73,10 +112,17 @@ class RSAEstimator(BaseEstimator):
     
     Notes
     -----
-    The RSAEstimator computes pairwise distances between samples, making it 
-    suitable for representational similarity analysis. When used with 
-    SearchLight, it analyzes the representational structure in local 
-    neighborhoods of voxels/features.
+    The RSAEstimator computes pairwise distances between condition-averaged
+    representations. This is the standard approach in Representational Similarity
+    Analysis, where the goal is to understand how different experimental conditions
+    are represented, not individual trials. When used with SearchLight, it analyzes 
+    the representational structure in local neighborhoods of voxels/features.
+    
+    References
+    ----------
+    Kriegeskorte, N., Mur, M., & Bandettini, P. (2008). Representational 
+    similarity analysis - connecting the branches of systems neuroscience. 
+    Frontiers in Systems Neuroscience, 2, 4.
     """
     
     def __init__(self, metric='euclidean'):
@@ -85,83 +131,138 @@ class RSAEstimator(BaseEstimator):
     def fit(self, X, y=None):
         """Fit the RSA estimator.
         
-        Computes the distance matrix for the training data.
+        Computes the distance matrix for condition-averaged training data.
+        RSA groups samples by their condition labels (y), averages samples
+        within each condition, then computes pairwise distances between
+        these condition averages.
         
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
             Training data.
-        y : array-like of shape (n_samples,), optional
-            Target values (used for compatibility, but not required for RSA).
+        y : array-like of shape (n_samples,)
+            Condition labels for each sample. Required for RSA.
             
         Returns
         -------
         self : RSAEstimator
             Fitted estimator.
         """
-        # Compute pairwise distances
-        self.distance_matrix_ = pdist(X, metric=self.metric)
-        # Store y for predict method compatibility
-        self.y_ = y
+        if y is None:
+            raise ValueError("y cannot be None for RSA. Condition labels are required.")
+        
+        X = np.asarray(X)
+        y = np.asarray(y)
+        
+        # Get unique conditions and compute condition averages
+        unique_conditions = np.unique(y)
+        condition_averages = []
+        
+        for condition in unique_conditions:
+            mask = y == condition
+            avg = X[mask].mean(axis=0)
+            condition_averages.append(avg)
+        
+        self.condition_averages_ = np.array(condition_averages)
+        self.unique_conditions_ = unique_conditions
+        
+        # Compute pairwise distances between condition averages
+        self.distance_matrix_ = pdist(self.condition_averages_, metric=self.metric)
+        
         return self
     
-    def predict(self, X):
+    def predict(self, X, y):
         """Predict method for compatibility with sklearn scoring.
         
-        For RSA, we return the condensed distance matrix as "predictions".
-        This allows the estimator to work with various sklearn scorers.
+        For RSA, we compute distances between condition-averaged samples.
         
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
             Data to predict on.
+        y : array-like of shape (n_samples,)
+            Condition labels for each sample.
             
         Returns
         -------
-        distances : ndarray of shape (n_samples * (n_samples - 1) / 2,)
-            Condensed distance matrix.
+        distances : ndarray of shape (n_conditions * (n_conditions - 1) / 2,)
+            Condensed distance matrix between condition averages.
         """
-        return pdist(X, metric=self.metric)
+        if y is None:
+            raise ValueError("y cannot be None for RSA. Condition labels are required.")
+        
+        X = np.asarray(X)
+        y = np.asarray(y)
+        
+        # Get unique conditions and compute condition averages
+        unique_conditions = np.unique(y)
+        condition_averages = []
+        
+        for condition in unique_conditions:
+            mask = y == condition
+            avg = X[mask].mean(axis=0)
+            condition_averages.append(avg)
+        
+        condition_averages = np.array(condition_averages)
+        
+        return pdist(condition_averages, metric=self.metric)
     
     def score(self, X, y=None):
         """Compute a score for the RSA analysis.
         
-        This computes the negative mean distance as a score metric.
-        In RSA, we want to capture the representational structure,
-        so we return a metric based on the distance matrix.
-        
-        For compatibility with regression scoring metrics like R², 
-        we can interpret the score as how well the representations 
-        are structured (lower distance = better structure).
+        This computes the negative mean distance between condition averages.
+        RSA groups samples by condition labels, averages within each condition,
+        then computes pairwise distances between conditions.
         
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
             Test data.
-        y : array-like of shape (n_samples,), optional
-            True labels (used for compatibility).
+        y : array-like of shape (n_samples,)
+            Condition labels. Required for RSA.
             
         Returns
         -------
         score : float
-            Negative mean distance (higher is better for more similar representations).
+            Negative mean distance between conditions (higher is better).
         """
-        return _compute_rsa_score(X, metric=self.metric)
+        return _compute_rsa_score(X, y, metric=self.metric)
     
-    def transform(self, X):
+    def transform(self, X, y):
         """Transform data to distance matrix representation.
+        
+        Computes distances between condition-averaged samples.
         
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
             Data to transform.
+        y : array-like of shape (n_samples,)
+            Condition labels for each sample.
             
         Returns
         -------
-        distances : ndarray of shape (n_samples * (n_samples - 1) / 2,)
-            Condensed distance matrix.
+        distances : ndarray of shape (n_conditions * (n_conditions - 1) / 2,)
+            Condensed distance matrix between condition averages.
         """
-        return pdist(X, metric=self.metric)
+        if y is None:
+            raise ValueError("y cannot be None for RSA. Condition labels are required.")
+        
+        X = np.asarray(X)
+        y = np.asarray(y)
+        
+        # Get unique conditions and compute condition averages
+        unique_conditions = np.unique(y)
+        condition_averages = []
+        
+        for condition in unique_conditions:
+            mask = y == condition
+            avg = X[mask].mean(axis=0)
+            condition_averages.append(avg)
+        
+        condition_averages = np.array(condition_averages)
+        
+        return pdist(condition_averages, metric=self.metric)
 
 
 def rsa_scorer(metric='euclidean'):
@@ -179,6 +280,6 @@ def rsa_scorer(metric='euclidean'):
     """
     def _score(estimator, X, y=None):
         """Score function for RSA."""
-        return _compute_rsa_score(X, metric=metric)
+        return _compute_rsa_score(X, y, metric=metric)
     
     return make_scorer(_score, greater_is_better=True)
