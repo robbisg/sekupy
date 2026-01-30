@@ -263,9 +263,15 @@ def add_bids_attributes(event_key, events, length, tr, onset_offset=0, extra_dur
     # This is to avoid 0-shaped event
     labels = labels.reshape(labels.size)
     dtype = events.dtypes[event_key]
+    
+    # Convert pandas StringDtype to numpy dtype
+    if hasattr(dtype, 'numpy_dtype'):
+        dtype = dtype.numpy_dtype
+    elif str(dtype) == 'string':
+        dtype = np.dtype('U')
 
     targets = np.zeros(length, dtype=dtype)
-    if dtype.kind is "U":
+    if dtype.kind == "U":
         targets[:] = 'rest'
 
     event_onsets = events['onset'].values

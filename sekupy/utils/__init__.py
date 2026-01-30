@@ -1,5 +1,23 @@
 
 def load_test_dataset(task='fmri', n_subjects=1):
+    """Load a test dataset for development and testing purposes.
+    
+    This function loads sample datasets included with sekupy for
+    testing and development. It supports different neuroimaging
+    modalities including fMRI and MEG data.
+    
+    Parameters
+    ----------
+    task : str, optional
+        Type of data to load ('fmri', 'meg'), by default 'fmri'
+    n_subjects : int, optional
+        Number of subjects to load, by default 1
+        
+    Returns
+    -------
+    Dataset
+        Loaded test dataset with preprocessing applied
+    """
     from sekupy.io.loader import DataLoader
     from sekupy.io.base import load_dataset
     from sekupy.io.connectivity import load_mat_ds
@@ -28,6 +46,17 @@ def load_test_dataset(task='fmri', n_subjects=1):
 
 
 def enable_logging():
+    """Enable logging for sekupy with formatted output.
+    
+    This function sets up logging for the sekupy package with a
+    detailed formatter that includes file, line number, and function
+    information for debugging purposes.
+    
+    Returns
+    -------
+    logging.Logger
+        Root logger instance configured for sekupy
+    """
     import logging
     root = logging.getLogger()
     form = logging.Formatter('%(name)s - %(levelname)s: %(lineno)d \t %(filename)s \t%(funcName)s \t --  %(message)s')
@@ -40,6 +69,17 @@ def enable_logging():
 
 
 def get_id():
+    """Generate a unique identifier string.
+    
+    This function creates a unique identifier by using the last 8 characters
+    of a temporary directory name, with special characters replaced by '0'
+    to ensure compatibility.
+    
+    Returns
+    -------
+    str
+        8-character unique identifier string
+    """
     import tempfile
     id_ = tempfile.mkdtemp()[-8:]
     
@@ -51,6 +91,28 @@ def get_id():
 
 
 def make_dict_product(as_filter=True, **kwargs):
+    """Create a list of dictionaries from Cartesian product of parameters.
+    
+    This function generates all possible combinations of parameters,
+    useful for parameter grid search in neuroimaging analyses.
+    
+    Parameters
+    ----------
+    as_filter : bool, optional
+        If True, wrap each parameter value in a list, by default True
+    **kwargs : dict
+        Parameter names and their possible values
+        
+    Returns
+    -------
+    list
+        List of dictionaries, each representing one parameter combination
+        
+    Examples
+    --------
+    >>> make_dict_product(C=[1, 10], kernel=['linear', 'rbf'])
+    [{'C': [1], 'kernel': ['linear']}, {'C': [1], 'kernel': ['rbf']}, ...]
+    """
     import itertools
     args = [arg for arg in kwargs]
     combinations_ = list(itertools.product(*[kwargs[arg] for arg in kwargs]))
@@ -65,21 +127,26 @@ def make_dict_product(as_filter=True, **kwargs):
 
 
 def setup_analysis(path, analysis, participants_fname=None, **configuration):
-    """This function sets up the analysis files 
+    """Set up analysis directory structure and configuration files.
+    
+    This function creates the necessary directory structure and configuration
+    files for a neuroimaging analysis following BIDS conventions.
 
     Parameters
     ----------
-    path : [type]
-        [description]
-    analysis : [type]
-        [description]
-    participants_fname : [type], optional
-        [description], by default None
+    path : str
+        Base path where the analysis directory will be created
+    analysis : str
+        Name of the analysis (used for directory and config file naming)
+    participants_fname : str, optional
+        Name of the participants file, by default None (uses 'participants.csv')
+    **configuration : dict
+        Additional configuration parameters to include in the config file
 
     Returns
     -------
-    [type]
-        [description]
+    str
+        Path to the created configuration file
     """
 
     import os

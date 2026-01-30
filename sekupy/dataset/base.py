@@ -49,6 +49,16 @@ class Dataset(AttrDataset):
     
 
     def _append_mapper(self, mapper):
+        """Append a mapper to the dataset's mapper chain.
+        
+        This method manages the dataset's mapper attribute, creating
+        a ChainMapper if multiple mappers need to be combined.
+        
+        Parameters
+        ----------
+        mapper : Mapper
+            The mapper instance to append to the dataset
+        """
         if not 'mapper' in self.a:
             self.a['mapper'] = mapper
             return

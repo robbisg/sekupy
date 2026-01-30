@@ -14,6 +14,27 @@ logger = logging.getLogger(__name__)
 
 
 def get_values(path, directory, field_list, result_keys):
+    """Extract analysis results and configuration from a results directory.
+    
+    This function reads configuration and result files from an analysis
+    directory and extracts specified fields and scores for further analysis.
+    
+    Parameters
+    ----------
+    path : str
+        Base path containing analysis results
+    directory : str
+        Specific directory name containing the results
+    field_list : list
+        List of configuration fields to extract
+    result_keys : list or None
+        Additional result keys to extract from .mat files
+        
+    Returns
+    -------
+    list
+        List of dictionaries containing extracted field values and scores
+    """
 
     dir_path = os.path.join(path, directory)
 

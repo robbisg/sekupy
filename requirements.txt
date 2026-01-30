@@ -5,9 +5,8 @@ pandas
 seaborn
 statsmodels
 scikit-learn
-nilearn
+nilearn==0.11.0
 mne
-mne-hcp
 nibabel
 pybids
 imbalanced-learn
@@ -18,7 +17,6 @@ dask-jobqueue
 dask-kubernetes
 distributed
 xlrd
-nistats
 coverage
 codecov
 pytest

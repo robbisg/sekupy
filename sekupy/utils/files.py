@@ -3,6 +3,26 @@ import os
 logger = logging.getLogger(__name__)
 
 def add_subdirs(path, name, sub_dirs):
+    """Add subdirectories to build complete directory paths.
+    
+    This function creates a list of complete directory paths by combining
+    a base path, subject name, and subdirectories. It validates that
+    directories exist before adding them to the list.
+    
+    Parameters
+    ----------
+    path : str
+        Base directory path
+    name : str
+        Subject or experiment name
+    sub_dirs : list
+        List of subdirectory names to add
+        
+    Returns
+    -------
+    list
+        List of complete directory paths that exist
+    """
     
     complete_path = []
     
@@ -30,6 +50,25 @@ def add_subdirs(path, name, sub_dirs):
 
 
 def build_pathnames(path, name, sub_dirs):
+    """Build list of file pathnames from directories.
+    
+    This function creates a comprehensive list of file paths by searching
+    through the base directory and specified subdirectories.
+    
+    Parameters
+    ----------
+    path : str
+        Base directory path
+    name : str
+        Subject or experiment name
+    sub_dirs : list
+        List of subdirectory names to search
+        
+    Returns
+    -------
+    list
+        List of file paths found in the directories
+    """
             
     
     path_file_dirs = add_subdirs(path, name, sub_dirs)
@@ -51,7 +90,16 @@ def build_pathnames(path, name, sub_dirs):
 
 
 def make_dir(path):
-    """ Make dir unix command wrapper """
+    """Create directory using mkdir -p command.
+    
+    This function wraps the Unix mkdir -p command to create
+    directories recursively if they don't exist.
+    
+    Parameters
+    ----------
+    path : str
+        Directory path to create
+    """
     command = 'mkdir -p '+os.path.join(path)
     logger.debug(command)
     os.system(command)
