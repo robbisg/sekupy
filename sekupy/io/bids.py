@@ -67,7 +67,7 @@ def load_bids_dataset(path, subj, task, **kwargs):
     if subj.find("-") != -1:
         try:
             subj = int(subj.split('-')[1])
-        except Exception as err:
+        except Exception as _:
             subj = subj.split('-')[1]
 
     if 'task' not in kwargs_bids.keys():
@@ -183,7 +183,7 @@ def load_bids_attributes(path, subj, **kwargs):
 
     try:
         tr = layout.get_tr()
-    except Exception as err:
+    except Exception as _:
         if tr is None:
             raise Exception("tr must be set in configuration file")
 
@@ -268,6 +268,8 @@ def add_bids_attributes(event_key, events, length, tr, onset_offset=0, extra_dur
     if hasattr(dtype, 'numpy_dtype'):
         dtype = dtype.numpy_dtype
     elif str(dtype) == 'string':
+        dtype = np.dtype('U')
+    elif isinstance(dtype, pd.StringDtype):
         dtype = np.dtype('U')
 
     targets = np.zeros(length, dtype=dtype)
