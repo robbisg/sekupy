@@ -52,6 +52,7 @@ def load_dataset(path, subj, folder, **kwargs):
     if 'extract_events' in kwargs.keys():
         extract_events = bool(kwargs['extract_events'])
 
+    
     # Load the filename list
     file_list = load_filelist(path, subj, folder, **kwargs)
 
@@ -123,8 +124,12 @@ def add_filename(ds, fmri_list):
 
     filenames = []
     for i, img in enumerate(fmri_list):
-        for _ in range(img.shape[-1]):
+        
+        if len(img.shape) < 4:
             filenames.append(img.get_filename())
+        else:
+            for _ in range(img.shape[-1]):
+                filenames.append(img.get_filename())
 
     # For each volume we store to which file it belongs to
     ds.sa['file'] = filenames
@@ -220,6 +225,9 @@ def load_filelist(path, name, folder, **kwargs):
 
     if 'sub_dir' in kwargs.keys():
         sub_dirs = kwargs['sub_dir'].split(',')
+        
+    logger.debug(sub_dirs)
+    logger.debug(img_pattern)
 
     file_list = build_pathnames(path, name, sub_dirs)
 
