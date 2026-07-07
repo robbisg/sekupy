@@ -7,6 +7,7 @@ from sekupy.io.connectivity import load_mat_ds
 from sekupy.io.base import load_dataset
 #from sekupy.simulation.loader import load_simulations
 from sekupy.io.mambo import load_bids_mambo_dataset
+from sekupy.io.mne import MneDataLoader
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,7 +20,17 @@ def get_loader(name):
         'base': load_dataset,
         'mat': load_mat_ds,
         #'simulations': load_simulations,
-        'bids-meg': load_bids_mambo_dataset
+        'bids-meg': load_bids_mambo_dataset,
+    }
+
+    return mapper[name]
+
+
+def get_dataloader(name):
+
+    mapper = {
+        'base': DataLoader,
+        'mne': MneDataLoader,
     }
 
     return mapper[name]

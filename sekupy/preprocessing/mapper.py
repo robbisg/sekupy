@@ -19,6 +19,10 @@ from sekupy.simulation.connectivity import ConnectivityStateSimulator
 from sekupy.preprocessing.filter import ButterFilter
 from sekupy.preprocessing.connectivity import SlidingWindowConnectivity
 from sekupy.preprocessing.sklearn import ScikitWrapper
+from sekupy.preprocessing.mne import (
+    Filter, NotchFilter, Resample, DropChannels, SetMontage,
+    RemoveBadChannels, Crop, Interpolate, ICA, AutoReject, Epoching,
+)
 
 
 
@@ -56,6 +60,17 @@ def function_mapper(name):
               'butter_filter': ButterFilter,
               'resampler': Resampler,
               'scikit_wrapper': ScikitWrapper,
+              'mne_filter': Filter,
+              'notch_filter': NotchFilter,
+              'mne_resample': Resample,
+              'drop_channels': DropChannels,
+              'set_montage': SetMontage,
+              'remove_bad_channels': RemoveBadChannels,
+              'crop': Crop,
+              'interpolate': Interpolate,
+              'ica': ICA,
+              'autoreject': AutoReject,
+              'epoching': Epoching,
               }
-    
+
     return mapper[name]
