@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: >-
+  If you use sekupy in your research, please cite it using the metadata below.
+  A citable archive of the software is available via Zenodo (see doi field).
+title: "sekupy: A Python package for clean and reproducible multivariate neuroimaging analysis pipelines"
+version: 0.0.1
+date-released: "2024-07-26"
+license: BSD-3-Clause
+repository-code: "https://github.com/robbisg/sekupy"
+url: "https://sekupy.readthedocs.io"
+doi: 10.5281/zenodo.XXXXXXX
+abstract: >-
+  Sekupy is a Python package that streamlines the construction of reproducible
+  multivariate analysis pipelines for neuroimaging data. It provides a unified
+  interface for loading BIDS-organised datasets, applying preprocessing
+  transformations, running decoding, RSA, fingerprint, and brain-state
+  analyses, and storing results in a BIDS-inspired directory structure.
+keywords:
+  - neuroimaging
+  - machine learning
+  - decoding
+  - MVPA
+  - fMRI
+  - MEG
+  - EEG
+  - pipelines
+  - reproducibility
+  - BIDS
+authors:
+  - family-names: Guidotti
+    given-names: Roberto
+    orcid: "https://orcid.org/0000-0002-0748-1301"
+    affiliation: >-
+      Department of Neuroscience, Imaging and Clinical Sciences,
+      University "G. D'Annunzio" Chieti-Pescara, Italy
+    email: roberto.guidotti@unich.it
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Guidotti
+      given-names: Roberto
+      orcid: "https://orcid.org/0000-0002-0748-1301"
+  title: >-
+    sekupy: A Python package for clean and reproducible multivariate
+    neuroimaging analysis pipelines
+  journal: "Journal of Open Source Software"
+  year: 2026
+  doi: 10.21105/joss.XXXXX

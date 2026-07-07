@@ -46,8 +46,33 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
-    'rinoh.frontend.sphinx'
+    'sphinx_gallery.gen_gallery',
+    'rinoh.frontend.sphinx',
 ]
+
+sphinx_gallery_conf = {
+    # Path to example scripts (relative to conf.py)
+    'examples_dirs': '../../examples',
+    # Where to store the generated RST pages (relative to conf.py)
+    'gallery_dirs': 'auto_examples',
+    # Only pick up files whose name starts with 'plot_'
+    'filename_pattern': r'/plot_',
+    # Show a download link for each example
+    'download_all_examples': False,
+    # Do not include a "binder" badge
+    #'binder_links': False,
+    # Avoid running examples that depend on external data by default;
+    # set to True locally when you want to rebuild plots.
+    'plot_gallery': True,
+    # Thumbnail size for the gallery grid
+    'thumbnail_size': (320, 224),
+    # Reference modules for intersphinx cross-links in example docstrings
+    'reference_url': {
+        'sekupy': None,
+    },
+    # Ignore __pycache__ files
+    'ignore_pattern': r'__pycache__|\.pyc',
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

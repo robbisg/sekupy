@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sekupy"
-description = "Detergent for your dirty neuroimaging pipelines"
+description = "Clean and reproducible multivariate neuroimaging analysis pipelines"
 version = "0.0.1"
 authors = [
     { name = "Roberto Guidotti", email = "roberto.guidotti@unich.it" },
@@ -20,20 +20,32 @@ keywords = [
     "MVPA",
     "fMRI",
     "brain",
-    "machine learning"
+    "machine learning",
+    "decoding",
+    "RSA",
+    "BIDS",
+    "pipelines",
+    "reproducibility",
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
-    "License :: OSI Approved",
+    "License :: OSI Approved :: BSD Software License",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3",
+    "Development Status :: 4 - Beta",
 ]
 
 dependencies = [
@@ -110,6 +122,8 @@ Homepage = "https://github.com/robbisg/sekupy"
 "Bug Tracker" = "https://github.com/robbisg/sekupy/issues/"
 Documentation = "https://sekupy.readthedocs.io/"
 "Source Code" = "https://github.com/robbisg/sekupy"
+Changelog = "https://github.com/robbisg/sekupy/blob/master/CHANGELOG.md"
+"Archive (Zenodo)" = "https://doi.org/10.5281/zenodo.XXXXXXX"
 
 [tool.hatch.build]
 exclude = [
@@ -150,6 +164,23 @@ ignore = [
 convention = "numpy"
 
 
+
+[tool.pytest.ini_options]
+addopts = "--tb=short"
+testpaths = ["sekupy"]
+
+[tool.coverage.run]
+source = ["sekupy"]
+omit = ["*/tests/*", "sekupy/io/data/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
 
 [tool.bandit.assert_used]
 skips = ["*/test_*.py"] # assert statements are good practice with pytest

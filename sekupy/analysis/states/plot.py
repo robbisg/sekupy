@@ -2,7 +2,7 @@ import matplotlib.pyplot as pl
 import numpy as np
 import os
 from sekupy.utils.matrix import copy_matrix, array_to_matrix
-from sklearn.manifold.mds import MDS
+from sklearn.manifold._mds import MDS
 from mvpa_itab.conn.states.utils import get_centroids
 
 def plot_states_matrices(X, 
