@@ -1,94 +1,166 @@
-from bids import BIDSLayout
-from sekupy.io.bids import get_bids_kwargs
-from sekupy.utils.bids import filter_bids, filter_files, get_dictionary
-from sekupy.dataset.collections import SampleAttributesCollection, \
-     DatasetAttributesCollection, FeatureAttributesCollection
-from sekupy.dataset.base import Dataset
-from sekupy.dataset.dataset import vstack
-
-from sekupy.io._loaders import mambo_mapper
-
-import h5py
 import os
-import numpy as np
-
 import logging
+from sekupy.io.configuration import read_configuration
+from sekupy.io.subjects import load_subjects
+from sekupy.utils.files import build_pathnames
+
 logger = logging.getLogger(__name__)
 
+_READERS = {
+    '.fif':  'read_raw_fif',
+    '.edf':  'read_raw_edf',
+    '.bdf':  'read_raw_bdf',
+    '.set':  'read_raw_eeglab',
+    '.vhdr': 'read_raw_brainvision',
+    '.cnt':  'read_raw_cnt',
+    '.gdf':  'read_raw_gdf',
+}
 
-def load_bids_mne_data(path, subj, task, **kwargs):
-    ''' Load a 2d dataset given the image path, the subject and the main folder of 
-    the data.
+
+def load_raw(path, subject, img_pattern, sub_dir='', run=None, preload=True):
+    """Load an MNE Raw object for a single subject.
 
     Parameters
     ----------
-    path : string
-       specification of filepath to load
-    subj : string
-        the id of the subject to load
-    task : string
-        the experiment name
-    kwargs : keyword arguments
-        Keyword arguments to format-specific load
+    path : str
+        Base data directory.
+    subject : str
+        Subject identifier (subfolder under ``path``).
+    img_pattern : str
+        File extension used to filter files (e.g., ``'.fif'``).
+    sub_dir : str
+        Comma-separated subdirectory names under the subject folder.
+    run : int or str, optional
+        If given, only files whose name contains ``run`` are loaded.
+    preload : bool
+        Load data into memory immediately.
 
     Returns
     -------
-    ds : ``Dataset``
-       Instance of ``sekupy.dataset.base.Dataset``
-    '''
-    
-    roi_labels = dict()
-    derivatives = False
+    raw : mne.io.BaseRaw
+        Concatenated Raw object (across runs if multiple files found).
+    """
+    import mne
 
-    logger.debug(kwargs)
+    sub_dirs = sub_dir.split(',') if sub_dir else ['']
+    file_list = build_pathnames(path, subject, sub_dirs)
+    file_list = sorted(f for f in file_list if f.endswith(img_pattern))
 
-    if 'roi_labels' in kwargs.keys():             # dictionary of mask {'mask_label': string}
-        roi_labels = kwargs['roi_labels']
-    
-    if 'bids_derivatives' in kwargs.keys():
-        if kwargs['bids_derivatives'] == 'True':
-            derivatives = True
+    if run is not None:
+        file_list = [f for f in file_list if str(run) in os.path.basename(f)]
+
+    if not file_list:
+        raise FileNotFoundError(
+            "No %s file found for subject %s in %s" % (img_pattern, subject, path)
+        )
+
+    raws = []
+    for fname in file_list:
+        ext = os.path.splitext(fname)[-1].lower()
+        reader = getattr(mne.io, _READERS.get(ext, 'read_raw'))
+        logger.info('Loading %s', fname)
+        raws.append(reader(fname, preload=preload))
+
+    return mne.concatenate_raws(raws) if len(raws) > 1 else raws[0]
+
+
+class MneDataLoader(object):
+    """Load MNE Raw files from a configuration file.
+
+    Mirrors the interface of :class:`~sekupy.io.loader.DataLoader`.
+    ``fetch`` is a generator that yields one ``(subject, raw)`` pair at a
+    time, so subjects are loaded and processed without holding all data in
+    memory simultaneously.
+
+    Parameters
+    ----------
+    configuration_file : str
+        Path to the configuration (``.conf`` or ``.yaml``) file.
+    task : str
+        Section name in the configuration file to read.
+    preload : bool
+        Load raw data into memory immediately.
+    **kwargs
+        Override any key from the configuration file.
+    """
+
+    def __init__(self, configuration_file, task, preload=True, **kwargs):
+        self._task = task
+        self._preload = preload
+        self._conf = read_configuration(configuration_file, task)
+        self._conf.update(kwargs)
+
+    def fetch(self, prepro=None, subject=None, run=None,
+              n_subjects=None, subject_names=None):
+        """Yield ``(subject, mne.io.BaseRaw)`` one at a time.
+
+        Parameters
+        ----------
+        prepro : list of MneTransformer, optional
+            Preprocessing steps applied to each Raw after loading.
+        subject : str, optional
+            Load only this subject instead of iterating over all subjects.
+        run : int or str, optional
+            Load only files whose name contains this run identifier.
+        n_subjects : int, optional
+            Maximum number of subjects to yield.
+        subject_names : list of str, optional
+            Subset of subjects to yield by name.
+
+        Yields
+        ------
+        subject : str
+        raw : mne.io.BaseRaw
+        """
+        pipeline = None
+        if prepro is not None:
+            from sekupy.preprocessing.pipelines import PreprocessingPipeline
+            pipeline = PreprocessingPipeline(nodes=prepro)
+
+        if subject is not None:
+            subjects = [subject]
         else:
-            derivatives = os.path.join(path, kwargs['bids_derivatives'])
-    
-    if 'load_fx' in kwargs.keys():
-        load_fx = mambo_mapper(kwargs['load_fx'])
-    else:
-        load_fx = load_hcp_motor
+            subjects, _ = load_subjects(self._conf, subject_names, n_subjects)
 
-    # TODO: Use kwargs to get derivatives etc.
-    logger.debug(derivatives)
-    layout = BIDSLayout(path, derivatives=derivatives)
+        n = len(subjects)
+        for i, subj in enumerate(subjects):
+            logger.info('Loading subject %d/%d: %s', i + 1, n, subj)
+            raw = load_raw(
+                self._conf['data_path'],
+                subj,
+                img_pattern=self._conf.get('img_pattern', '.fif'),
+                sub_dir=self._conf.get('sub_dir', ''),
+                run=run,
+                preload=self._preload,
+            )
+            if pipeline is not None:
+                raw = pipeline.transform(raw)
+            yield subj, raw
 
-    logger.debug(layout.get())
+    def get_subjects(self):
+        """Return the full subject list from the configuration.
 
-    # Load the filename list
-    kwargs_bids = get_bids_kwargs(kwargs)
-    
-    # Raise exception if it is a integer
-    if isinstance(subj, str) and subj.find("-") != -1:
-        subj = subj.split('-')[1]
-    
-    logger.debug((kwargs_bids, task, subj))
+        Returns
+        -------
+        subjects : array of str
+        """
+        subjects, _ = load_subjects(self._conf)
+        return subjects
 
-    file_list = layout.get(return_type='file', 
-                           extension='mat', 
-                           subject=subj,
-                           suffix='conn'
-                           )
+    def get_runs(self, subject):
+        """Return available run files for a subject.
 
-    logger.debug(file_list)
+        Parameters
+        ----------
+        subject : str
 
-    file_list = filter_files(file_list, **kwargs_bids)
-
-    datasets = []
-    for f in file_list:
-        logger.info(f['filename'])
-        data, sa, a, fa = load_fx(f['filename'], subject=subj)
-        logger.debug(data.shape)
-        ds = Dataset(data, sa=sa, a=a, fa=fa)
-        datasets.append(ds)
-
-    dataset = vstack(datasets, a='all')
-
-    return dataset
+        Returns
+        -------
+        runs : list of str
+            Sorted list of matching file paths.
+        """
+        img_pattern = self._conf.get('img_pattern', '.fif')
+        sub_dir = self._conf.get('sub_dir', '')
+        sub_dirs = sub_dir.split(',') if sub_dir else ['']
+        file_list = build_pathnames(self._conf['data_path'], subject, sub_dirs)
+        return sorted(f for f in file_list if f.endswith(img_pattern))

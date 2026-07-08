@@ -8,6 +8,7 @@ from sekupy.io.base import load_dataset
 #from sekupy.simulation.loader import load_simulations
 from sekupy.io.mambo import load_bids_mambo_dataset
 #from sekupy.io.mne import load_mne_data
+from sekupy.io.mne import MneDataLoader
 
 import logging
 logger = logging.getLogger(__name__)
