@@ -68,9 +68,6 @@ class MneDataLoader(object):
     """Load MNE Raw files from a configuration file.
 
     Mirrors the interface of :class:`~sekupy.io.loader.DataLoader`.
-    ``fetch`` is a generator that yields one ``(subject, raw)`` pair at a
-    time, so subjects are loaded and processed without holding all data in
-    memory simultaneously.
 
     Parameters
     ----------
@@ -84,7 +81,7 @@ class MneDataLoader(object):
         Override any key from the configuration file.
     """
 
-    def __init__(self, configuration_file, task, preload=True, **kwargs):
+    def __init__(self, configuration_file, task, preload=False, **kwargs):
         self._task = task
         self._preload = preload
         self._conf = read_configuration(configuration_file, task)
@@ -92,7 +89,7 @@ class MneDataLoader(object):
 
     def fetch(self, prepro=None, subject=None, run=None,
               n_subjects=None, subject_names=None):
-        """Yield ``(subject, mne.io.BaseRaw)`` one at a time.
+        """Load ``(subject, mne.io.BaseRaw)`` pairs for all requested subjects.
 
         Parameters
         ----------
@@ -103,14 +100,14 @@ class MneDataLoader(object):
         run : int or str, optional
             Load only files whose name contains this run identifier.
         n_subjects : int, optional
-            Maximum number of subjects to yield.
+            Maximum number of subjects to load.
         subject_names : list of str, optional
-            Subset of subjects to yield by name.
+            Subset of subjects to load by name.
 
-        Yields
-        ------
-        subject : str
-        raw : mne.io.BaseRaw
+        Returns
+        -------
+        data : list of (subject, raw)
+            One tuple per subject, in load order.
         """
         pipeline = None
         if prepro is not None:
@@ -123,6 +120,7 @@ class MneDataLoader(object):
             subjects, _ = load_subjects(self._conf, subject_names, n_subjects)
 
         n = len(subjects)
+        data = []
         for i, subj in enumerate(subjects):
             logger.info('Loading subject %d/%d: %s', i + 1, n, subj)
             raw = load_raw(
@@ -135,7 +133,9 @@ class MneDataLoader(object):
             )
             if pipeline is not None:
                 raw = pipeline.transform(raw)
-            yield subj, raw
+            data.append((subj, raw))
+
+        return data
 
     def get_subjects(self):
         """Return the full subject list from the configuration.

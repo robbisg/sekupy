@@ -22,5 +22,4 @@ doc/source/*.doctree
 sekupy/io/data/fmri/0_results/*
 sekupy/io/data/fmri/derivatives/*
 sekupy.egg-info/*
-examples/
 doc/source/_build/*

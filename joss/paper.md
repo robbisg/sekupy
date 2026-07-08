@@ -22,13 +22,13 @@ bibliography: paper.bib
 
 # Summary
 
-Sekupy is a Python package designed to streamline the construction of reproducible multivariate analysis pipelines for neuroimaging data. It provides a unified interface for loading BIDS-organised datasets [@gorgolewski2016brain], applying preprocessing transformations, executing a range of multivariate analyses—including decoding, Representational Similarity Analysis (RSA), fingerprint identification, and brain-state clustering—and storing results in a BIDS-inspired directory structure. By adopting the scikit-learn `fit`/`transform` paradigm [@pedregosa2011scikit] and integrating with established libraries such as MNE-Python [@gramfort2013meg], nilearn [@abraham2014machine], and imbalanced-learn [@lemaitre2017imbalanced], sekupy lowers the technical barrier to writing readable, extensible, and reusable neuroimaging analysis scripts. The package is distributed via PyPI, version-controlled on GitHub, and continuously tested with pytest and GitHub Actions.
+Sekupy is a Python package designed to streamline the construction of reproducible multivariate analysis pipelines for neuroimaging data. It provides a unified interface for loading BIDS-organised datasets [@gorgolewski2016brain], applying preprocessing transformations, executing a range of multivariate analyses—including decoding, Representational Similarity Analysis (RSA), fingerprint identification, and brain-state clustering—and storing results in a BIDS-inspired directory structure. By adopting the scikit-learn `fit`/`transform` paradigm [@pedregosa2011scikit] and integrating with established libraries such as MNE-Python [@gramfort2013meg], nilearn [@abraham2014machine], and imbalanced-learn [@lemaitre2017imbalanced], sekupy should reduce the technical barrier to writing readable, extensible, and reusable neuroimaging analysis scripts.
 
 # Statement of Need
 
-Modern cognitive neuroscience relies on a diverse ecosystem of analysis tools. While packages such as nilearn [@abraham2014machine], MNE-Python [@gramfort2013meg], and PyMVPA [@hanke2009pymvpa] offer powerful functionality, composing them into coherent, end-to-end analysis pipelines remains a non-trivial engineering task. Researchers frequently produce analysis scripts that are tightly coupled to a specific dataset or parameter choice, making re-use, auditing, and collaboration difficult.
+Modern cognitive neuroscience relies on a diverse ecosystem of analysis tools. While packages such as nilearn [@abraham2014machine], MNE-Python [@gramfort2013meg], and PyMVPA [@hanke2009pymvpa] offer a solid set of isolated functionalities to process neuroimaging datasets, composing them into coherent, editable and end-to-end analysis pipelines remains difficult to achieve. Researchers frequently produce analysis scripts that are tightly coupled to a specific dataset or parameter choice, making re-use, auditing, and collaboration difficult.
 
-The reproducibility crisis in neuroscience [@open2015estimating] has pushed the field to adopt community standards such as BIDS [@gorgolewski2016brain] for data organisation. However, tool-level support for BIDS-aware analysis pipelines targeting derivative datasets—trial-wise beta estimates from a GLM, functional connectivity matrices, spectral power features—is still fragmented. Sensitivity analyses that sweep over a grid of parameters require ad-hoc bookkeeping code that obscures the scientific logic of the script.
+The reproducibility crisis in neuroscience [@open2015estimating] has pushed the field to adopt community standards such as BIDS [@gorgolewski2016brain] for data organisation. The introduction of BIDS-apps such as fmriprep or mne-bids-pipeline provided a stand-alone support for BIDS-aware analysis preprocessing pipelines with high standards. However, customization of these tools is tricky and personalization of specific pipelines is still problematic for non experts. In addition, systematically changing parameters for subsequent analyses such as decoding analyses or standard univariate models can be important for multiverse approaches that enhance reproducibility and new scientific standards.
 
 Sekupy addresses these gaps by providing:
 
@@ -38,13 +38,13 @@ Sekupy addresses these gaps by providing:
 4. Multiple built-in multivariate analyses: ROI-based and searchlight decoding, RSA, fingerprint (identifiability) analysis, and brain-state clustering.
 5. A results management system that saves analysis outputs in a BIDS-inspired directory structure and reconstructs them as tidy `pandas` DataFrames for downstream statistical analysis and visualisation.
 
-Compared to general-purpose pipelines such as fMRIPrep [@esteban2019fmriprep] or MNE-BIDS-Pipeline [@appelhoff2022mne], sekupy is not a preprocessing workflow; it operates on already-preprocessed data and focuses on the multivariate analysis stage. Compared to lower-level packages such as PyMVPA or nilearn, sekupy offers an opinionated, configuration-driven interface that enforces a clean separation between data loading, preprocessing, analysis, and result storage.
+Compared to general-purpose pipelines such as fMRIPrep [@esteban2019fmriprep] or MNE-BIDS-Pipeline [@appelhoff2022mne], sekupy allows to make preprocessing choices for MEEG data but it operates on already-preprocessed data and focuses on the multivariate analysis stage. Compared to lower-level packages such as PyMVPA or nilearn, sekupy offers a configuration-driven interface that enforces a clean separation between data loading, preprocessing, analysis, and parameter sweeping.
 
 # Design and Architecture
 
 ## The Dataset Object
 
-The central data structure in sekupy is the `Dataset` class, derived from PyMVPA's `AttrDataset` [@hanke2009pymvpa]. It stores:
+The central data structure in sekupy is the `Dataset` class, obtained from PyMVPA's `AttrDataset` [@hanke2009pymvpa]. It stores:
 
 - `samples`: a 2-D (or 3-D for temporal analyses) NumPy array (observations × features).
 - `sa` (sample attributes): per-observation metadata such as experimental condition, subject identifier, or run number.
@@ -167,7 +167,7 @@ pipeline.save(path="./results")
 
 ### Searchlight Decoding
 
-`SearchLight` performs the same cross-validated classification in a sliding spherical neighbourhood across the brain volume, returning an accuracy map that can be projected back to MNI space using nilearn's surface or volumetric plotting utilities.
+`SearchLight` is based on nilearn implementation with few modification such as the possibility to include a separate metric or scores and performs the same cross-validated classification in a sliding spherical neighbourhood across the brain volume, returning an accuracy map that can be projected back to MNI space using nilearn's surface or volumetric plotting utilities.
 
 ### Representational Similarity Analysis
 
@@ -377,9 +377,7 @@ plt.savefig("rdm_roi1.pdf")
 
 # Research Impact
 
-Sekupy has been used as the primary analysis framework in several peer-reviewed neuroscience studies conducted at the Behavioral Imaging and Neural Dynamics (BIND) Center and the Mambo Lab, University "G. D'Annunzio" Chieti-Pescara. Published applications include decoding of memory-related neural representations from fMRI data, functional connectivity fingerprinting in MEG resting-state recordings, and RSA-based comparison of neural and computational model representational geometries. The package has also been adopted for analyses targeting brain-state dynamics in eyes-open versus eyes-closed MEG recordings, and for multi-site decoding studies examining the generalisability of fMRI classifiers across acquisition sites.
-
-The codebase has been openly developed on GitHub since 2018 (originally as `pyitab`) and has accumulated over 370 commits from iterative research use. The public issue tracker has received contributions and bug reports from external users, reflecting adoption beyond the original development team.
+Sekupy has been used as the primary analysis framework to enhance the reproducibility and the transparency of decoding papers. Published applications include decoding of memory-related neural representations from fMRI data, functional connectivity fingerprinting in MEG resting-state recordings, and RSA-based comparison of neural and computational model representational.
 
 # Availability
 
@@ -387,6 +385,6 @@ Sekupy is available on PyPI (`pip install sekupy`) and on GitHub at <https://git
 
 # Acknowledgements
 
-The author thanks colleagues at the Behavioral Imaging and Neural Dynamics (BIND) Center and the Mambo Lab, University "G. D'Annunzio" Chieti-Pescara, for feedback and real-world testing of early versions of the package. The author declares no conflicts of interest. No generative AI tools were used in the authoring of this paper.
+The author thanks colleagues at the Mambo Lab, University "G. D'Annunzio" Chieti-Pescara, for feedback and real-world testing of early versions of the package. The author declares no conflicts of interest. Generative AI tools were used for revising this paper.
 
 # References

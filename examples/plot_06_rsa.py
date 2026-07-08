@@ -1,0 +1,152 @@
+"""
+Representational Similarity Analysis (RSA)
+==========================================
+
+Representational Similarity Analysis (RSA; Kriegeskorte et al., 2008)
+measures the pairwise dissimilarity between neural patterns evoked by
+different stimuli or conditions, and represents them in a
+*Representational Dissimilarity Matrix* (RDM).
+
+:class:`~sekupy.analysis.rsa.rsa.RSA` computes the RDM for each ROI and
+optionally correlates it with a user-supplied model RDM.
+
+This example shows:
+
+* How to configure and run RSA with the
+  :class:`~sekupy.analysis.pipeline.AnalysisPipeline`.
+* How to visualise the resulting RDM as a heatmap.
+* How to compare the neural RDM with a theoretical model RDM.
+
+References
+----------
+Kriegeskorte, N., Mur, M., & Bandettini, P. A. (2008).
+Representational similarity analysis – connecting the branches of systems
+neuroscience. *Frontiers in Systems Neuroscience*, 2, 4.
+"""
+
+# %%
+# Build a synthetic dataset with categorical structure
+# -----------------------------------------------------
+#
+# We create 5 conditions with a clear categorical structure:
+# conditions 1-2 are "animate" and 3-5 are "inanimate". Within-category
+# patterns are more similar than across-category patterns.
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.spatial.distance import squareform
+from sekupy.dataset.base import Dataset
+
+CONDITIONS = ["face", "body", "tool", "place", "scrambled"]
+N_CONDITIONS = len(CONDITIONS)
+N_SUBJECTS = 4
+N_REPS = 6       # repetitions per condition per subject
+N_FEATURES = 80
+
+
+def make_rsa_dataset(seed=21):
+    rng = np.random.default_rng(seed)
+    # Define a categorical prototype: animate (0) vs inanimate (1)
+    category = np.array([0, 0, 1, 1, 1])
+    prototypes = rng.normal(0, 1, (2, N_FEATURES))
+
+    rows, targets, chunks, subjects = [], [], [], []
+    for sub in range(N_SUBJECTS):
+        for cond_i, cond in enumerate(CONDITIONS):
+            for _ in range(N_REPS):
+                proto = prototypes[category[cond_i]]
+                noise = rng.normal(0, 0.5, N_FEATURES)
+                rows.append(proto + noise)
+                targets.append(cond)
+                chunks.append(sub)
+                subjects.append(f"sub-{sub+1:02d}")
+
+    ds = Dataset(samples=np.array(rows))
+    ds.sa["targets"] = np.array(targets)
+    ds.sa["chunks"] = np.array(chunks)
+    ds.sa["subject"] = np.array(subjects)
+    ds.fa["roi"] = np.ones(N_FEATURES, dtype=int)
+    return ds
+
+
+ds = make_rsa_dataset()
+print(f"Dataset: {ds.shape}")
+
+# %%
+# Run RSA
+# --------
+
+from sekupy.analysis.rsa.rsa import RSA
+from sekupy.analysis.configurator import AnalysisConfigurator
+from sekupy.analysis.pipeline import AnalysisPipeline
+
+config = {
+    "prepro": ["none"],
+    "analysis": RSA,
+    "kwargs__roi": ["roi"],
+    "kwargs__metric": "euclidean",
+}
+
+pipeline = AnalysisPipeline(
+    AnalysisConfigurator(**config), name="rsa_example"
+).fit(ds)
+
+# %%
+# Visualise the RDM
+# ------------------
+#
+# The RSA class stores the condensed distance vector for each ROI in
+# ``pipeline._estimator.scores``. We convert it to a square matrix with
+# ``squareform`` and average over subjects for display.
+
+# The conditions array matches the unique order of ds.targets
+conditions_order = pipeline._estimator.conditions
+key = list(pipeline._estimator.scores.keys())[0]
+rdm_vector = pipeline._estimator.scores[key]
+rdm_matrix = squareform(rdm_vector)
+
+# Sort by condition name for a clean display
+sort_idx = np.argsort(conditions_order)
+rdm_sorted = rdm_matrix[np.ix_(sort_idx, sort_idx)]
+cond_sorted = conditions_order[sort_idx]
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+# Neural RDM
+im = axes[0].imshow(rdm_sorted, cmap="viridis")
+plt.colorbar(im, ax=axes[0], label="Euclidean distance")
+axes[0].set_xticks(range(N_CONDITIONS))
+axes[0].set_yticks(range(N_CONDITIONS))
+axes[0].set_xticklabels(cond_sorted, rotation=45, ha="right")
+axes[0].set_yticklabels(cond_sorted)
+axes[0].set_title("Neural RDM")
+
+# %%
+# Model RDM: animate vs. inanimate
+# ----------------------------------
+
+animate = ["face", "body"]
+category_vec = np.array([0 if c in animate else 1 for c in cond_sorted])
+model_rdm = (category_vec[:, None] != category_vec[None, :]).astype(float)
+
+im2 = axes[1].imshow(model_rdm, cmap="Blues", vmin=0, vmax=1)
+plt.colorbar(im2, ax=axes[1], label="Dissimilarity")
+axes[1].set_xticks(range(N_CONDITIONS))
+axes[1].set_yticks(range(N_CONDITIONS))
+axes[1].set_xticklabels(cond_sorted, rotation=45, ha="right")
+axes[1].set_yticklabels(cond_sorted)
+axes[1].set_title("Model RDM: animate vs. inanimate")
+
+plt.tight_layout()
+plt.show()
+
+# %%
+# Correlate neural and model RDMs
+# ---------------------------------
+
+from scipy.stats import spearmanr
+
+neural_vec = squareform(rdm_sorted)
+model_vec = squareform(model_rdm)
+rho, pval = spearmanr(neural_vec, model_vec)
+print(f"\nSpearman ρ (neural vs. model RDM) = {rho:.3f}  (p = {pval:.4f})")
