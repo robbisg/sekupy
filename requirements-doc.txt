@@ -3,7 +3,7 @@ pandas
 seaborn
 statsmodels
 scikit-learn
-nilearn
+nilearn==0.13.0
 mne
 pybids
 imbalanced-learn
