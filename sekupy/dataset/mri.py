@@ -19,9 +19,10 @@ __docformat__ = 'restructuredtext'
 
 
 import numpy as np
-from sekupy.dataset.base import _expand_attribute
-from sekupy.dataset.base import Dataset
-from sekupy.dataset.mappers import FlattenMapper
+from sekupy.dataset.dataset import Dataset, expand_attribute
+from sekupy.dataset.flatten import (
+    flatten_dataset, flatten_array, unflatten_to_brain, unflatten_samples_to_brain,
+)
 
 import logging
 logger = logging.getLogger(__name__)
@@ -124,9 +125,9 @@ def map2nifti(dataset, data=None, imghdr=None, imgtype=None):
 
     # call the appropriate function to map single samples or multiples
     if len(data.shape) > 1:
-        dsarray = dataset.a.mapper.reverse(data)
+        dsarray = unflatten_samples_to_brain(data, dataset)
     else:
-        dsarray = dataset.a.mapper.reverse1(data)
+        dsarray = unflatten_to_brain(data, dataset)
 
     if imghdr is None:
         if 'imghdr' in dataset.a:
@@ -255,9 +256,9 @@ def fmri_dataset(samples, targets=None, chunks=None, mask=None,
     # compile the samples attributes
     sa = {}
     if targets is not None:
-        sa['targets'] = _expand_attribute(targets, imgdata.shape[0], 'targets')
+        sa['targets'] = expand_attribute(targets, imgdata.shape[0], 'targets')
     if chunks is not None:
-        sa['chunks'] = _expand_attribute(chunks, imgdata.shape[0], 'chunks')
+        sa['chunks'] = expand_attribute(chunks, imgdata.shape[0], 'chunks')
 
     # create a dataset
     ds = Dataset(imgdata, sa=sa)
@@ -265,25 +266,23 @@ def fmri_dataset(samples, targets=None, chunks=None, mask=None,
         space = None
     else:
         space = sprefix + '_indices'
-    ds = ds.get_mapped(FlattenMapper(shape=imgdata.shape[1:], space=space))
+    ds = flatten_dataset(ds, space=space)
 
     # now apply the mask if any
+    feature_mask = None
     if mask is not None:
         # permit 4D image mask if time dimension is 1
         if mask.shape == (1,) + imgdata.shape[1:]:
             mask = mask.reshape(mask.shape[1:])
-        flatmask = ds.a.mapper.forward1(mask)
-        # direct slicing is possible, and it is potentially more efficient,
-        # so let's use it
-        # mapper = StaticFeatureSelection(flatmask)
-        # ds = ds.get_mapped(StaticFeatureSelection(flatmask))
-        ds = ds[:, flatmask != 0]
+        feature_mask = flatten_array(mask, ds) != 0
+        ds = ds[:, feature_mask]
 
     # load and store additional feature attributes
     if add_fa is not None:
         for fattr in add_fa:
             value = _load_anyimg(add_fa[fattr], ensure=True)[0]
-            ds.fa[fattr] = ds.a.mapper.forward1(value)
+            flat_value = flatten_array(value, ds)
+            ds.fa[fattr] = flat_value[feature_mask] if feature_mask is not None else flat_value
 
     # store interesting NIfTI props in the dataset in a more portable way
     ds.a['imgaffine'] = img.affine
