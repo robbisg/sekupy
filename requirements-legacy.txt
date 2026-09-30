@@ -24,5 +24,4 @@ tqdm
 h5py
 hmmlearn
 pybids==0.15.6
-pymvpa2
 bids-validator==1.9.9
