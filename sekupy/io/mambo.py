@@ -1,10 +1,7 @@
 from bids import BIDSLayout
 from sekupy.io.bids import get_bids_kwargs
 from sekupy.utils.bids import filter_bids, filter_files, get_dictionary
-from sekupy.dataset.collections import SampleAttributesCollection, \
-     DatasetAttributesCollection, FeatureAttributesCollection
-from sekupy.dataset.base import Dataset
-from sekupy.dataset.dataset import vstack
+from sekupy.dataset.dataset import AttrDict, Dataset, vstack
 
 from sekupy.io._loaders import mambo_mapper
 
@@ -37,9 +34,9 @@ def load_reftep_sensor(filename, **kwargs):
                'chunks' :   np.arange(y.shape[0])
                                      })
 
-    a = DatasetAttributesCollection({})
-    fa = FeatureAttributesCollection({'matrix_values':np.ones(data.shape[1])})
-    sa = SampleAttributesCollection(sa)
+    a = AttrDict({})
+    fa = AttrDict({'matrix_values':np.ones(data.shape[1])})
+    sa = AttrDict(sa)
 
     mat.close()
 
@@ -66,9 +63,9 @@ def load_reftep_power(filename, **kwargs):
                'chunks':    np.arange(y.shape[0])
                                      })
 
-    a = DatasetAttributesCollection({})
-    fa = FeatureAttributesCollection({'matrix_values':np.ones(data.shape[1])})
-    sa = SampleAttributesCollection(sa)
+    a = AttrDict({})
+    fa = AttrDict({'matrix_values':np.ones(data.shape[1])})
+    sa = AttrDict(sa)
 
     mat.close()
 
@@ -96,9 +93,9 @@ def load_reftep_iplv(filename, **kwargs):
                'chunks' :   np.arange(y.shape[0])
                                      })
 
-    a = DatasetAttributesCollection({})
-    fa = FeatureAttributesCollection({'matrix_values':np.ones(data.shape[1])})
-    sa = SampleAttributesCollection(sa)
+    a = AttrDict({})
+    fa = AttrDict({'matrix_values':np.ones(data.shape[1])})
+    sa = AttrDict(sa)
 
     mat.close()
 
@@ -143,10 +140,10 @@ def load_hcp_motor(filename, **kwargs):
                'file':   [filename for _ in range(rt.shape[0])]
                                      })
 
-    sa = SampleAttributesCollection(sa)
+    sa = AttrDict(sa)
 
-    a = DatasetAttributesCollection({'times': times})
-    fa = FeatureAttributesCollection({'matrix_values':np.ones(data.shape[1])})
+    a = AttrDict({'times': times})
+    fa = AttrDict({'matrix_values':np.ones(data.shape[1])})
 
     mat.close()
 
@@ -227,6 +224,6 @@ def load_bids_mambo_dataset(path, subj, task, **kwargs):
         ds = Dataset(data, sa=sa, a=a, fa=fa)
         datasets.append(ds)
 
-    dataset = vstack(datasets, a='all')
+    dataset = vstack(datasets)
 
     return dataset

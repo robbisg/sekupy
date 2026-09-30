@@ -84,7 +84,7 @@ class AnalysisPipeline(Analyzer):
         self._configurator._default_options['ds__target_count_pre'] = Counter(ds.targets)
         
         # TODO: Is it useful??
-        ds_dict = {"ds.a.%s" % (k): v.value for k, v in ds.a.items()}
+        ds_dict = {"ds.a.%s" % (k): v for k, v in ds.a.items()}
         self._configurator._default_options.update(ds_dict)
 
         for node in self._transformer.nodes:

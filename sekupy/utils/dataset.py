@@ -30,7 +30,7 @@ def ds_to_dataframe(ds, keys=None, melt=False):
     
     for sample in ds:
         for k in keys:
-            df_dict[k] = sample.sa[k].value[0]
+            df_dict[k] = sample.sa[k][0]
             
         sample_data = sample.samples.squeeze()
         feature_dict = {"feature_%04d"%(i+1) : v for i, v in enumerate(sample_data)}
@@ -67,7 +67,7 @@ def get_ds_data(ds, target_attribute='targets'):
     """
 
 
-    return ds.samples, ds.sa[target_attribute].value
+    return ds.samples, ds.sa[target_attribute]
 
 
 

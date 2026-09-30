@@ -1,9 +1,7 @@
 import numpy as np
 import scipy as sp
 from scipy import signal
-from sekupy.dataset.base import Dataset
-from sekupy.dataset.collections import SampleAttributesCollection, \
-    FeatureAttributesCollection, DatasetAttributesCollection
+from sekupy.dataset.dataset import Dataset
 from sekupy.preprocessing.base import Transformer
 
 import logging
@@ -34,11 +32,8 @@ class SimulationModel(Transformer):
             'snr': self.snr
         }
         sa_dict = {'targets': dynamics_model._dynamics}
-        
-        a = DatasetAttributesCollection(a_dict)
-        sa = SampleAttributesCollection(sa_dict)
 
-        ds = Dataset(self.data, sa=sa, a=a)
+        ds = Dataset(self.data, sa=sa_dict, a=a_dict)
 
         return ds
 

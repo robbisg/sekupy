@@ -1,5 +1,4 @@
-from sekupy.dataset.collections import SampleAttributesCollection
-from sekupy.dataset.base import Dataset
+from sekupy.dataset.dataset import AttrDict, Dataset, expand_attribute
 
 from sklearn.preprocessing import LabelEncoder
 
@@ -81,7 +80,7 @@ def load_mat_ds(path, subj, folder, **kwargs):
     logger.debug(data.shape)
     logger.debug(attr)
 
-    ds = Dataset.from_wizard(data, attr.targets, flatten=False)
+    ds = Dataset(data, sa={'targets': expand_attribute(attr.targets, data.shape[0], 'targets')})
     ds = add_subjectname(ds, subj)
     ds = add_attributes(ds, attr)
 
@@ -136,4 +135,4 @@ def edit_attr(attr, shape):
         for label in attr[key]:
             attr_[key] += [label for i in range(factor)]
 
-    return SampleAttributesCollection(attr_), None
+    return AttrDict(attr_), None

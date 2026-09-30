@@ -1,9 +1,7 @@
 import h5py
 import numpy as np
 
-from sekupy.dataset.collections import SampleAttributesCollection, \
-     DatasetAttributesCollection, FeatureAttributesCollection
-from sekupy.dataset.base import Dataset
+from sekupy.dataset.dataset import AttrDict
 
 from sekupy.utils.bids import get_dictionary
 
@@ -29,13 +27,11 @@ def load_reftep_sensor(filename, subject=None, layout=None, **kwargs):
                'chunks':    np.arange(y.shape[0])
                })
 
-    a = DatasetAttributesCollection({})
-    fa = FeatureAttributesCollection({'matrix_values': np.ones(data.shape[1])})
-    sa = SampleAttributesCollection(sa)
+    a = AttrDict({})
+    fa = AttrDict({'matrix_values': np.ones(data.shape[1])})
+    sa = AttrDict(sa)
 
     mat.close()
-
-    ds = Dataset(data, sa=sa, a=a, fa=fa)
 
     return data, sa, a, fa
 
@@ -59,13 +55,11 @@ def load_reftep_power(filename, subject, layout=None, **kwargs):
                'chunks':    np.arange(y.shape[0])
                })
 
-    a = DatasetAttributesCollection({})
-    fa = FeatureAttributesCollection({'matrix_values': np.ones(data.shape[1])})
-    sa = SampleAttributesCollection(sa)
+    a = AttrDict({})
+    fa = AttrDict({'matrix_values': np.ones(data.shape[1])})
+    sa = AttrDict(sa)
 
     mat.close()
-
-    ds = Dataset(data, sa=sa, a=a, fa=fa)
 
     return data, sa, a, fa
 
@@ -88,13 +82,11 @@ def load_reftep_iplv(filename, subject=None, layout=None, **kwargs):
                'chunks':    np.arange(y.shape[0])
                })
 
-    a = DatasetAttributesCollection({})
-    fa = FeatureAttributesCollection({'matrix_values': np.ones(data.shape[1])})
-    sa = SampleAttributesCollection(sa)
+    a = AttrDict({})
+    fa = AttrDict({'matrix_values': np.ones(data.shape[1])})
+    sa = AttrDict(sa)
 
     mat.close()
-
-    ds = Dataset(data, sa=sa, a=a, fa=fa)
 
     return data, sa, a, fa
 
@@ -124,13 +116,11 @@ def load_reftep_conn(filename, subject=None, layout=None, **kwargs):
                'chunks':    np.arange(y.shape[0])
                })
 
-    a = DatasetAttributesCollection({})
-    fa = FeatureAttributesCollection({'matrix_values': np.ones(data.shape[1])})
-    sa = SampleAttributesCollection(sa)
+    a = AttrDict({})
+    fa = AttrDict({'matrix_values': np.ones(data.shape[1])})
+    sa = AttrDict(sa)
 
     mat.close()
-
-    ds = Dataset(data, sa=sa, a=a, fa=fa)
 
     return data, sa, a, fa
 
@@ -161,12 +151,10 @@ def load_mtms_iplv(filename, subject=None, layout=None, **kwargs):
                'chunks':    np.arange(y.shape[0])
                })
 
-    a = DatasetAttributesCollection({})
-    fa = FeatureAttributesCollection({'matrix_values': np.ones(data.shape[1])})
-    sa = SampleAttributesCollection(sa)
+    a = AttrDict({})
+    fa = AttrDict({'matrix_values': np.ones(data.shape[1])})
+    sa = AttrDict(sa)
 
     mat.close()
-
-    ds = Dataset(data, sa=sa, a=a, fa=fa)
 
     return data, sa, a, fa

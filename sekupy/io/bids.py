@@ -2,7 +2,7 @@ from sekupy.io.base import load_fmri, add_attributes, add_events, add_filename
 from sekupy.io.base import load_mask, load_roi_labels
 from sekupy.io.subjects import add_subjectname
 
-from sekupy.dataset.collections import SampleAttributesCollection
+from sekupy.dataset.dataset import AttrDict
 from sekupy.dataset.mri import fmri_dataset
 
 from bids import BIDSLayout
@@ -246,7 +246,7 @@ def load_bids_attributes(path, subj, **kwargs):
 
 
     #attribute_dict = {k: np.hstack([dic[k] for dic in attribute_list]) for k in attribute_list[11]}
-    sa = SampleAttributesCollection(attribute_dict)
+    sa = AttrDict(attribute_dict)
 
     return sa
 

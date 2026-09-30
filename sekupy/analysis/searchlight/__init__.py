@@ -1,5 +1,6 @@
 import numpy as np
 import os
+from types import SimpleNamespace
 
 from nilearn.image.resampling import coord_transform
 from nilearn import masking
@@ -14,6 +15,7 @@ from sekupy.ext.nilearn.searchlight import search_light
 from sekupy.ext.nilearn.utils import _get_affinity, check_proximity
 from sekupy.ext.nilearn.utils import load_proximity, save_proximity
 from sekupy.analysis.base import Analyzer
+from sekupy.dataset.flatten import unflatten_to_brain
 
 from sekupy.utils.dataset import get_ds_data
 from sekupy.utils.image import save_map
@@ -162,9 +164,9 @@ class SearchLight(Analyzer):
 
         if cv_attr is not None:
             if isinstance(cv_attr, list):
-                groups = np.vstack([ds.sa[att].value for att in cv_attr]).T
+                groups = np.vstack([ds.sa[att] for att in cv_attr]).T
             else:
-                groups = ds.sa[cv_attr].value
+                groups = ds.sa[cv_attr]
 
         values = []
         indices = self._get_permutation_indices(len(y))
@@ -221,7 +223,8 @@ class SearchLight(Analyzer):
     
     def _save_image(self, path, image, score, n_permutation, suffix, fx, **kwargs):
 
-        reverse = self._info['a'].mapper.reverse1
+        info_ds = SimpleNamespace(a=self._info['a'], fa=self._info['fa'])
+        reverse = lambda values: unflatten_to_brain(values, info_ds)
         affine = self._info['a'].imgaffine
         
         params = {

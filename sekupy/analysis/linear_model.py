@@ -46,7 +46,7 @@ class LinearModel(LinearModelMixin):
         if self.design_attr == 'all':
             self.design_attr = [k for k in ds.sa.keys()]
         
-        data = {k: ds.sa[k].value for k in self.design_attr}
+        data = {k: ds.sa[k] for k in self.design_attr}
 
         # TODO : Remove mean from each feature using prepro
         Y = ds.samples

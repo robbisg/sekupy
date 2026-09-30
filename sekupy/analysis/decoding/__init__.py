@@ -107,9 +107,9 @@ class Decoding(Analyzer):
         groups = None
         if cv_attr is not None:
             if isinstance(cv_attr, list):
-                groups = np.vstack([ds.sa[att].value for att in cv_attr]).T
+                groups = np.vstack([ds.sa[att] for att in cv_attr]).T
             else:
-                groups = ds.sa[cv_attr].value
+                groups = ds.sa[cv_attr]
 
         return X, y, groups
 
@@ -169,7 +169,7 @@ class Decoding(Analyzer):
         rois_values = []
         
         for r in rois:
-            value = [(r, [v]) for v in np.unique(ds.fa[r].value) if v != 0]
+            value = [(r, [v]) for v in np.unique(ds.fa[r]) if v != 0]
             rois_values.append(value)
             
         return list(*rois_values)    

@@ -83,14 +83,22 @@ def load_ds(conf_file, task,
         ds_merged.append(ds)
         del ds
     
-    ds_merged = vstack(ds_merged, a='all')
-
+    # per-subject dataset attributes before vstack drops them: most dataset
+    # attrs (imgaffine, imghdr, ...) are identical across subjects, so we
+    # just keep the first subject's value; a few (snr/states/time) are
+    # genuinely per-subject and are kept as a tuple, one entry per subject
+    per_subject_a = {}
     if len(subjects) > 1:
-        for k in ds_merged.a.keys():
-            if k not in ['snr', 'states', 'time', 'mapper']:
-                ds_merged.a[k] = ds_merged.a[k].value[0]
+        all_a_keys = set().union(*(ds.a.keys() for ds in ds_merged))
+        for k in all_a_keys:
+            values = tuple(ds.a.get(k) for ds in ds_merged)
+            per_subject_a[k] = values if k in ('snr', 'states', 'time', 'mapper') else values[0]
+    else:
+        per_subject_a = dict(ds_merged[0].a)
 
-    
+    ds_merged = vstack(ds_merged)
+    ds_merged.a.update(per_subject_a)
+
     ds_merged.a.update(conf)
     ds_merged.a['task'] = task
 
@@ -98,26 +106,3 @@ def load_ds(conf_file, task,
         ds_merged.sa['subject'] = ds_merged.sa.pop('name')
     
     return ds_merged
-
-
-def dataset_wizard(X, y=None, **kwargs):
-
-    from sekupy.dataset.collections import SampleAttributesCollection, \
-        DatasetAttributesCollection, FeatureAttributesCollection
-    from sekupy.dataset.base import Dataset
-    import numpy as np
-
-    sa = SampleAttributesCollection({
-        'targets': y,
-        'subject': np.ones(X.shape[0]),
-        'file': ["foo.mat" for _ in range(X.shape[0])]
-    })
-
-    fa = FeatureAttributesCollection({'matrix_values':np.ones(X.shape[1])})
-    a = DatasetAttributesCollection({'data_path':'/media/robbis/DATA/meg/hcp/', 
-                                     'experiment':'hcp', 
-                                    })
-
-    ds = Dataset(X, sa=sa, a=a, fa=fa)
-
-    return ds

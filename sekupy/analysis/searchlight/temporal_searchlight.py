@@ -113,7 +113,7 @@ class TemporalSearchLight(SearchLight):
         self._balancer = balancer
 
         X, y = get_ds_data(ds)
-        t_values = ds.sa[time_attr].value
+        t_values = ds.sa[time_attr]
 
         X, y = temporal_transformation(X, y, t_values)
 
@@ -124,9 +124,9 @@ class TemporalSearchLight(SearchLight):
         if cv_attr is not None:
             _reshape = temporal_attribute_reshaping
             if isinstance(cv_attr, list):
-                groups = np.vstack([_reshape(ds.sa[att].value, t_values) for att in cv_attr]).T
+                groups = np.vstack([_reshape(ds.sa[att], t_values) for att in cv_attr]).T
             else:
-                groups = _reshape(ds.sa[cv_attr].value, t_values)
+                groups = _reshape(ds.sa[cv_attr], t_values)
             groups = groups[indices]
 
         X, y = X[indices], y[indices]

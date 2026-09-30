@@ -2,7 +2,7 @@ from sekupy.preprocessing.base import Transformer
 from sekupy.preprocessing.slicers import SampleSlicer
 from sekupy.utils.dataset import get_ds_data
 from sekupy.preprocessing.balancing.utils import sample_generator
-from sekupy.dataset.base import Dataset
+from sekupy.dataset.dataset import Dataset
 from imblearn.under_sampling import RandomUnderSampler
 
 from collections import Counter
@@ -102,7 +102,7 @@ class SamplingBalancer(Transformer):
             self._attr = [self._attr]
 
         n_attributes = len(self._attr)
-        unique_attributes = product(*[np.unique(ds.sa[v].value)
+        unique_attributes = product(*[np.unique(ds.sa[v])
                                         for v in self._attr])
 
         logger.debug(unique_attributes)
@@ -175,13 +175,13 @@ class OverSamplingBalancer(SamplingBalancer):
         
     def _update_ds(self, ds, X, y):
         
-        ds_ = Dataset.from_wizard(X)
-        
-        samples_difference = len(y) - len(ds.targets) 
-        
+        ds_ = Dataset(X)
+
+        samples_difference = len(y) - len(ds.targets)
+
         for key in ds.sa.keys():
-            
-            values = ds.sa[key].value      
+
+            values = ds.sa[key]
             values_ = sample_generator(key, values, samples_difference, y)
             u, c = np.unique(values_, return_counts=True)
             logger.debug("%s - sample per key: %s" %(key, str([u,c])))

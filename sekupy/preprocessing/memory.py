@@ -18,11 +18,11 @@ class MemoryReducer(Transformer):
         ds.samples = self._dtype(ds.samples)
 
         for attribute in ds.fa.keys():
-            array = ds.fa[attribute].value
+            array = ds.fa[attribute]
             ds.fa[attribute] = self._minify(array)
 
         for attribute in ds.sa.keys():
-            array = ds.sa[attribute].value
+            array = ds.sa[attribute]
             ds.sa[attribute] = self._minify(array)
 
                         

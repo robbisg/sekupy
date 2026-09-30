@@ -6,11 +6,10 @@
 from __future__ import print_function
 
 from sekupy.dataset.mri import fmri_dataset
-from sekupy.dataset.dataset import vstack
 from sekupy.dataset.events import find_events
 from sekupy.utils.files import add_subdirs, build_pathnames
 from sekupy.io.subjects import add_subjectname
-from sekupy.dataset.collections import SampleAttributesCollection
+from sekupy.dataset.dataset import AttrDict
 
 import os
 import numpy as np
@@ -415,6 +414,6 @@ def load_attributes(path, subj, task, **kwargs):
     attr_fname = attribute_list[0]
     
     attr = pd.read_csv(attr_fname, sep=' ').to_dict(orient='list')
-    attr = SampleAttributesCollection(attr)
+    attr = AttrDict(attr)
 
     return attr

@@ -41,7 +41,17 @@ class SimulationLoader(object):
             ds.sa['file'] = [name % (str(i+1)) for _ in range(ds.shape[0])]
             ds_merged.append(ds)
 
-        ds_merged = vstack(ds_merged, a='all')
+        # per-subject dataset attrs (states/sample_frequency/time/snr) come
+        # from SimulationModel.fit() and are genuinely per-subject; keep
+        # them as a tuple, one entry per subject (mirrors sekupy.io.load_ds)
+        per_subject_a = {}
+        all_a_keys = set().union(*(ds.a.keys() for ds in ds_merged))
+        for k in all_a_keys:
+            values = tuple(ds.a.get(k) for ds in ds_merged)
+            per_subject_a[k] = values if k in ('snr', 'states', 'time', 'mapper') else values[0]
+
+        ds_merged = vstack(ds_merged)
+        ds_merged.a.update(per_subject_a)
         ds_merged.a.update(self.conf)
 
         self._ds = ds_merged

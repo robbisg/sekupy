@@ -60,7 +60,7 @@ class Imbalancer(Transformer):
             attributes = [list(np.unique(ds.targets))]
             self._attr = 'targets'
         else:
-            attributes = [[a] for a in np.unique(ds.sa[self._attr].value)]
+            attributes = [[a] for a in np.unique(ds.sa[self._attr])]
 
         masks = []
         for attribute in attributes:

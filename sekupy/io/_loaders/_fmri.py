@@ -2,7 +2,7 @@ import nibabel as ni
 import numpy as np
 import pandas as pd
 
-from sekupy.dataset.collections import SampleAttributesCollection
+from sekupy.dataset.dataset import AttrDict
 from sekupy.io.base import load_roi_labels, load_mask, load_fmri
 
 
@@ -185,7 +185,7 @@ def load_bids_attributes(subject, **kwargs):
                     attribute_dict[c] = np.hstack((attribute_dict[c],
                                                    -1*np.ones(nelem)))
 
-    sa = SampleAttributesCollection(attribute_dict)
+    sa = AttrDict(attribute_dict)
 
     return sa
 

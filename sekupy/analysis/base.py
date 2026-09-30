@@ -231,9 +231,10 @@ class Analyzer(Node):
         info = dict()
         info['a'] = ds.a.copy()
         info['sa'] = ds.sa.copy()
+        info['fa'] = ds.fa.copy()
 
-        info.update({'ds.a.%s' % k: ds.a[k].value for k in ds.a.keys()})
-        info.update({'ds.sa.%s' % k: np.unique(ds.sa[k].value) for k in ds.sa.keys()})
+        info.update({'ds.a.%s' % k: ds.a[k] for k in ds.a.keys()})
+        info.update({'ds.sa.%s' % k: np.unique(ds.sa[k]) for k in ds.sa.keys()})
 
         info['targets'] = np.unique(ds.targets)
         info['summary'] = ds.summary()
@@ -285,7 +286,7 @@ class Analyzer(Node):
         info['targets'] = self._info['targets']
         
         for k in self._info['sa'].keys():
-            info[k] = np.unique(self._info['sa'][k].value)
+            info[k] = np.unique(self._info['sa'][k])
         info['summary'] = self._info['summary']
 
         return info

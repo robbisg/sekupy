@@ -25,7 +25,7 @@ class Identifiability(Analyzer):
 
     def fit(self, ds, attr='targets'):
 
-        unique = np.unique(ds.sa[attr].value)
+        unique = np.unique(ds.sa[attr])
         row, col = np.triu_indices(len(unique), k=0)
         
         identifiability_matrix = np.zeros((len(unique), len(unique)))

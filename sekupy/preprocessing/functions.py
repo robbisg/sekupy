@@ -2,10 +2,8 @@ from __future__ import print_function
 
 import numpy as np
 
-from sekupy.dataset.detrend import PolyDetrendMapper
-from sekupy.dataset.mappers import mean_group_sample
-
-from sekupy.dataset.dataset import vstack, hstack
+from sekupy.dataset.detrend import poly_detrend
+from sekupy.dataset.dataset import Dataset, vstack, hstack
 
 from itertools import product
 from sekupy.preprocessing.base import Transformer
@@ -36,8 +34,8 @@ class Detrender(Transformer):
     def __init__(self, degree=1, chunks_attr='chunks', **kwargs):
 
         self._degree = degree
-        self.node = PolyDetrendMapper(chunks_attr=chunks_attr, polyord=degree)
-        Transformer.__init__(self, name='detrender', 
+        self._chunks_attr = chunks_attr
+        Transformer.__init__(self, name='detrender',
                              degree=degree, chunks_attr=chunks_attr)
 
     def transform(self, ds):
@@ -53,10 +51,8 @@ class Detrender(Transformer):
         ds : :class:`~sekupy.dataset.base.Dataset`
             The detrended dataset
         """
-        self.node.train(ds)
-
         logger.info('Dataset preprocessing: Detrending with polynomial of order %s...', (str(self._degree)))
-        ds = self.node.forward(ds)
+        ds = poly_detrend(ds, chunks_attr=self._chunks_attr, polyord=self._degree)
         return Transformer.transform(self, ds)
 
 
@@ -71,17 +67,20 @@ class SampleAverager(Transformer):
     """
 
     def __init__(self, attributes):
-        self.node = mean_group_sample(attributes)
+        self._attributes = attributes
 
         attr_string = '.'.join(attributes)
 
-        Transformer.__init__(self, 
+        Transformer.__init__(self,
                              name='sample_averager',
                              attributes=attr_string)
 
 
     def transform(self, ds):
         """Average samples.
+
+        Groups samples by the unique combination of `self._attributes`
+        (sorted lexicographically) and replaces each group with its mean.
 
         Parameters
         ----------
@@ -95,7 +94,20 @@ class SampleAverager(Transformer):
         """
         logger.info('Dataset preprocessing: Averaging samples...')
 
-        ds = ds.get_mapped(self.node)
+        attrs = self._attributes
+        combos = sorted(set(zip(*(ds.sa[a] for a in attrs))))
+
+        samples = []
+        sa = {a: [] for a in attrs}
+        for combo in combos:
+            mask = np.ones(len(ds), dtype=bool)
+            for a, v in zip(attrs, combo):
+                mask &= (ds.sa[a] == v)
+            samples.append(ds.samples[mask].mean(axis=0))
+            for a, v in zip(attrs, combo):
+                sa[a].append(v)
+
+        ds = Dataset(np.array(samples), sa=sa, fa=dict(ds.fa), a=dict(ds.a))
 
         return Transformer.transform(self, ds)
 
@@ -204,12 +216,9 @@ class FeatureStacker(Transformer):
 
         ds_ = SampleSlicer(**self._selection).transform(ds)
 
-        iterable = [np.unique(ds_.sa[a].value) for a in self._attr]
+        iterable = [np.unique(ds_.sa[a]) for a in self._attr]
 
         ds_stack = []
-
-        key = self._stack_attr[0]
-        unique_stack_attr = np.unique(ds_.sa[key].value)
 
         for attr in product(*iterable):
             logger.debug(attr)
@@ -217,31 +226,22 @@ class FeatureStacker(Transformer):
             mask = np.ones_like(ds_.targets, dtype=bool)
 
             for i, a in enumerate(attr):
-                mask = np.logical_and(mask, ds_.sa[self._attr[i]].value == a)
+                mask = np.logical_and(mask, ds_.sa[self._attr[i]] == a)
 
             logger.debug(ds_[mask].shape)
 
-            ds_stacked = []
-            for _, k in enumerate(unique_stack_attr):
-                values = ds_.sa[key].value
-                mask_attr = np.logical_and(mask, values == k)
-                ds_stacked.append(ds_[mask_attr])
-
-            ds_stacked = hstack(ds_stacked, a='unique')
-            #print(ds_stacked.shape)
-
-            ds_stacked = hstack([d for d in ds_[mask]], a='unique')
+            ds_stacked = hstack([d for d in ds_[mask]])
             ds_stacked = self.update_attribute(ds_stacked, ds_[mask])
             ds_stack.append(ds_stacked)
 
-        ds = vstack(ds_stack, a='unique')
+        ds = vstack(ds_stack)
         return Transformer.transform(self, ds)
 
 
     def update_attribute(self, ds, ds_orig):
 
         key = list(self._stack_attr)[0]
-        uniques = np.unique(ds_orig.sa[key].value)
+        uniques = np.unique(ds_orig.sa[key])
         value = "+".join([str(v) for v in uniques])
 
         logger.debug(key)
@@ -302,20 +302,19 @@ class TemporalTransformer(Transformer):
 
     def transform(self, ds):
 
-        temporal_attributes = ds.sa[self.attr].value
+        temporal_attributes = ds.sa[self.attr]
 
-        X, y = temporal_transformation(ds.samples, 
-                                       ds.targets, 
+        X, y = temporal_transformation(ds.samples,
+                                       ds.targets,
                                        temporal_attributes)
 
         logger.info(X.shape)
-        ds.sa.set_length_check(len(y))
 
-        for k in ds.sa.keys():
-            ds.sa[k] = temporal_attribute_reshaping(ds.sa[k].value, temporal_attributes)
-
-        logger.info(X.shape)
-        ds.samples = X
+        new_sa = {
+            k: temporal_attribute_reshaping(v, temporal_attributes)
+            for k, v in ds.sa.items()
+        }
+        ds = Dataset(X, sa=new_sa, fa=dict(ds.fa), a=dict(ds.a))
 
         logger.info(ds.samples.shape)
 

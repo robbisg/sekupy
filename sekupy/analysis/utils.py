@@ -48,7 +48,7 @@ def get_rois(ds, roi):
     rois_values = []
     
     for r in rois:
-        for v in np.unique(ds.fa[r].value):
+        for v in np.unique(ds.fa[r]):
             if v != 0:
                 value = (r, [v])
                 rois_values.append(value)

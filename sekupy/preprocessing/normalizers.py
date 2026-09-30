@@ -1,6 +1,6 @@
 from sekupy.preprocessing.base import Transformer
 from sekupy.preprocessing.slicers import SampleSlicer
-from sekupy.dataset.zscore import ZScoreMapper
+from sekupy.dataset.zscore import zscore
 from sekupy.dataset.dataset import vstack
 
 import numpy as np
@@ -12,16 +12,16 @@ logger = logging.getLogger(__name__)
 class FeatureZNormalizer(Transformer):
     
     def __init__(self, chunks_attr=None, param_est=None, **kwargs):
-        
-        self.node = ZScoreMapper(chunks_attr=chunks_attr, param_est=param_est)
-        Transformer.__init__(self, name='feature_znormalizer', 
+
+        self._chunks_attr = chunks_attr
+        self._param_est = param_est
+        Transformer.__init__(self, name='feature_znormalizer',
                                     chunks_attr=chunks_attr)
-        
-    
+
+
     def transform(self, ds):
         logger.info('Dataset preprocessing: Zscoring feature-wise...')
-        self.node.train(ds)
-        ds = self.node.forward(ds)
+        ds = zscore(ds, chunks_attr=self._chunks_attr, param_est=self._param_est)
         return Transformer.transform(self, ds)
     
 
@@ -69,7 +69,7 @@ class FeatureSigmaNormalizer(Transformer):
     def transform(self, ds):
         
         ds_merged = []
-        for target in np.unique(ds.sa[self.attr].value):
+        for target in np.unique(ds.sa[self.attr]):
             
             selection_dict = {self.attr: [target]}
             ds_target = SampleSlicer(**selection_dict).transform(ds)
@@ -99,7 +99,7 @@ class FeatureAttrNormalizer(Transformer):
         baseline_ds = SampleSlicer(**selection_dict).transform(ds)
         
 
-        for target in np.unique(ds.sa[self.attr].value):
+        for target in np.unique(ds.sa[self.attr]):
             
             selection_dict = {self.attr: [target]}
             ds_target = SampleSlicer(**selection_dict).transform(ds)

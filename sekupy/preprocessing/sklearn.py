@@ -1,6 +1,6 @@
 from .base import Transformer
 from ..utils.dataset import get_ds_data
-from sekupy.dataset.base import Dataset
+from sekupy.dataset.dataset import Dataset
 
 import logging
 logger = logging.getLogger(__name__)

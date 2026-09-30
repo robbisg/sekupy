@@ -47,7 +47,7 @@ class FeatureSlicer(Transformer):
             
             logger.info("Selected %s from %s attribute.", str(values), key)
             
-            ds_values = ds.fa[key].value
+            ds_values = ds.fa[key]
             condition_mask = np.zeros_like(ds_values, dtype=bool)
             
             for value in values:
@@ -107,7 +107,7 @@ class SampleSlicer(Transformer):
             
             logger.info("Selected %s from %s attribute.", str(values), key)
             
-            ds_values = ds.sa[key].value
+            ds_values = ds.sa[key]
             condition_mask = np.zeros_like(ds_values, dtype=bool)
             
             for value in values:        
@@ -191,7 +191,7 @@ class SampleExpressionSlicer(Transformer):
         from types import LambdaType
 
         compare = self.compare_fx
-        attributes = ds.sa[self.attr].value.copy()
+        attributes = ds.sa[self.attr].copy()
 
         if self.attr_transformer is not None:
             attributes = self.attr_transformer(attributes)

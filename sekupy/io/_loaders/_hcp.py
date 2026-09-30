@@ -1,8 +1,7 @@
 import h5py
 import numpy as np
 import pandas as pd
-from sekupy.dataset.collections import SampleAttributesCollection, \
-     DatasetAttributesCollection, FeatureAttributesCollection
+from sekupy.dataset.dataset import AttrDict
 from sekupy.utils.bids import get_dictionary
 from scipy.io import loadmat
 
@@ -45,10 +44,10 @@ def load_hcp_motor(filename, **kwargs):
                'file':   [filename for _ in range(rt.shape[0])]
                })
 
-    sa = SampleAttributesCollection(sa)
+    sa = AttrDict(sa)
 
-    a = DatasetAttributesCollection({'times': times})
-    fa = FeatureAttributesCollection({'matrix_values': np.ones(data.shape[1])})
+    a = AttrDict({'times': times})
+    fa = AttrDict({'matrix_values': np.ones(data.shape[1])})
 
     mat.close()
 
@@ -111,8 +110,8 @@ def load_hcp_blp(filename, **kwargs):
         matrix_values=np.ones(data.shape[1])
     )
 
-    fa = FeatureAttributesCollection(fa)
-    a = DatasetAttributesCollection({})
+    fa = AttrDict(fa)
+    a = AttrDict({})
 
     return data, sa, a, fa
 

@@ -8,8 +8,7 @@ from sekupy.preprocessing.base import Transformer
 from scipy.spatial.distance import pdist
 from scipy import signal
 
-from sekupy.dataset.collections import SampleAttributesCollection
-from sekupy.dataset.base import Dataset
+from sekupy.dataset.dataset import AttrDict, Dataset
 
 import itertools
 
@@ -46,7 +45,7 @@ class SingleRowMatrixTransformer(Transformer):
 
         attr = self._edit_attr(ds, data.shape)
 
-        ds_ = Dataset.from_wizard(data)
+        ds_ = Dataset(data)
         ds_ = add_attributes(ds_, attr)
 
         return Transformer.transform(self, ds_)
@@ -57,7 +56,7 @@ class SingleRowMatrixTransformer(Transformer):
         attr = dict()
         for key in ds.sa.keys():
             attr[key] = []
-            for v in ds.sa[key].value:
+            for v in ds.sa[key]:
                 attr[key] += [v for _ in range(shape[1])]
 
         attr['roi_labels'] = []
@@ -67,7 +66,7 @@ class SingleRowMatrixTransformer(Transformer):
 
         logger.debug(shape)
 
-        return SampleAttributesCollection(attr)
+        return AttrDict(attr)
 
 
 
@@ -153,7 +152,7 @@ class SlidingWindowConnectivity(Transformer):
     def update_ds(self, ds, windows_start):
         sa = {}
         for k in ds.sa.keys():
-            sa.update({k: ds.sa[k].value[windows_start]})
+            sa.update({k: ds.sa[k][windows_start]})
 
         ds_ = Dataset(ds.samples, sa=sa, a=ds.a)
 
